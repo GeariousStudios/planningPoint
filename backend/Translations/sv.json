@@ -260,6 +260,8 @@
   "AuditTrail/OldOrder": "Gammal ordning",
   "AuditTrail/NewOrder": "Ny ordning",
   "AuditTrail/ReverseColor": "Omvänd färg",
+  "AuditTrail/Mappings": "Importregler",
+  "AuditTrail/MasterPlanFieldMapping": "Importregler för huvudplan",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

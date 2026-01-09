@@ -340,15 +340,15 @@ namespace backend.Controllers
                 DataType = dto.DataType,
                 Alignment = dto.Alignment,
                 IsHidden = dto.IsHidden,
-                MasterPlanToMasterPlanFields =
-                    dto.MasterPlanIds != null
-                        ? dto
-                            .MasterPlanIds.Select(id => new MasterPlanToMasterPlanField
-                            {
-                                MasterPlanId = id,
-                            })
-                            .ToList()
-                        : new List<MasterPlanToMasterPlanField>(),
+                // MasterPlanToMasterPlanFields =
+                //     dto.MasterPlanIds != null
+                //         ? dto
+                //             .MasterPlanIds.Select(id => new MasterPlanToMasterPlanField
+                //             {
+                //                 MasterPlanId = id,
+                //             })
+                //             .ToList()
+                //         : new List<MasterPlanToMasterPlanField>(),
 
                 // Meta data.
                 CreationDate = now,
@@ -367,9 +367,9 @@ namespace backend.Controllers
                 DataType = field.DataType,
                 Alignment = field.Alignment,
                 IsHidden = field.IsHidden,
-                MasterPlanIds = field
-                    .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
-                    .ToList(),
+                // MasterPlanIds = field
+                //     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
+                //     .ToList(),
 
                 // Meta data.
                 CreationDate = field.CreationDate,
@@ -465,18 +465,18 @@ namespace backend.Controllers
             field.Alignment = dto.Alignment;
             field.IsHidden = dto.IsHidden;
 
-            _context.MasterPlanToMasterPlanFields.RemoveRange(field.MasterPlanToMasterPlanFields);
+            // _context.MasterPlanToMasterPlanFields.RemoveRange(field.MasterPlanToMasterPlanFields);
 
-            field.MasterPlanToMasterPlanFields =
-                dto.MasterPlanIds != null
-                    ? dto
-                        .MasterPlanIds.Select(id => new MasterPlanToMasterPlanField
-                        {
-                            MasterPlanId = id,
-                            MasterPlanFieldId = field.Id,
-                        })
-                        .ToList()
-                    : new List<MasterPlanToMasterPlanField>();
+            // field.MasterPlanToMasterPlanFields =
+            //     dto.MasterPlanIds != null
+            //         ? dto
+            //             .MasterPlanIds.Select(id => new MasterPlanToMasterPlanField
+            //             {
+            //                 MasterPlanId = id,
+            //                 MasterPlanFieldId = field.Id,
+            //             })
+            //             .ToList()
+            //         : new List<MasterPlanToMasterPlanField>();
 
             // Meta data.
             field.UpdateDate = now;
@@ -491,9 +491,9 @@ namespace backend.Controllers
                 DataType = field.DataType,
                 Alignment = field.Alignment,
                 IsHidden = field.IsHidden,
-                MasterPlanIds = field
-                    .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
-                    .ToList(),
+                // MasterPlanIds = field
+                //     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
+                //     .ToList(),
 
                 // Meta data.
                 UpdateDate = field.UpdateDate,

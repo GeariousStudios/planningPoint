@@ -20,6 +20,7 @@ namespace backend.Models
         public string UpdatedBy { get; set; } = string.Empty;
 
         public List<MasterPlanToMasterPlanField> MasterPlanToMasterPlanFields { get; set; } = new();
+        public List<MasterPlanFieldMapping> FieldMappings { get; set; } = new();
     }
 
     public enum MasterPlanFieldDataType

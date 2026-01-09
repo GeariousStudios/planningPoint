@@ -234,6 +234,14 @@ const MasterPlansClient = (props: Props) => {
               })
             )}
           </div>
+           <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span
+              className={`${badgeClass} ${!item.allowRemovingElements ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
+            >
+              {item.allowRemovingElements ? t("Manage/Allowed") : t("Manage/Disallowed")}
+            </span>
+          </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
             <span

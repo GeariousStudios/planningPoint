@@ -84,6 +84,7 @@ export const useMasterPlan = (
   const minDelay = 100;
   const startDelay = 600;
   const acceleration = 100;
+  const [importFile, setImportFile] = useState<File | null>(null);
 
   // --- Other ---
   const { notify } = useToast();
@@ -183,6 +184,37 @@ export const useMasterPlan = (
     }
   }, [refetchData]);
 
+  // --- Handle import file ---
+  const handleImport = async () => {
+    if (!importFile) {
+      return;
+    }
+
+    const form = new FormData();
+    form.append("file", importFile);
+    form.append("masterPlanId", String(masterPlanId));
+
+    const res = await fetch(`${apiUrl}/master-plan/mapping/import`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+
+    const rows = await res.json();
+    console.log("IMPORT RESULT:", rows);
+
+    [...rows].reverse().forEach((row: any) => {
+      const dict: Record<number, string> = {};
+      for (const [fieldId, value] of Object.entries(row.values)) {
+        dict[Number(fieldId)] = value as string;
+      }
+
+      handleAddElement(Number(masterPlanId), null, dict);
+    });
+
+    setImportFile(null);
+  };
+
   // --- Handle search ---
   const handleSearch = async () => {
     try {
@@ -228,7 +260,11 @@ export const useMasterPlan = (
   };
 
   // --- Handle add element ---
-  const handleAddElement = (planId: number, groupId: number | null = null) => {
+  const handleAddElement = (
+    planId: number,
+    groupId: number | null = null,
+    values: Record<number, string> = {},
+  ) => {
     setMasterPlans((prev) =>
       prev.map((p) => {
         if (p.id !== planId) return p;
@@ -236,7 +272,7 @@ export const useMasterPlan = (
         const newValues = fieldOptions.map((f) => ({
           masterPlanFieldId: f.id,
           masterPlanFieldName: f.label,
-          value: "",
+          value: values[f.id] ?? "",
         }));
 
         let insertIndex = 0;
@@ -277,7 +313,7 @@ export const useMasterPlan = (
         }
 
         const newElement: MasterPlanElement = {
-          id: `temp-${Date.now()}`,
+          id: `temp-${Date.now()}-${Math.random()}`,
           groupId: finalGroupId,
           values: newValues,
           currentElement: false,
@@ -1144,5 +1180,8 @@ export const useMasterPlan = (
     handleHoldStart,
     handleHoldEnd,
     duplicateSelected,
+    handleImport,
+    importFile,
+    setImportFile,
   };
 };

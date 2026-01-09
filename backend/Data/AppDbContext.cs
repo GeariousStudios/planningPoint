@@ -32,6 +32,7 @@ namespace backend.Data
         public DbSet<MasterPlanElement> MasterPlanElements { get; set; }
         public DbSet<MasterPlanElementValue> MasterPlanElementValues { get; set; }
         public DbSet<MasterPlanField> MasterPlanFields { get; set; }
+        public DbSet<MasterPlanFieldMapping> MasterPlanFieldMappings { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
@@ -306,6 +307,19 @@ namespace backend.Data
                 .HasOne(mpe => mpe.MasterPlanElement)
                 .WithMany(e => e.MasterPlanToMasterPlanElements)
                 .HasForeignKey(mpe => mpe.MasterPlanElementId);
+
+            // MasterPlanFieldMapping <-> MasterPlan and MasterPlanField many-to-one relationships.
+            modelBuilder
+                .Entity<MasterPlanFieldMapping>()
+                .HasOne(m => m.MasterPlan)
+                .WithMany(mp => mp.FieldMappings)
+                .HasForeignKey(m => m.MasterPlanId);
+
+            modelBuilder
+                .Entity<MasterPlanFieldMapping>()
+                .HasOne(m => m.Field)
+                .WithMany(f => f.FieldMappings)
+                .HasForeignKey(m => m.FieldId);
         }
 
         public override int SaveChanges()

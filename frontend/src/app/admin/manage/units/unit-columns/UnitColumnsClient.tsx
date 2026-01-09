@@ -150,13 +150,19 @@ const UnitColumnsClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name, units",
+      key: "name, dataType, units, hasData",
       getValue: (item: UnitColumnItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
             </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("MasterPlanFieldModal/Data type")}:
+            </span>
+            <span className="-mt-2">{t("Common/" + item.dataType)}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
@@ -205,6 +211,16 @@ const UnitColumnsClient = (props: Props) => {
                 );
               })
             )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Columns/Has data")}:
+            </span>
+            <span
+              className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
+            >
+              {item.hasData ? t("Common/Yes") : t("Common/No")}
+            </span>
           </div>
         </div>
       ),
@@ -280,27 +296,27 @@ const UnitColumnsClient = (props: Props) => {
                 key={i}
                 className={badgeClass}
                 style={
-                      matchingUnit?.reverseColor
-                        ? {
-                            boxShadow: `inset 0 0 0 1px ${
-                              currentTheme === "dark"
-                                ? matchingUnit?.darkColorHex
-                                : matchingUnit?.lightColorHex
-                            }`,
-                            backgroundColor: "transparent",
-                            color: "var(--text-main)",
-                          }
-                        : {
-                            backgroundColor:
-                              currentTheme === "dark"
-                                ? matchingUnit?.darkColorHex
-                                : matchingUnit?.lightColorHex,
-                            color:
-                              currentTheme === "dark"
-                                ? matchingUnit?.darkTextColorHex
-                                : matchingUnit?.lightTextColorHex,
-                          }
-                    }
+                  matchingUnit?.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkTextColorHex
+                            : matchingUnit?.lightTextColorHex,
+                      }
+                }
               >
                 {label}
               </span>

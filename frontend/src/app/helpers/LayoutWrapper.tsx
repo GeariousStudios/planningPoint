@@ -128,6 +128,7 @@ const LayoutWrapper = (props: Props) => {
       // --- Plan ---
       plan: { label: t("Navbar/Plan"), clickable: false },
       "master-plans": { label: t("Common/Master plans"), clickable: false },
+      "import-rules": { label: t("ImportRules/Import rules"), clickable: false },
       "master-plan-fields": {
         label: t("Common/Master plan fields"),
         clickable: false,

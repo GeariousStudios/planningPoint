@@ -280,6 +280,7 @@ namespace backend.Controllers
                     "MasterPlan",
                     "MasterPlanField",
                     "MasterPlanElement",
+                    "MasterPlanFieldMapping",
                 };
 
                 actions = new[] { "All", "Create", "Update", "Delete", "Move" };

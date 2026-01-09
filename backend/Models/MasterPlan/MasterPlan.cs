@@ -28,5 +28,6 @@ namespace backend.Models
         public List<MasterPlanToMasterPlanField> MasterPlanToMasterPlanFields { get; set; } = new();
         public List<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; } =
             new();
+        public List<MasterPlanFieldMapping> FieldMappings { get; set; } = new();
     }
 }

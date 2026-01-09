@@ -347,6 +347,12 @@ const Navbar = (props: Props) => {
         icon: "WrenchIcon",
       },
       {
+        href: "/admin/manage/units/master-plans/import-rules/",
+        // label: t("Common/Manage") + " / " + t("Common/Columns"),
+        label: t("ImportRules/Import rules"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/admin/manage/units/master-plan-fields/",
         // label: t("Common/Manage") + " / " + t("Common/Columns"),
         label: t("Common/Master plan fields"),
@@ -491,7 +497,7 @@ const Navbar = (props: Props) => {
       <div
         className={`${
           !props.navbarHidden
-            ? "z-(--z-overlay) fixed inset-0 h-full w-screen bg-black/50 md:static md:h-auto md:w-auto md:bg-transparent"
+            ? "fixed inset-0 z-(--z-overlay) h-full w-screen bg-black/50 md:static md:h-auto md:w-auto md:bg-transparent"
             : ""
         }`}
         onPointerDown={() => toggleNavbar()}
@@ -541,7 +547,7 @@ const Navbar = (props: Props) => {
                   zIndex: 0,
                 }}
               />
-              <div className="border-(--border-main) pointer-events-none absolute top-0 left-0 h-full w-full border-r-1" />
+              <div className="pointer-events-none absolute top-0 left-0 h-full w-full border-r-1 border-(--border-main)" />
               {/* Simulated border. */}
 
               {isAuthReady && unitsLoaded ? (
@@ -556,7 +562,7 @@ const Navbar = (props: Props) => {
                     }
                   >
                     <div className="flex flex-col">
-                      <div className="duration-(--slow) fixed top-0 flex h-18 transition-transform">
+                      <div className="fixed top-0 flex h-18 transition-transform duration-(--slow)">
                         <Link
                           href={`/`}
                           className="mt-2.25 -ml-2.25 flex h-15 max-w-17 min-w-40"
@@ -577,7 +583,7 @@ const Navbar = (props: Props) => {
                         <Outline.ChevronDoubleLeftIcon />
                       </button>
 
-                      <hr className="text-(--border-main) mt-1 mb-7 rounded-full" />
+                      <hr className="mt-1 mb-7 rounded-full text-(--border-main)" />
 
                       {/* --- USER FAVOURITES --- */}
                       {resolvedFavourites.length > 0 && (
@@ -617,7 +623,7 @@ const Navbar = (props: Props) => {
                             }}
                           />
 
-                          <hr className="text-(--border-main) mt-4 mb-7 rounded-full" />
+                          <hr className="mt-4 mb-7 rounded-full text-(--border-main)" />
                         </div>
                       )}
 
@@ -637,7 +643,7 @@ const Navbar = (props: Props) => {
                               isLoggedIn ? onToggleFavourite : undefined
                             }
                           />
-                          <hr className="text-(--border-main) mt-4 mb-7 rounded-full" />
+                          <hr className="mt-4 mb-7 rounded-full text-(--border-main)" />
                         </div>
                       )}
 
@@ -722,7 +728,7 @@ const Navbar = (props: Props) => {
 
                       {isAdmin && (
                         <div>
-                          <hr className="text-(--border-main) mt-4 mb-7 rounded-full" />
+                          <hr className="mt-4 mb-7 rounded-full text-(--border-main)" />
 
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Common/Admin")}
@@ -811,6 +817,19 @@ const Navbar = (props: Props) => {
                                       (f) =>
                                         f.href ===
                                         "/admin/manage/units/master-plan-fields/",
+                                    ),
+                                  },
+                                  {
+                                    href: "/admin/manage/units/master-plans/import-rules/",
+                                    label: t("ImportRules/Import rules"),
+
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/units/master-plans/import-rules/",
                                     ),
                                   },
                                 ],

@@ -718,39 +718,43 @@ const UnitClient = (props: any) => {
                                     <div className="flex gap-4">
                                       {c.editingCell?.hour === hour &&
                                       c.editingCell?.columnId === columnId ? (
-                                        <Input
-                                          compact
-                                          focusOnMount
-                                          type={
-                                            dataType === "Number"
-                                              ? "number"
-                                              : "text"
-                                          }
-                                          value={String(c.editingValue ?? "")}
-                                          onChange={(val) =>
-                                            c.setEditingValue(
+                                        <div className="-mx-2">
+                                          <Input
+                                            compact
+                                            focusOnMount
+                                            type={
                                               dataType === "Number"
-                                                ? val === ""
-                                                  ? ""
-                                                  : isNaN(Number(val))
-                                                    ? ""
-                                                    : Number(val)
-                                                : val,
-                                            )
-                                          }
-                                          onBlur={() => c.setEditingCell(null)}
-                                          onKeyDown={(e) => {
-                                            if (e.key === "Escape") {
-                                              e.stopPropagation();
-                                              c.setEditingCell(null);
-                                            } else if (e.key === "Enter") {
-                                              e.preventDefault();
-                                              c.saveInlineEdit();
+                                                ? "number"
+                                                : "text"
                                             }
-                                          }}
-                                          min={0}
-                                          max={999999}
-                                        />
+                                            value={String(c.editingValue ?? "")}
+                                            onChange={(val) =>
+                                              c.setEditingValue(
+                                                dataType === "Number"
+                                                  ? val === ""
+                                                    ? ""
+                                                    : isNaN(Number(val))
+                                                      ? ""
+                                                      : Number(val)
+                                                  : val,
+                                              )
+                                            }
+                                            onBlur={() =>
+                                              c.setEditingCell(null)
+                                            }
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Escape") {
+                                                e.stopPropagation();
+                                                c.setEditingCell(null);
+                                              } else if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                c.saveInlineEdit();
+                                              }
+                                            }}
+                                            min={0}
+                                            max={999999}
+                                          />
+                                        </div>
                                       ) : (
                                         <>
                                           {displayValue}

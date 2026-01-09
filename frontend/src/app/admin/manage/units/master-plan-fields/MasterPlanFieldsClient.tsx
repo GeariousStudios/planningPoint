@@ -153,13 +153,25 @@ const MasterPlanFieldsClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name, isHidden, masterPlans",
+      key: "name, dataType, alignment, isHidden, masterPlans",
       getValue: (item: MasterPlanFieldItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-4 text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
             </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("MasterPlanFieldModal/Data type")}:
+            </span>
+            <span className="-mt-2">{t("Common/" + item.dataType)}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("MasterPlanFieldModal/Alignment")}:
+            </span>
+            <span className="-mt-2">{t("Common/" + item.alignment)}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">

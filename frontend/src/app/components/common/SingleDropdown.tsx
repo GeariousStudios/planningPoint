@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, ReactNode } from "react";
 import ChevronDownIcon from "@heroicons/react/20/solid/ChevronDownIcon";
 import { FocusTrap } from "focus-trap-react";
+import { createPortal } from "react-dom";
 
 type OptionProps = {
   value: string | number;
@@ -24,6 +25,7 @@ type DropdownProps = {
   scrollContainer?: () => HTMLElement | null;
   smallDropdown?: boolean;
   showMore?: boolean;
+  usePortal?: boolean;
 };
 
 const SingleDropdown = ({
@@ -43,6 +45,7 @@ const SingleDropdown = ({
   scrollContainer,
   smallDropdown = false,
   showMore = false,
+  usePortal = false,
 }: DropdownProps) => {
   // --- VARIABLES ---
   // --- Refs ---
@@ -52,6 +55,11 @@ const SingleDropdown = ({
 
   // --- States ---
   const [isOpen, setIsOpen] = useState(false);
+  const [portalPosition, setPortalPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
 
   // --- ISOPEN HANDLER ---
   useEffect(() => {
@@ -97,6 +105,95 @@ const SingleDropdown = ({
   }, [isOpen]);
 
   const selectedLabel = options.find((opt) => opt.value === value)?.label || "";
+
+  // --- PORTAL POSITION ---
+  useEffect(() => {
+    if (!isOpen || !usePortal) {
+      return;
+    }
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    if (!rect) {
+      return;
+    }
+
+    setPortalPosition({
+      left: rect.left + 8,
+      top: showAbove
+        ? rect.top - (dropdownRef.current?.offsetHeight ?? 0)
+        : rect.bottom,
+      width: rect.width - 16,
+    });
+  }, [isOpen, usePortal, showAbove]);
+
+  const dropdownList = (
+    <FocusTrap
+      focusTrapOptions={{
+        clickOutsideDeactivates: true,
+        escapeDeactivates: true,
+        returnFocusOnDeactivate: true,
+        fallbackFocus: () => document.body,
+      }}
+    >
+      <ul
+        data-inside-modal="true"
+        ref={(el) => {
+          dropdownRef.current = el;
+        }}
+        className={`${isOpen ? `pointer-events-auto ${showMore ? "max-h-68" : "max-h-48"} opacity-100` : "max-h-0"} ${
+          options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"
+        } ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : "bg-(--bg-main)"} ${
+          showAbove
+            ? "bottom-full rounded-t border-b-0"
+            : "top-full rounded-b border-t-0"
+        } ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${
+          smallDropdown ? "text-sm" : ""
+        } absolute z-(--z-tooltip) ml-2 w-[calc(100%-1rem)] list-none border opacity-0 transition-[opacity,max-height] duration-(--medium)`}
+        role="listbox"
+        inert={!isOpen || undefined}
+        style={
+          usePortal
+            ? {
+                position: "fixed",
+                top: portalPosition.top,
+                left: portalPosition.left,
+                width: portalPosition.width,
+                marginLeft: 0,
+              }
+            : undefined
+        }
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <li role="option" aria-hidden="true" hidden></li>
+        {options.map((opt, index) => (
+          <li
+            key={opt.value}
+            ref={(el) => {
+              optionRefs.current[index] = el;
+            }}
+            tabIndex={0}
+            className={`${value === opt.value ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-(--slow) select-none hover:bg-(--accent-color)`}
+            role="option"
+            onClick={() => {
+              onChange && onChange(opt.value);
+              setIsOpen(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setIsOpen(false);
+              } else if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onChange && onChange(opt.value);
+                setIsOpen(false);
+              }
+            }}
+          >
+            {opt.label}
+          </li>
+        ))}
+      </ul>
+    </FocusTrap>
+  );
 
   return (
     <div className={`relative w-full`} ref={wrapperRef}>
@@ -144,7 +241,13 @@ const SingleDropdown = ({
           )}
         </label>
 
-        {isOpen && (
+        {!usePortal && isOpen && dropdownList}
+        {usePortal &&
+          isOpen &&
+          typeof document !== "undefined" &&
+          createPortal(dropdownList, document.body)}
+
+        {/* {isOpen && (
           <FocusTrap
             focusTrapOptions={{
               clickOutsideDeactivates: true,
@@ -191,7 +294,7 @@ const SingleDropdown = ({
               ))}
             </ul>
           </FocusTrap>
-        )}
+        )} */}
 
         {/* This <select> is here to get form validation check */}
         <select

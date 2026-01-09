@@ -104,12 +104,15 @@ const MasterPlanClient = (props: Props) => {
     handleHoldStart,
     handleHoldEnd,
     duplicateSelected,
+    handleImport,
+    importFile,
+    setImportFile,
   } = useMasterPlan(t, apiUrl, token, masterPlanId);
 
   return (
     <>
       {isEditing && (
-        <>
+        <div className="pointer-events-none">
           <div className="fixed inset-0 z-[calc(var(--z-edit)-2)] bg-(--bg-main) opacity-90" />
 
           <div className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)] border-6 border-(--edit-mode)" />
@@ -117,7 +120,7 @@ const MasterPlanClient = (props: Props) => {
           <div className="fixed top-0 left-0 z-(--z-edit) w-full bg-(--edit-mode) py-2 text-center text-lg font-semibold tracking-wide text-(--text-main-reverse)">
             {t("Common/Editing")} {t("Common/master plan")}
           </div>
-        </>
+        </div>
       )}
 
       <div
@@ -315,6 +318,36 @@ const MasterPlanClient = (props: Props) => {
                   </button>
                 )}
               </div>
+
+              {/* --- Import --- */}
+              {isEditing && !isCheckingIn && (
+                <div className="flex gap-4">
+                  <input
+                    id="excel-import-input"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    className="hidden"
+                    onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+                  />
+
+                  <button
+                    className={buttonSecondaryClass}
+                    onClick={() =>
+                      document.getElementById("excel-import-input")?.click()
+                    }
+                  >
+                    {t("MasterPlan/Import master plan")}
+                  </button>
+
+                  <button
+                    className={buttonPrimaryClass}
+                    disabled={!importFile}
+                    onClick={handleImport}
+                  >
+                    {t("MasterPlan/Start import")}
+                  </button>
+                </div>
+              )}
 
               {/* --- Manual refresh --- */}
               {!isEditing && !isCheckingOut && !isCheckingIn && (
@@ -728,7 +761,7 @@ const MasterPlanClient = (props: Props) => {
                           removedElementIds.includes(el.id)
                             ? "!bg-(--button-delete) text-(--text-main-reverse)"
                             : ""
-                        } ${isStrikeMode ? "cursor-pointer" : ""} ${selectedId === el.id ? "ring-2 ring-(--accent-color)" : "hover:bg-(--bg-grid-header-hover)"} transition-[background] duration-(--fast)`}
+                        } ${isStrikeMode ? "cursor-pointer" : ""} ${selectedId === el.id ? "" : "hover:bg-(--bg-grid-header-hover)"} transition-[background] duration-(--fast)`}
                       >
                         {/* <TdCell classNameAddition="min-w-fit whitespace-nowrap px-4 text-(--text-secondary)">
                         {String(el.id)}
@@ -779,7 +812,7 @@ const MasterPlanClient = (props: Props) => {
                                   i === fieldOptions.length - 1
                                     ? "w-full min-w-fit"
                                     : "min-w-fit whitespace-nowrap"
-                                } ${f.dataType?.toLowerCase() === "date" && isEditing ? "!min-w-[11rem]" : ""}`}
+                                } ${f.dataType?.toLowerCase() === "date" && isEditing ? "!min-w-[11rem]" : ""} ${isEditing ? "px-2!" : ""}`}
                               >
                                 <div
                                   className={`flex w-full ${
@@ -798,12 +831,12 @@ const MasterPlanClient = (props: Props) => {
                                         el.struckElement
                                           ? "line-through opacity-60"
                                           : ""
-                                      }`}
+                                      } mb-2`}
                                     >
                                       <span className="invisible whitespace-pre">
                                         {val || " "}
                                       </span>
-                                      <div className="absolute inset-0 w-full">
+                                      <div className="absolute w-full">
                                         <Input
                                           type={
                                             f.dataType?.toLowerCase() ===
@@ -823,12 +856,12 @@ const MasterPlanClient = (props: Props) => {
                                               newValue as string,
                                             );
                                           }}
-                                          compact
-                                          classNameAddition={
+                                          compactWithBorder
+                                          classNameAddition={`${
                                             el.struckElement
                                               ? "line-through opacity-60"
                                               : ""
-                                          }
+                                          } `}
                                         />
                                       </div>
                                     </div>

@@ -31,9 +31,11 @@ type InputProps = {
   max?: string | number;
   focusOnMount?: boolean;
   compact?: boolean;
+  compactWithBorder?: boolean;
   showAsterixOnPlaceholder?: boolean;
   showAsterix?: boolean;
   classNameAddition?: string;
+  disabled?: boolean;
 };
 
 const Input = ({
@@ -65,9 +67,11 @@ const Input = ({
   max,
   focusOnMount = false,
   compact = false,
+  compactWithBorder = false,
   showAsterixOnPlaceholder = false,
   showAsterix = false,
   classNameAddition,
+  disabled = false,
 }: InputProps & { icon?: ReactNode }) => {
   const { currentTheme } = useTheme();
 
@@ -172,7 +176,7 @@ const Input = ({
           onBlur={onBlur}
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `accent-(--accent-color) relative cursor-pointer appearance-none` : `duration-medium flex ${compact ? "h-[24px] border-0! p-0!" : "h-[40px]"} caret-(--accent-color) w-full`} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${
+          className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `accent-(--accent-color) relative cursor-pointer appearance-none` : `duration-medium flex ${compact ? "h-[24px] border-0! p-0!" : "h-[40px]"} ${compactWithBorder ? "h-[28px]!" : "h-[40px]"} caret-(--accent-color) w-full`} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${
             isColor ? "cursor-pointer p-1" : "p-2"
           } ${classNameAddition}`}
           readOnly={readOnly}
@@ -189,6 +193,7 @@ const Input = ({
           min={min}
           max={max}
           tabIndex={isDisabled ? -1 : (tabIndex ?? 0)}
+          disabled={disabled}
         />
 
         {icon && (
