@@ -58,6 +58,8 @@ export const Filter = ({
     divClassName += "xl:flex";
   } else if (breakpoint === "2xl") {
     divClassName += "2xl:flex";
+  } else if (breakpoint === "3xl") {
+    divClassName += "3xl:flex";
   }
 
   return (
@@ -72,12 +74,12 @@ export const Filter = ({
         aria-expanded={filterOpen}
       >
         <span
-          className={`${filterClass} ${filterOpen ? "text-[var(--accent-color)]" : ""}`}
+          className={`${filterClass} ${filterOpen ? "text-(--accent-color)" : ""}`}
         >
           {label}
         </span>
         <ChevronDownIcon
-          className={`${filterIconClass} ${filterOpen ? "-rotate-180 text-[var(--accent-color)]" : ""}`}
+          className={`${filterIconClass} ${filterOpen ? "-rotate-180 text-(--accent-color)" : ""}`}
         />
       </button>
 
@@ -135,17 +137,17 @@ export const AllFilter = ({
     <div>
       <button
         onClick={() => setFilterOpen((prev) => !prev)}
-        className={`${filterOpen ? "text-[var(--accent-color)]" : ""} flex w-full cursor-pointer items-center justify-between py-4 duration-[var(--fast)] hover:text-[var(--accent-color)]`}
+        className={`${filterOpen ? "text-(--accent-color)" : ""} flex w-full cursor-pointer items-center justify-between py-4 duration-(--fast) hover:text-(--accent-color)`}
       >
         <span className="text-lg font-semibold">{label}</span>
         <ChevronDownIcon
-          className={`${filterOpen ? "-rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
+          className={`${filterOpen ? "-rotate-180" : ""} transition-rotate h-6 w-6 duration-(--fast)`}
         />
       </button>
 
       <div
         style={{ height: filterHeight }}
-        className="overflow-hidden transition-[height] duration-[var(--slow)]"
+        className="overflow-hidden transition-[height] duration-(--slow)"
       >
         <div ref={filterRef}>
           <div className="flex w-full flex-col">
@@ -169,7 +171,7 @@ export const AllFilter = ({
           </div>
         </div>
       </div>
-      <hr className="-ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
+      <hr className="-ml-4 flex w-[calc(100%+2rem)] text-(--border-main)" />
     </div>
   );
 };
@@ -210,7 +212,7 @@ export const ThCell = ({
   sortable = true,
 }: {
   sortingItem?: string;
-  label: string;
+  label: string | ReactNode;
   labelAsc?: string;
   labelDesc?: string;
   sortBy?: string;
@@ -222,10 +224,10 @@ export const ThCell = ({
   const t = useTranslations();
 
   const baseClass =
-    "pl-4 p-2 min-w-48 h-[40px] border-1 border-t-0 border-[var(--border-secondary)] border-b-[var(--border-main)] text-left transition-[background] duration-[var(--fast)]";
+    "pl-4 p-2 min-w-48 h-[40px] border border-t-0 border-(--border-secondary) border-b-(--border-main) text-left transition-[background] duration-(--fast)";
 
   const hoverClass = sortable
-    ? "cursor-pointer hover:bg-[var(--bg-grid-header-hover)]"
+    ? "cursor-pointer hover:bg-(--bg-grid-header-hover)"
     : "cursor-default";
 
   if (!sortable) {

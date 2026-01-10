@@ -19,6 +19,7 @@ import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../../common/DragDrop";
 import { useTranslations } from "next-intl";
 import { categoryConstraints } from "@/app/helpers/inputConstraints";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -43,6 +44,7 @@ const CategoryModal = (props: Props) => {
   const updatedSubCategoriesRef = useRef<SubCategoryDto[]>([]);
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [subCategoryIds, setSubCategoryIds] = useState<number[]>([]);
   const [newSubCategory, setNewSubCategory] = useState("");
@@ -88,6 +90,7 @@ const CategoryModal = (props: Props) => {
   // --- Create category ---
   const createCategory = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     const newSubCategoryNames = updatedSubCategoriesRef.current
       .filter((sc) => subCategoryIds.includes(sc.id) && sc.id < 0)
@@ -166,15 +169,18 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Category") + t("Modal/created"), 4000);
+      notify("success", t("Common/Category") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // --- Update category ---
   const updateCategory = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     const newSubCategoryNames = updatedSubCategoriesRef.current
       .filter((sc) => subCategoryIds.includes(sc.id) && sc.id < 0)
@@ -261,9 +267,11 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Category") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Category") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -399,7 +407,7 @@ const CategoryModal = (props: Props) => {
 
     return (
       <div
-        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-[var(--bg-modal-link)] px-4 transition-transform duration-[var(--fast)]`}
+        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-(--bg-modal-link) px-4 transition-transform duration-(--fast)`}
         style={{
           cursor: isEditing ? "text" : isDragging ? "grabbing" : "grab",
         }}
@@ -427,7 +435,7 @@ const CategoryModal = (props: Props) => {
               }
             }}
             {...categoryConstraints.subCategoryName}
-            className="w-32 border-b border-[var(--border-primary)] bg-transparent outline-none"
+            className="w-32 border-b border-(--border-primary) bg-transparent outline-none"
           />
         ) : (
           <>
@@ -438,7 +446,7 @@ const CategoryModal = (props: Props) => {
                 setEditingSubCategoryId(id);
                 setEditingName(label);
               }}
-              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              className="text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
               style={{ cursor: "pointer" }}
             >
               <PencilIcon className="h-5 w-5" />
@@ -452,7 +460,7 @@ const CategoryModal = (props: Props) => {
                 e.stopPropagation();
                 onDelete();
               }}
-              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              className="text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
               style={{ cursor: "pointer" }}
             >
               <XMarkIcon className="h-6 w-6" />
@@ -521,11 +529,11 @@ const CategoryModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("CategoryModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
@@ -542,11 +550,11 @@ const CategoryModal = (props: Props) => {
               </div>
 
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("CategoryModal/Info2")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="flex gap-4">
@@ -561,7 +569,9 @@ const CategoryModal = (props: Props) => {
                     }
                   }}
                   // placeholder={t("CategoryModal/Placeholder text")}
-                  label={t("Common/Add") + " " + t("Common/sub category") + "..."}
+                  label={
+                    t("Common/Add") + " " + t("Common/sub category") + "..."
+                  }
                   {...categoryConstraints.subCategoryName}
                 />
 
@@ -624,7 +634,7 @@ const CategoryModal = (props: Props) => {
                     }}
                   />
 
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
                       t("Common/sub category") +
                       t("Modal/Drag and drop3")}
@@ -640,8 +650,23 @@ const CategoryModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

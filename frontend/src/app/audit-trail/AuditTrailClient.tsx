@@ -20,6 +20,7 @@ import React from "react";
 import { TdCell, ThCell } from "../components/manage/ManageComponents";
 import Message from "../components/common/Message";
 import SingleDropdown from "../components/common/SingleDropdown";
+import { useHandbook } from "../context/HandbookContext";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -300,9 +301,16 @@ const AuditTrailClient = (props: Props) => {
     );
   };
 
+  // --- Update handbook ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Audit trail");
+  }, []);
+
   return (
     <div className="grid gap-4">
-      <div className="grid w-full rounded-2xl bg-[var(--bg-modal)]">
+      <div className="grid w-full rounded-2xl bg-(--bg-modal)">
         {/* --- HEADER --- */}
         <div className="flex items-center justify-between gap-4 px-6 pt-6">
           <h2 className="text-lg font-semibold whitespace-nowrap">
@@ -332,14 +340,14 @@ const AuditTrailClient = (props: Props) => {
               >
                 {/* --- FILTER SECTION --- */}
                 <div className="grid gap-6">
-                  <hr className="-mx-6 mt-6 text-[var(--border-tertiary)]" />
+                  <hr className="-mx-6 mt-6 text-(--border-tertiary)" />
 
                   <div className="flex items-center gap-2">
-                    <hr className="w-12 text-[var(--border-tertiary)]" />
-                    <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    <hr className="w-12 text-(--border-tertiary)" />
+                    <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                       {t("AuditTrail/Filters")}
                     </h3>
-                    <hr className="w-full text-[var(--border-tertiary)]" />
+                    <hr className="w-full text-(--border-tertiary)" />
                   </div>
 
                   <div className="mb-8 grid gap-6">
@@ -381,11 +389,11 @@ const AuditTrailClient = (props: Props) => {
                   {/* --- DATE SECTION --- */}
                   <div className="grid gap-6">
                     <div className="flex items-center gap-2">
-                      <hr className="w-12 text-[var(--border-tertiary)]" />
-                      <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                      <hr className="w-12 text-(--border-tertiary)" />
+                      <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                         {t("Common/Date range")}
                       </h3>
-                      <hr className="w-full text-[var(--border-tertiary)]" />
+                      <hr className="w-full text-(--border-tertiary)" />
                     </div>
 
                     <div className="grid grid-cols-1 gap-6">
@@ -478,9 +486,9 @@ const AuditTrailClient = (props: Props) => {
       </div>
 
       {/* --- RESULT LIST --- */}
-      <div className="relative w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
+      <div className="relative w-full overflow-x-auto rounded border border-(--border-main)">
         <table className="w-full min-w-6xl table-fixed border-collapse">
-          <thead className="bg-[var(--bg-grid-header)]">
+          <thead className="bg-(--bg-grid-header)">
             <tr>
               <ThCell
                 sortingItem="timestamp"
@@ -490,7 +498,7 @@ const AuditTrailClient = (props: Props) => {
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
-                classNameAddition="sticky left-0 bg-[var(--bg-grid-header)] z-[calc(var(--z-base)+1)]"
+                classNameAddition="sticky left-0 bg-(--bg-grid-header) z-[calc(var(--z-base)+1)]"
               />
               <ThCell
                 sortingItem="action"
@@ -547,7 +555,7 @@ const AuditTrailClient = (props: Props) => {
               <tr>
                 <td
                   colSpan={6}
-                  className="h-57 text-center text-[var(--text-secondary)]"
+                  className="h-57 text-center text-(--text-secondary)"
                 >
                   {isLoading ? (
                     <Message icon="loading" content={t("Message/Content")} />
@@ -564,7 +572,7 @@ const AuditTrailClient = (props: Props) => {
                 return (
                   <React.Fragment key={a.id}>
                     <tr
-                      className={`${isEven ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} cursor-pointer transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
+                      className={`${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} cursor-pointer transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)`}
                       onClick={() => setExpandedRow(isExpanded ? null : a.id)}
                     >
                       <TdCell classNameAddition="sticky left-0 [background:inherit] z-[calc(var(--z-base)+1)]">
@@ -585,11 +593,11 @@ const AuditTrailClient = (props: Props) => {
                     {/* --- EXPANDED DETAILS --- */}
                     {isExpanded && a.details && (
                       <tr
-                        className={`${isEven ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} border-t-1 border-[var(--border-secondary)]`}
+                        className={`${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} border-t-1 border-(--border-secondary)`}
                       >
                         <td
                           colSpan={6}
-                          className="px-4 py-4 text-sm text-[var(--text-secondary)]"
+                          className="px-4 py-4 text-sm text-(--text-secondary)"
                         >
                           {(() => {
                             try {
@@ -600,8 +608,8 @@ const AuditTrailClient = (props: Props) => {
                                 return (
                                   <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                     {/* --- Old values --- */}
-                                    <div className="rounded bg-[var(--bg-modal)] p-4">
-                                      <h4 className="mb-2 font-semibold text-[var(--note-error)] uppercase">
+                                    <div className="rounded bg-(--bg-modal) p-4">
+                                      <h4 className="mb-2 font-semibold text-(--note-error) uppercase">
                                         {t("AuditTrail/Before change")}
                                       </h4>
                                       <div className="-mx-4">
@@ -619,8 +627,8 @@ const AuditTrailClient = (props: Props) => {
                                                   : index % 2 !== 0;
 
                                                 const rowClass = useZebra
-                                                  ? "bg-[var(--bg-modal-zebra)] text-[var(--text-main)]"
-                                                  : "bg-[var(--bg-modal)] text-[var(--text-secondary)]";
+                                                  ? "bg-(--bg-modal-zebra) text-(--text-main)"
+                                                  : "bg-(--bg-modal) text-(--text-secondary)";
 
                                                 return (
                                                   <tr
@@ -710,8 +718,8 @@ const AuditTrailClient = (props: Props) => {
                                     </div>
 
                                     {/* --- New values --- */}
-                                    <div className="rounded bg-[var(--bg-modal)] p-4">
-                                      <h4 className="mb-2 font-semibold text-[var(--note-success)] uppercase">
+                                    <div className="rounded bg-(--bg-modal) p-4">
+                                      <h4 className="mb-2 font-semibold text-(--note-success) uppercase">
                                         {t("AuditTrail/After change")}
                                       </h4>
                                       <div className="-mx-4">
@@ -729,8 +737,8 @@ const AuditTrailClient = (props: Props) => {
                                                   : index % 2 !== 0;
 
                                                 const rowClass = useZebra
-                                                  ? "bg-[var(--bg-modal-zebra)] text-[var(--text-main)]"
-                                                  : "bg-[var(--bg-modal)] text-[var(--text-secondary)]";
+                                                  ? "bg-(--bg-modal-zebra) text-(--text-main)"
+                                                  : "bg-(--bg-modal) text-(--text-secondary)";
 
                                                 return (
                                                   <tr
@@ -824,9 +832,9 @@ const AuditTrailClient = (props: Props) => {
 
                               // --- CREATE or DELETE ---
                               return (
-                                <div className="rounded bg-[var(--bg-modal)] p-4">
+                                <div className="rounded bg-(--bg-modal) p-4">
                                   <h4
-                                    className={`${checkIfCreated(a.action) ? "text-[var(--note-success)]" : "text-[var(--note-error)]"} mb-2 font-semibold uppercase`}
+                                    className={`${checkIfCreated(a.action) ? "text-(--note-success)" : "text-(--note-error)"} mb-2 font-semibold uppercase`}
                                   >
                                     {t("AuditTrail/Details")}
                                   </h4>
@@ -843,8 +851,8 @@ const AuditTrailClient = (props: Props) => {
                                               : index % 2 !== 0;
 
                                             const rowClass = useZebra
-                                              ? "bg-[var(--bg-modal-zebra)] text-[var(--text-main)]"
-                                              : "bg-[var(--bg-modal)] text-[var(--text-secondary)]";
+                                              ? "bg-(--bg-modal-zebra) text-(--text-main)"
+                                              : "bg-(--bg-modal) text-(--text-secondary)";
 
                                             return (
                                               <tr
@@ -931,7 +939,7 @@ const AuditTrailClient = (props: Props) => {
                               );
                             } catch {
                               return (
-                                <span className="text-sm text-[var(--note-error)]">
+                                <span className="text-sm text-(--note-error)">
                                   {t("AuditTrail/Invalid JSON")}
                                 </span>
                               );
@@ -951,7 +959,7 @@ const AuditTrailClient = (props: Props) => {
       {/* --- PAGINATION --- */}
       <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
         {/* --- Showing info --- */}
-        <span className="flex w-[175.23px] text-[var(--text-secondary)]">
+        <span className="flex w-[175.23px] text-(--text-secondary)">
           {t("Manage/Viewing")}{" "}
           {totalItems === 0
             ? "0-0"
@@ -1012,14 +1020,14 @@ const AuditTrailClient = (props: Props) => {
                     ...
                   </span>
                 ) : (
-                 <button
+                  <button
                     key={index}
                     onClick={() => setCurrentPage(Number(page))}
                     className={`${
                       currentPage === page
-                        ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"
-                        : "hover:text-[var(--accent-color)]"
-                    } flex min-w-7 cursor-pointer justify-center rounded-full px-[0.6rem] text-lg transition-colors duration-[var(--fast)]`}
+                        ? "bg-(--accent-color) text-(--text-main-reverse)"
+                        : "hover:text-(--accent-color)"
+                    } flex min-w-7 cursor-pointer justify-center rounded-full px-[0.6rem] text-lg transition-colors duration-(--fast)`}
                   >
                     {page}
                   </button>

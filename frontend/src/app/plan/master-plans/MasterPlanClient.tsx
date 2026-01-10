@@ -7,6 +7,7 @@ import MultiDropdown from "@/app/components/common/MultiDropdown";
 import {
   buttonAddPrimaryClass,
   buttonDeletePrimaryClass,
+  buttonDeleteSecondaryClass,
   buttonPrimaryClass,
   buttonSecondaryClass,
   hyperLinkButtonClass,
@@ -19,8 +20,8 @@ import {
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
 import * as SmallerSolid from "@heroicons/react/20/solid";
-import { motion, AnimatePresence } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
 import { TdCell, ThCell } from "../../components/manage/ManageComponents";
 import Message from "../../components/common/Message";
 import SingleDropdown from "../../components/common/SingleDropdown";
@@ -29,12 +30,14 @@ import HoverIcon from "@/app/components/common/HoverIcon";
 import { useParams } from "next/navigation";
 import { useMasterPlan } from "@/app/hooks/useMasterPlan";
 import { tdClass, thClass } from "@/app/components/manage/ManageClasses";
+import { useAuth } from "@/app/context/AuthContext";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isAuthReady: boolean | null;
   isLoggedIn: boolean | null;
   isConnected: boolean | null;
-  isReporter: boolean | null;
+  isMasterPlanner: boolean | null;
 };
 
 const MasterPlanClient = (props: Props) => {
@@ -83,45 +86,56 @@ const MasterPlanClient = (props: Props) => {
     checkedOutByMe,
     moveElement,
     moveGroup,
+    toggleRemoveElement,
+    removedElementIds,
+    clearRemovedElements,
+    constraintsRef,
+    dragControls,
+    isExpanded,
+    setIsExpanded,
+    selectedId,
+    setSelectedId,
+    editMode,
+    setEditMode,
+    isKeepSeparate,
+    setIsKeepSeparate,
+    showForceColor,
+    selectedElement,
+    isSelectedStruck,
+    handleHoldStart,
+    handleHoldEnd,
+    duplicateSelected,
+    handleImport,
+    importing,
+    setImporting,
   } = useMasterPlan(t, apiUrl, token, masterPlanId);
 
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editMode, setEditMode] = useState<"element" | "group">("element");
-  const selectedElement = masterPlans[0]?.elements.find(
-    (el) => String(el.id) === selectedId,
-  );
-  const isSelectedStruck = selectedElement?.struckElement ?? false;
-  const [lastStableMode, setLastStableMode] = useState<
-    "edit" | "force" | "normal"
-  >("normal");
+  // --- Update handbook ---
+  const { setHandbook } = useHandbook();
 
-  const showForceColor =
-    !isCheckingOut &&
-    !isCheckingIn &&
-    !isEditing &&
-    checkedOutBy &&
-    !checkedOutByMe;
+  useEffect(() => {
+    setHandbook("Master plan");
+  }, []);
 
   return (
     <>
       {isEditing && (
-        <>
-          <div className="fixed inset-0 z-[calc(var(--z-edit)-2)] bg-[var(--bg-main)] opacity-90" />
+        <div className="pointer-events-none">
+          <div className="fixed inset-0 z-[calc(var(--z-edit)-2)] bg-(--bg-main) opacity-90" />
 
-          <div className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)] border-6 border-[var(--note-error)]" />
+          <div className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)] border-6 border-(--edit-mode)" />
 
-          <div className="fixed top-0 left-0 z-[var(--z-edit)] w-full bg-[var(--note-error)] py-2 text-center text-lg font-semibold tracking-wide text-[var(--text-main-reverse)]">
+          <div className="fixed top-0 left-0 z-(--z-edit) w-full bg-(--edit-mode) py-2 text-center text-lg font-semibold tracking-wide text-(--text-main-reverse)">
             {t("Common/Editing")} {t("Common/master plan")}
           </div>
-        </>
+        </div>
       )}
 
       <div
         className={`grid gap-4 ${isEditing ? "relative z-[calc(var(--z-edit)-1)]" : ""}`}
       >
         {/* --- HEADER --- */}
-        {/* <div className="grid w-full rounded-2xl bg-[var(--bg-modal)]">
+        {/* <div className="grid w-full rounded-2xl bg-(--bg-modal)">
           <div className="flex items-center justify-between gap-4 px-6 pt-6">
             <h2 className="text-lg font-semibold whitespace-nowrap">
               {t("Common/Settings")}
@@ -149,14 +163,14 @@ const MasterPlanClient = (props: Props) => {
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
                   <div className="grid gap-6">
-                    <hr className="-mx-6 mt-6 text-[var(--border-tertiary)]" />
+                    <hr className="-mx-6 mt-6 text-(--border-tertiary)" />
 
                     <div className="flex items-center gap-2">
-                      <hr className="w-12 text-[var(--border-tertiary)]" />
-                      <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                      <hr className="w-12 text-(--border-tertiary)" />
+                      <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                         {t("AuditTrail/Filters")}
                       </h3>
-                      <hr className="w-full text-[var(--border-tertiary)]" />
+                      <hr className="w-full text-(--border-tertiary)" />
                     </div>
 
                     <div className="mb-8 grid gap-6">
@@ -165,11 +179,11 @@ const MasterPlanClient = (props: Props) => {
 
                     <div className="grid gap-6">
                       <div className="flex items-center gap-2">
-                        <hr className="w-12 text-[var(--border-tertiary)]" />
-                        <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                        <hr className="w-12 text-(--border-tertiary)" />
+                        <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                           {t("Common/Status")}
                         </h3>
-                        <hr className="w-full text-[var(--border-tertiary)]" />
+                        <hr className="w-full text-(--border-tertiary)" />
                       </div>
 
                       <div className="mb-8">
@@ -211,311 +225,492 @@ const MasterPlanClient = (props: Props) => {
           </div>
         </div> */}
 
-        {/* --- ACTION BAR --- */}
-        <div className="flex w-full flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-4">
-            <button
-              className={` ${buttonPrimaryClass} group lg:w-max lg:px-4 ${
-                isEditing
-                  ? "!bg-[var(--note-success)] text-[var(--text-main-reverse)] hover:!bg-[var(--note-success-hover)]"
-                  : showForceColor
-                    ? "!bg-[var(--note-error)] text-[var(--text-main-reverse)] hover:!bg-[var(--note-error-hover)]"
-                    : ""
-              } `}
-              disabled={isCheckingOut || isCheckingIn || isLoading}
-              onClick={() => {
-                if (!isEditing) {
-                  if (checkedOutBy && !checkedOutByMe) {
-                    setIsCheckingOut(true);
-                    handleCheck(true);
-                  } else {
-                    setIsCheckingOut(true);
-                    handleCheck(false);
-                  }
-                } else {
-                  setIsCheckingIn(true);
-                  handleSave();
-                }
-              }}
-            >
-              <div className="flex items-center justify-center gap-2 truncate">
-                {(isCheckingOut || isCheckingIn) && (
-                  <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />
-                )}
-
-                {!isCheckingOut && !isCheckingIn && (
-                  <HoverIcon
-                    outline={
-                      isEditing
-                        ? Outline.CheckIcon
-                        : showForceColor
-                          ? Outline.ExclamationTriangleIcon
-                          : Outline.PencilIcon
+        {/* --- CHECKING BAR --- */}
+        {props.isMasterPlanner ? (
+          <>
+            <div className="flex w-full flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-4">
+                <button
+                  className={` ${buttonPrimaryClass} group lg:w-max lg:px-4 ${
+                    isEditing
+                      ? "!bg-(--note-success) text-(--text-main-reverse) hover:!bg-(--note-success-hover)"
+                      : showForceColor
+                        ? "!bg-(--note-error) text-(--text-main-reverse) hover:!bg-(--note-error-hover)"
+                        : ""
+                  } `}
+                  disabled={isCheckingOut || isCheckingIn || isLoading}
+                  onClick={() => {
+                    if (!isEditing) {
+                      if (checkedOutBy && !checkedOutByMe) {
+                        setIsCheckingOut(true);
+                        handleCheck(true);
+                      } else {
+                        setIsCheckingOut(true);
+                        handleCheck(false);
+                      }
+                    } else {
+                      setIsCheckingIn(true);
+                      setIsKeepSeparate(false);
+                      handleSave();
                     }
-                    solid={
-                      isEditing
-                        ? Solid.CheckIcon
-                        : showForceColor
-                          ? Solid.ExclamationTriangleIcon
-                          : Solid.PencilIcon
-                    }
-                    className="h-6 w-6"
-                  />
-                )}
+                  }}
+                >
+                  <div className="flex items-center justify-center gap-2 truncate">
+                    {(isCheckingOut || isCheckingIn) && (
+                      <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />
+                    )}
 
-                <span className="hidden lg:block">
-                  {isCheckingOut || isCheckingIn
-                    ? isEditing && isCheckingIn
-                      ? t("MasterPlan/Checking in")
-                      : isCheckingOut
-                        ? t("MasterPlan/Checking out")
-                        : t("MasterPlan/Checking in")
-                    : showForceColor
-                      ? t("MasterPlan/Force checkout")
-                      : isEditing
-                        ? t("MasterPlan/Save and push")
-                        : t("MasterPlan/Edit master plan")}
-                </span>
+                    {!isCheckingOut && !isCheckingIn && (
+                      <HoverIcon
+                        outline={
+                          isEditing
+                            ? Outline.CheckIcon
+                            : showForceColor
+                              ? Outline.ExclamationTriangleIcon
+                              : Outline.PencilIcon
+                        }
+                        solid={
+                          isEditing
+                            ? Solid.CheckIcon
+                            : showForceColor
+                              ? Solid.ExclamationTriangleIcon
+                              : Solid.PencilIcon
+                        }
+                        className="h-6 w-6"
+                      />
+                    )}
+
+                    <span className="hidden lg:block">
+                      {isCheckingOut || isCheckingIn
+                        ? isEditing && isCheckingIn
+                          ? t("MasterPlan/Checking in")
+                          : isCheckingOut
+                            ? t("MasterPlan/Checking out")
+                            : t("MasterPlan/Checking in")
+                        : showForceColor
+                          ? t("MasterPlan/Force checkout")
+                          : isEditing
+                            ? t("MasterPlan/Save and push")
+                            : t("MasterPlan/Edit master plan")}
+                    </span>
+                  </div>
+                </button>
+
+                {/* --- Abort --- */}
+                {isEditing && !isCheckingIn && (
+                  <button
+                    className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
+                    disabled={isCheckingIn}
+                    onClick={() => {
+                      setIsCheckingIn(true);
+                      setIsKeepSeparate(false);
+                      handleAbortChanges();
+                    }}
+                  >
+                    <div className="flex items-center justify-center gap-2 truncate">
+                      {isCheckingIn ? (
+                        <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />
+                      ) : (
+                        <HoverIcon
+                          outline={Outline.XMarkIcon}
+                          solid={Solid.XMarkIcon}
+                          className="h-6 w-6"
+                        />
+                      )}
+                      <span className="hidden lg:block">
+                        {isCheckingIn
+                          ? t("MasterPlan/Checking in")
+                          : t("MasterPlan/Abort changes")}
+                      </span>
+                    </div>
+                  </button>
+                )}
               </div>
-            </button>
 
-            {/* --- Abort --- */}
-            {isEditing && !isCheckingIn && (
-              <button
-                className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
-                disabled={isCheckingIn}
-                onClick={() => {
-                  setIsCheckingIn(true);
-                  handleAbortChanges();
-                }}
-              >
-                <div className="flex items-center justify-center gap-2 truncate">
-                  {isCheckingIn ? (
-                    <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />
-                  ) : (
-                    <HoverIcon
-                      outline={Outline.XMarkIcon}
-                      solid={Solid.XMarkIcon}
-                      className="h-6 w-6"
-                    />
-                  )}
-                  <span className="hidden lg:block">
-                    {isCheckingIn
-                      ? t("MasterPlan/Checking in")
-                      : t("MasterPlan/Abort changes")}
-                  </span>
+              {/* --- Import --- */}
+              {isEditing && !isCheckingIn && masterPlans[0]?.allowImport && (
+                <div className="flex gap-4">
+                  <input
+                    id="excel-import-input"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null;
+                      if (!file) {
+                        return;
+                      }
+
+                      handleImport(file);
+                      e.currentTarget.value = "";
+                    }}
+                  />
+
+                  <button
+                    className={buttonSecondaryClass}
+                    onClick={() => {
+                      document.getElementById("excel-import-input")?.click();
+                    }}
+                    disabled={importing}
+                  >
+                    {importing ? (
+                      <div className="flex items-center justify-center gap-2 truncate">
+                        <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
+                        {t("MasterPlan/Importing master plan")}
+                      </div>
+                    ) : (
+                      t("MasterPlan/Import master plan")
+                    )}
+                  </button>
                 </div>
-              </button>
+              )}
+
+              {/* --- Manual refresh --- */}
+              {!isEditing && !isCheckingOut && !isCheckingIn && (
+                <CustomTooltip
+                  content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Common/Update page")}`}
+                  veryLongDelay
+                  showOnTouch
+                >
+                  <button
+                    className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
+                    onClick={() => {
+                      setIsManualRefresh(true);
+                      setRefetchData(true);
+                    }}
+                    aria-label={t("Common/Update page")}
+                    disabled={isManualRefresh && refetchData}
+                  >
+                    <Outline.ArrowPathIcon
+                      className={`${refetchData && isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
+                    />
+                  </button>
+                </CustomTooltip>
+              )}
+            </div>
+
+            {/* --- Checked out by text --- */}
+            {checkedOutBy && !isEditing && !isCheckingOut && !isCheckingIn && (
+              <p className="text-sm text-(--text-secondary)">
+                {t("MasterPlan/Checked out by")}:{" "}
+                <span className="font-medium">{checkedOutBy}</span>
+              </p>
             )}
-          </div>
 
-          {/* --- Manual refresh --- */}
-          {!isEditing && !isCheckingOut && !isCheckingIn && (
-            <CustomTooltip
-              content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Common/Update page")}`}
-              veryLongDelay
-              showOnTouch
+            {/* --- ACTION BAR --- */}
+            {isEditing && (
+              <div
+                ref={constraintsRef}
+                className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)]"
+              >
+                <motion.div
+                  drag
+                  dragControls={dragControls}
+                  dragListener={false}
+                  dragMomentum={false}
+                  dragElastic={0}
+                  dragConstraints={constraintsRef}
+                  className="pointer-events-auto absolute bottom-4 mx-4 flex w-fit flex-col gap-4 rounded-2xl bg-(--bg-modal) p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] lg:left-1/2 lg:-translate-x-1/2"
+                  style={{ touchAction: "none" }}
+                >
+                  <div
+                    className="flex cursor-move items-center justify-between gap-4"
+                    onPointerDown={(e) => {
+                      document.body.style.userSelect = "none";
+                      dragControls.start(e);
+                      const handleUp = () => {
+                        document.body.style.userSelect = "";
+                        window.removeEventListener("pointerup", handleUp);
+                      };
+                      window.addEventListener("pointerup", handleUp);
+                    }}
+                  >
+                    <span className="text-xl font-semibold lg:w-lg">
+                      {t("MasterPlan/Master Plan Toolbar")}
+                    </span>
+                    <Outline.Bars3Icon className="h-6 w-6 opacity-50" />
+                  </div>
+
+                  <hr className="-ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
+
+                  <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2">
+                    {/* --- Don't join groups --- */}
+                    <div
+                      className={`${editMode === "group" ? "cursor-not-allowed opacity-25" : ""}`}
+                    >
+                      <CustomTooltip
+                        content={`${editMode === "element" ? t("MasterPlan/Do not join groups tooltip") : ""}`}
+                        showOnTouch
+                        longDelay
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={isKeepSeparate}
+                            className={`${switchClass(isKeepSeparate)} `}
+                            onClick={() => setIsKeepSeparate((prev) => !prev)}
+                            disabled={editMode === "group"}
+                          >
+                            <div className={switchKnobClass(isKeepSeparate)} />
+                          </button>
+                          <span className="mb-0.5">
+                            {t("MasterPlan/Do not join groups")}
+                          </span>
+                        </div>
+                      </CustomTooltip>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {/* --- Edit mode --- */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Element mode tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${editMode === "element" ? `${textPrimaryButtonClass} underline` : `${textSecondaryButtonClass}`}`}
+                          onClick={() => setEditMode("element")}
+                        >
+                          {t("MasterPlan/Element mode")}
+                        </button>
+                      </CustomTooltip>
+                      |
+                      <CustomTooltip
+                        content={t("MasterPlan/Group mode tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${editMode === "group" ? `${textPrimaryButtonClass} underline` : `${textSecondaryButtonClass}`}`}
+                          onClick={() => {
+                            setEditMode("group");
+                            setIsKeepSeparate(false);
+                          }}
+                        >
+                          {t("MasterPlan/Group mode")}
+                        </button>
+                      </CustomTooltip>
+                    </div>
+                  </div>
+
+                  <hr className="-ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
+
+                  <div className="flex w-full flex-col gap-4">
+                    <div className="flex gap-4 lg:grid lg:grid-cols-3">
+                      {/* --- Add element --- */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Add element tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${buttonPrimaryClass} group col-span-2 flex w-full items-center justify-center gap-2 lg:px-4`}
+                          onClick={() => {
+                            const topGroup =
+                              editMode === "group"
+                                ? (masterPlans[0]?.elements?.[0]?.groupId ??
+                                  null)
+                                : null;
+                            handleAddElement(
+                              masterPlans[0]?.id as number,
+                              topGroup,
+                            );
+                          }}
+                        >
+                          <HoverIcon
+                            outline={Outline.PlusIcon}
+                            solid={Solid.PlusIcon}
+                            className="h-6 w-6"
+                          />
+                          {t("MasterPlan/Add element")}
+                        </button>
+                      </CustomTooltip>
+
+                      {/* --- Duplicate object */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Tooltip duplicate object")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${buttonSecondaryClass} group col-span-1 flex items-center justify-center gap-2 lg:w-full lg:px-4`}
+                          onClick={() => {
+                            if (selectedId !== null) {
+                              duplicateSelected(
+                                String(masterPlans[0]?.id),
+                                selectedId,
+                                editMode,
+                              );
+                            }
+                          }}
+                          disabled={selectedId === null}
+                        >
+                          <HoverIcon
+                            outline={Outline.SquaresPlusIcon}
+                            solid={Solid.SquaresPlusIcon}
+                            className="h-6 w-6"
+                          />
+                          <span className="hidden lg:block">
+                            {t("MasterPlan/Duplicate object")}
+                          </span>
+                        </button>
+                      </CustomTooltip>
+                    </div>
+
+                    <hr className="-mr-4 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
+
+                    <div className="grid gap-4">
+                      {/* --- Move up --- */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Move up tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${buttonSecondaryClass} group flex w-full items-center justify-center gap-2 px-4`}
+                          onMouseDown={() => handleHoldStart("up")}
+                          onMouseUp={handleHoldEnd}
+                          onMouseLeave={handleHoldEnd}
+                          disabled={selectedId === null}
+                        >
+                          <HoverIcon
+                            outline={Outline.ArrowUpIcon}
+                            solid={Solid.ArrowUpIcon}
+                            className="h-6 w-6"
+                          />
+                          {t("MasterPlan/Move up")}
+                        </button>
+                      </CustomTooltip>
+
+                      {/* --- Move down --- */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Move down tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${buttonSecondaryClass} group flex w-full items-center justify-center gap-2 px-4`}
+                          onMouseDown={() => handleHoldStart("down")}
+                          onMouseUp={handleHoldEnd}
+                          onMouseLeave={handleHoldEnd}
+                          disabled={selectedId === null}
+                        >
+                          <HoverIcon
+                            outline={Outline.ArrowDownIcon}
+                            solid={Solid.ArrowDownIcon}
+                            className="h-6 w-6"
+                          />
+                          {t("MasterPlan/Move down")}
+                        </button>
+                      </CustomTooltip>
+                    </div>
+
+                    <hr className="-mr-4 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
+
+                    <div className="flex gap-4 lg:grid lg:grid-cols-3">
+                      {/* --- Strike mode --- */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Strike tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${
+                            isSelectedStruck
+                              ? buttonPrimaryClass
+                              : buttonSecondaryClass
+                          } group col-span-1 flex items-center justify-center gap-2 lg:w-full lg:px-4`}
+                          onClick={() => {
+                            if (selectedId !== null) {
+                              toggleStrikeThrough(String(selectedId), editMode);
+                            }
+                          }}
+                          disabled={selectedId === null}
+                        >
+                          <HoverIcon
+                            outline={Outline.NoSymbolIcon}
+                            solid={Solid.NoSymbolIcon}
+                            className="h-6 w-6"
+                          />
+                          <span className="hidden lg:block">
+                            {t("MasterPlan/Strike")}
+                          </span>
+                        </button>
+                      </CustomTooltip>
+
+                      {/* --- Delete element --- */}
+                      {masterPlans[0]?.allowRemovingElements && (
+                        <CustomTooltip
+                          content={t("MasterPlan/Mark for deletion tooltip")}
+                          showOnTouch
+                          longDelay
+                        >
+                          <button
+                            className={`${
+                              selectedId !== null &&
+                              removedElementIds.some(
+                                (id) => String(id) === String(selectedId),
+                              )
+                                ? buttonDeletePrimaryClass
+                                : buttonDeleteSecondaryClass
+                            } group col-span-2 flex w-full items-center justify-center gap-2 px-4`}
+                            onClick={() => {
+                              if (selectedId !== null) {
+                                toggleRemoveElement(
+                                  String(selectedId),
+                                  editMode,
+                                );
+                              }
+                            }}
+                            disabled={selectedId === null}
+                          >
+                            <HoverIcon
+                              outline={Outline.TrashIcon}
+                              solid={Solid.TrashIcon}
+                              className="h-6 w-6"
+                            />
+                            {selectedId !== null &&
+                            removedElementIds.some(
+                              (id) => String(id) === String(selectedId),
+                            )
+                              ? t("MasterPlan/Undo mark for deletion")
+                              : t("MasterPlan/Mark for deletion")}
+                          </button>
+                        </CustomTooltip>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </>
+        ) : (
+          <CustomTooltip
+            content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Common/Update page")}`}
+            veryLongDelay
+            showOnTouch
+          >
+            <button
+              className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
+              onClick={() => {
+                setIsManualRefresh(true);
+                setRefetchData(true);
+              }}
+              aria-label={t("Common/Update page")}
+              disabled={isManualRefresh && refetchData}
             >
-              <button
-                className={`${buttonSecondaryClass} group flex items-center justify-center`}
-                onClick={() => {
-                  setIsManualRefresh(true);
-                  setRefetchData(true);
-                }}
-                aria-label={t("Common/Update page")}
-                disabled={isManualRefresh && refetchData}
-              >
-                <Outline.ArrowPathIcon
-                  className={`${refetchData && isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
-                />
-              </button>
-            </CustomTooltip>
-          )}
-        </div>
-
-        {/* --- Checked out by text --- */}
-        {checkedOutBy && !isEditing && !isCheckingOut && !isCheckingIn && (
-          <p className="text-sm text-[var(--text-secondary)]">
-            {t("MasterPlan/Checked out by")}:{" "}
-            <span className="font-medium">{checkedOutBy}</span>
-          </p>
-        )}
-
-        {/* --- ACTION BAR --- */}
-        {isEditing && (
-          <div className="flex flex-col gap-4">
-            {/* --- Edit mode --- */}
-            <div className="flex items-center justify-end gap-2">
-              <CustomTooltip
-                content={t("MasterPlan/Element mode tooltip")}
-                showOnTouch
-                longDelay
-              >
-                <button
-                  className={`${editMode === "element" ? textPrimaryButtonClass : textSecondaryButtonClass}`}
-                  onClick={() => setEditMode("element")}
-                >
-                  {t("MasterPlan/Element mode")}
-                </button>
-              </CustomTooltip>
-              |
-              <CustomTooltip
-                content={t("MasterPlan/Group mode tooltip")}
-                showOnTouch
-                longDelay
-              >
-                <button
-                  className={`${editMode === "group" ? textPrimaryButtonClass : textSecondaryButtonClass}`}
-                  onClick={() => setEditMode("group")}
-                >
-                  {t("MasterPlan/Group mode")}
-                </button>
-              </CustomTooltip>
-            </div>
-
-            <div className="flex flex-wrap justify-end gap-4">
-              {/* --- Add element --- */}
-              <CustomTooltip
-                content={t("MasterPlan/Add element tooltip")}
-                showOnTouch
-                longDelay
-              >
-                <button
-                  className={`${buttonPrimaryClass} group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
-                  onClick={() => {
-                    const topGroup =
-                      editMode === "group"
-                        ? (masterPlans[0]?.elements?.[0]?.groupId ?? null)
-                        : null;
-                    handleAddElement(masterPlans[0]?.id as number, topGroup);
-                  }}
-                >
-                  <HoverIcon
-                    outline={Outline.PlusIcon}
-                    solid={Solid.PlusIcon}
-                    className="h-6 w-6"
-                  />
-                  <span className="hidden lg:block">
-                    {t("MasterPlan/Add element")}
-                  </span>
-                </button>
-              </CustomTooltip>
-
-              {/* --- Move up --- */}
-              <CustomTooltip
-                content={t("MasterPlan/Move up tooltip")}
-                showOnTouch
-                longDelay
-              >
-                <button
-                  className={`${buttonSecondaryClass} group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
-                  onClick={() => {
-                    if (selectedId !== null && masterPlans[0]?.elements) {
-                      if (editMode === "group") {
-                        const selectedElement = masterPlans[0].elements.find(
-                          (el) => String(el.id) === selectedId,
-                        );
-                        const groupId = selectedElement?.groupId
-                          ? String(selectedElement.groupId)
-                          : String(selectedElement?.id ?? "");
-                        moveGroup(String(masterPlans[0]?.id), groupId, "up");
-                      } else {
-                        moveElement(
-                          String(masterPlans[0]?.id),
-                          selectedId,
-                          "up",
-                        );
-                      }
-                    }
-                  }}
-                  disabled={selectedId === null}
-                >
-                  <HoverIcon
-                    outline={Outline.ArrowUpIcon}
-                    solid={Solid.ArrowUpIcon}
-                    className="h-6 w-6"
-                  />
-                  <span className="hidden lg:block">
-                    {t("MasterPlan/Move up")}
-                  </span>
-                </button>
-              </CustomTooltip>
-
-              {/* --- Move down --- */}
-              <CustomTooltip
-                content={t("MasterPlan/Move down tooltip")}
-                showOnTouch
-                longDelay
-              >
-                <button
-                  className={`${buttonSecondaryClass} group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
-                  onClick={() => {
-                    if (selectedId !== null && masterPlans[0]?.elements) {
-                      if (editMode === "group") {
-                        const selectedElement = masterPlans[0].elements.find(
-                          (el) => String(el.id) === selectedId,
-                        );
-                        const groupId = selectedElement?.groupId
-                          ? String(selectedElement.groupId)
-                          : String(selectedElement?.id ?? "");
-                        moveGroup(String(masterPlans[0]?.id), groupId, "down");
-                      } else {
-                        moveElement(
-                          String(masterPlans[0]?.id),
-                          selectedId,
-                          "down",
-                        );
-                      }
-                    }
-                  }}
-                  disabled={selectedId === null}
-                >
-                  <HoverIcon
-                    outline={Outline.ArrowDownIcon}
-                    solid={Solid.ArrowDownIcon}
-                    className="h-6 w-6"
-                  />
-                  <span className="hidden lg:block">
-                    {t("MasterPlan/Move down")}
-                  </span>
-                </button>
-              </CustomTooltip>
-
-              {/* --- Strike mode --- */}
-              <CustomTooltip
-                content={t("MasterPlan/Strike tooltip")}
-                showOnTouch
-                longDelay
-              >
-                <button
-                  className={`${
-                    isSelectedStruck ? buttonPrimaryClass : buttonSecondaryClass
-                  } group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
-                  onClick={() => {
-                    if (selectedId !== null) {
-                      toggleStrikeThrough(String(selectedId), editMode);
-                    }
-                  }}
-                  disabled={selectedId === null}
-                >
-                  <HoverIcon
-                    outline={Outline.NoSymbolIcon}
-                    solid={Solid.NoSymbolIcon}
-                    className="h-6 w-6"
-                  />
-                  <span className="hidden lg:block">
-                    {t("MasterPlan/Strike")}
-                  </span>
-                </button>
-              </CustomTooltip>
-            </div>
-          </div>
+              <Outline.ArrowPathIcon
+                className={`${refetchData && isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
+              />
+            </button>
+          </CustomTooltip>
         )}
 
         {/* --- RESULT LIST --- */}
-        <div className="relative w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
+        <div className="relative w-full overflow-x-auto rounded border border-(--border-main)">
           <table className="table w-full min-w-6xl table-auto border-collapse">
-            <thead className="bg-[var(--bg-grid-header)]">
+            <thead className="bg-(--bg-grid-header)">
               <tr>
                 {/* <ThCell
                 label="ID"
@@ -550,7 +745,7 @@ const MasterPlanClient = (props: Props) => {
                 <tr>
                   <td
                     colSpan={fieldOptions.length || 1}
-                    className="h-57 text-center text-[var(--text-secondary)]"
+                    className="h-57 text-center text-(--text-secondary)"
                   >
                     <Message icon="loading" content={t("Message/Content")} />
                   </td>
@@ -578,15 +773,13 @@ const MasterPlanClient = (props: Props) => {
                     return (
                       <tr
                         key={`${planId}-${el.id}`}
-                        className={`${isEven ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} ${
-                          isStrikeMode ? "cursor-pointer" : ""
-                        } ${
-                          selectedId === el.id
-                            ? "ring-2 ring-[var(--accent-color)]"
-                            : "hover:bg-[var(--bg-grid-header-hover)]"
-                        } transition-[background] duration-[var(--fast)]`}
+                        className={` ${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} ${
+                          removedElementIds.includes(el.id)
+                            ? "!bg-(--button-delete) text-(--text-main-reverse)"
+                            : ""
+                        } ${isStrikeMode ? "cursor-pointer" : ""} ${selectedId === el.id ? "" : "hover:bg-(--bg-grid-header-hover)"} transition-[background] duration-(--fast)`}
                       >
-                        {/* <TdCell classNameAddition="min-w-fit whitespace-nowrap px-4 text-[var(--text-secondary)]">
+                        {/* <TdCell classNameAddition="min-w-fit whitespace-nowrap px-4 text-(--text-secondary)">
                         {String(el.id)}
                       </TdCell> */}
 
@@ -635,7 +828,7 @@ const MasterPlanClient = (props: Props) => {
                                   i === fieldOptions.length - 1
                                     ? "w-full min-w-fit"
                                     : "min-w-fit whitespace-nowrap"
-                                } `}
+                                } ${f.dataType?.toLowerCase() === "date" && isEditing ? "!min-w-[11rem]" : ""} ${isEditing ? "px-2!" : ""}`}
                               >
                                 <div
                                   className={`flex w-full ${
@@ -645,10 +838,7 @@ const MasterPlanClient = (props: Props) => {
                                         ? "justify-end"
                                         : f.alignment === "Left"
                                           ? "justify-start"
-                                          : (f.dataType ?? "").toLowerCase() ===
-                                              "number"
-                                            ? "justify-end"
-                                            : "justify-start"
+                                          : "justify-start"
                                   }`}
                                 >
                                   {isEditing ? (
@@ -657,18 +847,21 @@ const MasterPlanClient = (props: Props) => {
                                         el.struckElement
                                           ? "line-through opacity-60"
                                           : ""
-                                      }`}
+                                      } mb-2`}
                                     >
                                       <span className="invisible whitespace-pre">
                                         {val || " "}
                                       </span>
-                                      <div className="absolute inset-0 w-full">
+                                      <div className="absolute w-full">
                                         <Input
                                           type={
                                             f.dataType?.toLowerCase() ===
                                             "number"
                                               ? "number"
-                                              : "text"
+                                              : f.dataType?.toLowerCase() ===
+                                                  "date"
+                                                ? "date"
+                                                : "text"
                                           }
                                           value={val || ""}
                                           onChange={(newValue) => {
@@ -679,12 +872,12 @@ const MasterPlanClient = (props: Props) => {
                                               newValue as string,
                                             );
                                           }}
-                                          compact
-                                          classNameAddition={
+                                          compactWithBorder
+                                          classNameAddition={`${
                                             el.struckElement
                                               ? "line-through opacity-60"
                                               : ""
-                                          }
+                                          } `}
                                         />
                                       </div>
                                     </div>
@@ -694,7 +887,7 @@ const MasterPlanClient = (props: Props) => {
                                         el.struckElement
                                           ? "line-through opacity-60"
                                           : ""
-                                      } ${val ? "" : "text-[var(--text-secondary)]"}`}
+                                      } ${val ? "" : "text-(--text-secondary)"}`}
                                     >
                                       {val || "—"}
                                     </span>
@@ -714,7 +907,7 @@ const MasterPlanClient = (props: Props) => {
 
         {/* --- PAGINATION --- */}
         <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
-          <span className="flex w-[175.23px] text-[var(--text-secondary)]">
+          <span className="flex w-[175.23px] text-(--text-secondary)">
             {t("Manage/Viewing")} {(currentPage - 1) * itemsPerPage + 1}-
             {Math.min(currentPage * itemsPerPage, totalGroups)}{" "}
             {t("Manage/out of")} {totalGroups}
@@ -774,9 +967,9 @@ const MasterPlanClient = (props: Props) => {
                       onClick={() => setCurrentPage(Number(page))}
                       className={`${
                         currentPage === page
-                          ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"
-                          : "hover:text-[var(--accent-color)]"
-                      } flex min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-[var(--fast)]`}
+                          ? "bg-(--accent-color) text-(--text-main-reverse)"
+                          : "hover:text-(--accent-color)"
+                      } flex min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-(--fast)`}
                     >
                       {page}
                     </button>

@@ -20,6 +20,7 @@ import { useTranslations } from "next-intl";
 import { unitColumnConstraints } from "@/app/helpers/inputConstraints";
 import UnitColumns from "@/app/admin/manage/units/unit-columns/page";
 import { get } from "http";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -38,6 +39,7 @@ const UnitColumnModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [dataType, setDataType] = useState<UnitColumnDataType>();
   const [compare, setCompare] = useState(false);
@@ -83,9 +85,10 @@ const UnitColumnModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add unit column ---
-  const addUnitColumn = async (event: FormEvent) => {
+  // --- Create unit column ---
+  const createUnitColumn = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/unit-column/create`, {
@@ -145,9 +148,11 @@ const UnitColumnModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Column") + t("Modal/created"), 4000);
+      notify("success", t("Common/Column") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -197,6 +202,7 @@ const UnitColumnModal = (props: Props) => {
   // --- Update unit column ---
   const updateUnitColumn = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -260,9 +266,11 @@ const UnitColumnModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Column") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Column") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -306,7 +314,7 @@ const UnitColumnModal = (props: Props) => {
         <form
           ref={formRef}
           onSubmit={(e) =>
-            props.itemId ? updateUnitColumn(e) : addUnitColumn(e)
+            props.itemId ? updateUnitColumn(e) : createUnitColumn(e)
           }
         >
           <ModalBase
@@ -324,11 +332,11 @@ const UnitColumnModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("ColumnModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
@@ -361,11 +369,11 @@ const UnitColumnModal = (props: Props) => {
               {dataType === "Number" ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <hr className="w-12 text-[var(--border-tertiary)]" />
-                    <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    <hr className="w-12 text-(--border-tertiary)" />
+                    <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                       {t("ColumnModal/Info2")}
                     </h3>
-                    <hr className="w-full text-[var(--border-tertiary)]" />
+                    <hr className="w-full text-(--border-tertiary)" />
                   </div>
 
                   <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
@@ -399,11 +407,11 @@ const UnitColumnModal = (props: Props) => {
               ) : dataType === "Text" ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <hr className="w-12 text-[var(--border-tertiary)]" />
-                    <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    <hr className="w-12 text-(--border-tertiary)" />
+                    <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                       {t("ColumnModal/Info3")}
                     </h3>
-                    <hr className="w-full text-[var(--border-tertiary)]" />
+                    <hr className="w-full text-(--border-tertiary)" />
                   </div>
 
                   <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
@@ -444,8 +452,23 @@ const UnitColumnModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

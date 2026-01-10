@@ -194,7 +194,8 @@ const ManageBase = <TItem extends { id: number }>({
   }
 
   // --- UPDATE GRID/TABLE PREFERENCE ---
-  const { isLoadingUserPrefs, isGridView, updateIsGridView } = useUserPrefsContext();
+  const { isLoadingUserPrefs, isGridView, updateIsGridView } =
+    useUserPrefsContext();
   useEffect(() => {
     if (window.innerWidth < 640) {
       setIsGrid(true);
@@ -317,6 +318,7 @@ const ManageBase = <TItem extends { id: number }>({
         3: 1024, // lg:
         4: 1280, // xl:
         5: 1536, // 2xl:
+        6: 1920, // 3xl:
       };
 
       const screenWidth = window.innerWidth;
@@ -341,17 +343,10 @@ const ManageBase = <TItem extends { id: number }>({
     return (
       <>
         <div className="hidden md:block">
-          {/* <Message icon="loading" content="Nästan klar..." fullscreen /> */}
           <Message icon="loading" content="loading" fullscreen />
         </div>
 
         <div className="block md:hidden">
-          {/* <Message
-            icon="loading"
-            content="Nästan klar..."
-            fullscreen
-            withinContainer
-          /> */}
           <Message
             icon="loading"
             content="loading"
@@ -516,19 +511,19 @@ const ManageBase = <TItem extends { id: number }>({
                   {isGrid ? (
                     <>
                       <OutlineTableCellsIcon
-                        className={`${viewClass} absolute opacity-100 transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                        className={`${viewClass} absolute opacity-100 transition-opacity duration-(--fast) group-hover:opacity-0`}
                       />
                       <SolidTableCellsIcon
-                        className={`${viewClass} absolute opacity-0 transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                        className={`${viewClass} absolute opacity-0 transition-opacity duration-(--fast) group-hover:opacity-100`}
                       />
                     </>
                   ) : (
                     <>
                       <OutlineSquares2X2Icon
-                        className={`${viewClass} absolute opacity-100 transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                        className={`${viewClass} absolute opacity-100 transition-opacity duration-(--fast) group-hover:opacity-0`}
                       />
                       <SolidSquares2X2Icon
-                        className={`${viewClass} absolute opacity-0 transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                        className={`${viewClass} absolute opacity-0 transition-opacity duration-(--fast) group-hover:opacity-100`}
                       />{" "}
                     </>
                   )}
@@ -558,7 +553,12 @@ const ManageBase = <TItem extends { id: number }>({
         {/* --- Filter: All ---  */}
         {filters && filters.length > 0 && (
           <div className="relative">
-            <CustomTooltip content={t("Manage/All filters")} lgHidden longDelay showOnTouch>
+            <CustomTooltip
+              content={t("Manage/All filters")}
+              lgHidden
+              longDelay
+              showOnTouch
+            >
               <button
                 className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
                 onClick={() => {
@@ -626,7 +626,7 @@ const ManageBase = <TItem extends { id: number }>({
       {/* --- Filter chips --- */}
       {filterChips.length > 0 && (
         <div className="flex flex-wrap gap-4">
-          <span className="flex items-center font-semibold text-[var(--text-secondary)]">
+          <span className="flex items-center font-semibold text-(--text-secondary)">
             {t("Manage/Active filters")}:
           </span>
           {filterChips.map((chip, idx) => (
@@ -638,10 +638,10 @@ const ManageBase = <TItem extends { id: number }>({
           ))}
 
           <button
-            className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]"
+            className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-(--fast) hover:bg-(--bg-navbar-link)"
             onClick={() => clearFilters()}
           >
-            <span className="font-semibold text-[var(--accent-color)]">
+            <span className="font-semibold text-(--accent-color)">
               {t("Manage/Clear all")}
             </span>
           </button>
@@ -678,7 +678,7 @@ const ManageBase = <TItem extends { id: number }>({
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className={`${gridItems.length > 1 ? "gap-2" : ""} ${selectedItems.includes(item.id) ? "border-[var(--accent-color)]" : "border-[var(--border-main)]"} ${getIsDisabled(item) ? "!cursor-not-allowed !border-[var(--border-main)]" : ""} flex max-h-[462.5px] cursor-pointer flex-col overflow-auto rounded border-1 p-4 transition-colors duration-[var(--fast)] hover:border-[var(--accent-color)]`}
+                  className={`${gridItems.length > 1 ? "gap-2" : ""} ${selectedItems.includes(item.id) ? "border-(--accent-color)" : "border-(--border-main)"} ${getIsDisabled(item) ? "!cursor-not-allowed !border-(--border-main)" : ""} flex max-h-[462.5px] cursor-pointer flex-col overflow-auto rounded border p-4 transition-colors duration-(--fast) hover:border-(--accent-color)`}
                   onClick={() => toggleSelect(item.id)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
@@ -710,10 +710,10 @@ const ManageBase = <TItem extends { id: number }>({
       ) : (
         // --- TABLE VIEW ---
         <div className="flex w-full flex-col">
-          <div className="flex w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
+          <div className="flex w-full overflow-x-auto rounded border border-(--border-main)">
             <table className="w-full table-fixed border-collapse">
               <thead
-                className={`${!isConnected || isLoading ? "pointer-events-none" : ""} bg-[var(--bg-grid-header)]`}
+                className={`${!isConnected || isLoading ? "pointer-events-none" : ""} bg-(--bg-grid-header)`}
               >
                 <tr>
                   {showCheckbox && (
@@ -830,10 +830,8 @@ const ManageBase = <TItem extends { id: number }>({
                       : false;
 
                     const rowClass = `${
-                      isEven
-                        ? "bg-[var(--bg-grid)]"
-                        : "bg-[var(--bg-grid-zebra)]"
-                    } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""} ${isDisabled ? "!cursor-not-allowed opacity-33" : "hover:bg-[var(--bg-grid-header-hover)]"} cursor-pointer transition-[background] duration-[var(--fast)]`;
+                      isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"
+                    } ${isSelected ? "bg-[var--bg-grid-header-hover)" : ""} ${isDisabled ? "!cursor-not-allowed opacity-33" : "hover:bg-(--bg-grid-header-hover)"} cursor-pointer transition-[background] duration-(--fast)`;
 
                     return (
                       <tr
@@ -910,7 +908,7 @@ const ManageBase = <TItem extends { id: number }>({
         //    --- PAGINATION ---
         <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
           {/* --- Showing info --- */}
-          <span className="flex w-[175.23px] text-[var(--text-secondary)]">
+          <span className="flex w-[175.23px] text-(--text-secondary)">
             {t("Manage/Viewing")}{" "}
             {pagination.totalItems === 0
               ? "0-0"
@@ -950,7 +948,7 @@ const ManageBase = <TItem extends { id: number }>({
                         setSelectedItems([]);
                         pagination.setCurrentPage(Number(page));
                       }}
-                      className={`${pagination.currentPage === page ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]" : "hover:text-[var(--accent-color)]"} ${pagination.currentPage === page && page >= 100 ? "px-5" : ""} flex min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-[var(--fast)]`}
+                      className={`${pagination.currentPage === page ? "bg-(--accent-color) text-(--text-main-reverse)" : "hover:text-(--accent-color)"} ${pagination.currentPage === page && page >= 100 ? "px-5" : ""} flex min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-(--fast)`}
                     >
                       {page}
                     </button>

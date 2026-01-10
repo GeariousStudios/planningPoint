@@ -25,6 +25,7 @@ const DeleteModal = (props: Props) => {
 
   // --- VARIABLES ---
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const requestDelete = () => {
@@ -92,10 +93,10 @@ const DeleteModal = (props: Props) => {
             escapeDeactivates: false,
           }}
         >
-          <div className="fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/75">
+          <div className="fixed inset-0 z-(--z-overlay) h-full w-screen bg-black/75">
             <div className="relative top-1/2">
-              <div className="relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-md -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]">
-                <p className="mb-6 text-[var(--text-main)]">
+              <div className="relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-md -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-(--bg-modal) p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-(--fast)">
+                <p className="mb-6 text-(--text-main)">
                   {props.confirmDeleteMessage ?? t("DeleteModal/Confirm")}
                 </p>
                 <div className="grid grid-cols-3 gap-4">

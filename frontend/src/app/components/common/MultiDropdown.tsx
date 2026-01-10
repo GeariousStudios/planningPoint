@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { FocusTrap } from "focus-trap-react";
+import { createPortal } from "react-dom";
 
 type OptionProps = {
   value: string;
@@ -24,6 +25,7 @@ type DropdownProps = {
   scrollContainer?: () => HTMLElement | null;
   smallDropdown?: boolean;
   showMore?: boolean;
+  usePortal?: boolean;
 };
 
 const MultiDropdown = ({
@@ -43,12 +45,18 @@ const MultiDropdown = ({
   scrollContainer,
   smallDropdown = false,
   showMore = false,
+  usePortal = false,
 }: DropdownProps) => {
   // --- VARIABLES ---
   // --- Refs ---
   const wrapperRef = useRef<HTMLDivElement>(null);
   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
   const dropdownRef = useRef<HTMLUListElement>(null);
+  const [portalPosition, setPortalPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
 
   // --- States ---
   const [isOpen, setIsOpen] = useState(false);
@@ -101,10 +109,115 @@ const MultiDropdown = ({
     .map((opt) => opt.label);
   const displayLabel = selectedLabels.join(", ");
 
+  // --- PORTAL POSITION ---
+  useEffect(() => {
+    if (!isOpen || !usePortal) {
+      return;
+    }
+
+    const rect = wrapperRef.current?.getBoundingClientRect();
+    if (!rect) {
+      return;
+    }
+
+    setPortalPosition({
+      left: rect.left + 8,
+      top: showAbove
+        ? rect.top - (dropdownRef.current?.offsetHeight ?? 0)
+        : rect.bottom,
+      width: rect.width - 16,
+    });
+  }, [isOpen, usePortal, showAbove]);
+
+  const dropdownList = (
+    <FocusTrap
+      focusTrapOptions={{
+        clickOutsideDeactivates: true,
+        escapeDeactivates: true,
+        returnFocusOnDeactivate: true,
+        fallbackFocus: () => document.body,
+      }}
+    >
+      <ul
+        data-inside-modal="true"
+        ref={(el) => {
+          dropdownRef.current = el;
+        }}
+        className={`${isOpen ? `pointer-events-auto ${showMore ? "max-h-68" : "max-h-48"} opacity-100` : "max-h-0"} ${
+          options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"
+        } ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : "bg-(--bg-main)"} ${
+          showAbove
+            ? "bottom-full rounded-t border-b-0"
+            : "rounded-b border-t-0"
+        } ${smallDropdown ? "text-sm" : ""} absolute z-(--z-tooltip) ml-2 w-[calc(100%-1rem)] list-none border border-(--border-tertiary) opacity-0 transition-[opacity,max-height] duration-(--medium)`}
+        role="listbox"
+        inert={!isOpen || undefined}
+        style={
+          usePortal
+            ? {
+                position: "fixed",
+                top: portalPosition.top,
+                left: portalPosition.left,
+                width: portalPosition.width,
+                marginLeft: 0,
+              }
+            : undefined
+        }
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <li role="option" aria-hidden="true" hidden></li>
+        {options.map((opt, index) => (
+          <li
+            key={opt.value}
+            ref={(el) => {
+              optionRefs.current[index] = el;
+            }}
+            tabIndex={0}
+            className={`${value.includes(opt.value) ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-(--slow) select-none hover:bg-(--accent-color)`}
+            role="option"
+            onClick={(e) => {
+              e.stopPropagation();
+
+              let newValue: string[];
+
+              if (value.includes(opt.value)) {
+                newValue = value.filter((v) => v !== opt.value);
+              } else {
+                newValue = [...value, opt.value];
+              }
+
+              onChange && onChange(newValue);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setIsOpen(false);
+              } else if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                let newValue: string[];
+
+                if (value.includes(opt.value)) {
+                  newValue = value.filter((v) => v !== opt.value);
+                } else {
+                  newValue = [...value, opt.value];
+                }
+
+                onChange && onChange(newValue);
+                setIsOpen(false);
+              }
+            }}
+          >
+            {opt.label}
+          </li>
+        ))}
+      </ul>
+    </FocusTrap>
+  );
+
   return (
     <div className={`relative w-full`} ref={wrapperRef}>
       <div
-        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} ${inChip ? "border-[var(--text-main)]" : "border-[var(--border-tertiary)]"} ${smallDropdown ? "h-[24px] text-sm" : "h-[40px]"} z-1 flex w-full cursor-pointer items-center rounded border-1 bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
+        className={`${isOpen ? "outline-2 outline-offset-2 outline-(--accent-color)" : ""} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${smallDropdown ? "h-[24px] text-sm" : "h-[40px]"} z-1 flex w-full cursor-pointer items-center rounded border bg-transparent p-2 transition-[max-height] duration-(--medium)`}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -125,19 +238,19 @@ const MultiDropdown = ({
           {displayLabel}
         </span>
         <span
-          className={`${isOpen ? "text-[var(--accent-color)]" : ""} flex transition-colors duration-[var(--fast)]`}
+          className={`${isOpen ? "text-(--accent-color)" : ""} flex transition-colors duration-(--fast)`}
         >
           <ChevronDownIcon
             className={`${
-              isOpen ? "-rotate-180 text-[var(--accent-color)]" : ""
-            } ${smallDropdown ? "h-4 w-4" : "h-6 w-6"} -rotate-0 transition-[color,rotate] duration-[var(--slow)]`}
+              isOpen ? "-rotate-180 text-(--accent-color)" : ""
+            } ${smallDropdown ? "h-4 w-4" : "h-6 w-6"} -rotate-0 transition-[color,rotate] duration-(--slow)`}
           />
         </span>
       </div>
 
       <label
         htmlFor={id}
-        className={`${value.length > 0 || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} ${smallDropdown ? "text-sm" : ""} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
+        className={`${value.length > 0 || isOpen ? `-top-4 ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : "bg-(--bg-main)"} font-semibold text-(--accent-color)` : "top-[60%] -translate-y-[65%] bg-transparent"} ${smallDropdown ? "text-sm" : ""} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-(--slow) select-none`}
       >
         {label}
         {required && <span className="pr-2" />}
@@ -146,7 +259,13 @@ const MultiDropdown = ({
         )}
       </label>
 
-      {isOpen && (
+      {!usePortal && isOpen && dropdownList}
+      {usePortal &&
+        isOpen &&
+        typeof document !== "undefined" &&
+        createPortal(dropdownList, document.body)}
+
+      {/* {isOpen && (
         <FocusTrap
           focusTrapOptions={{
             clickOutsideDeactivates: true,
@@ -160,7 +279,7 @@ const MultiDropdown = ({
             ref={(el) => {
               dropdownRef.current = el;
             }}
-            className={`${isOpen ? `pointer-events-auto ${showMore ? "max-h-68" : "max-h-48"} opacity-100` : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} ${showAbove ? "bottom-full rounded-t border-b-0" : "rounded-b border-t-0"} ${smallDropdown ? "text-sm" : ""} absolute z-[var(--z-tooltip)] ml-2 w-[calc(100%-1rem)] list-none border-1 border-[var(--border-tertiary)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+            className={`${isOpen ? `pointer-events-auto ${showMore ? "max-h-68" : "max-h-48"} opacity-100` : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : "bg-(--bg-main)"} ${showAbove ? "bottom-full rounded-t border-b-0" : "rounded-b border-t-0"} ${smallDropdown ? "text-sm" : ""} absolute z-(--z-tooltip) ml-2 w-[calc(100%-1rem)] list-none border border-(--border-tertiary) opacity-0 transition-[opacity,max-height] duration-(--medium)`}
             role="listbox"
             inert={!isOpen || undefined}
           >
@@ -172,7 +291,7 @@ const MultiDropdown = ({
                   optionRefs.current[index] = el;
                 }}
                 tabIndex={0}
-                className={`${value.includes(opt.value) ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-[var(--slow)] select-none hover:bg-[var(--accent-color)]`}
+                className={`${value.includes(opt.value) ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-(--slow) select-none hover:bg-(--accent-color)`}
                 role="option"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -210,7 +329,7 @@ const MultiDropdown = ({
             ))}
           </ul>
         </FocusTrap>
-      )}
+      )} */}
 
       {/* This <select> is here to get form validation check */}
       <select

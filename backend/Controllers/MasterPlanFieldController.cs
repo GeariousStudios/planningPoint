@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Route("master-plan-field")]
     public class MasterPlanFieldController : ControllerBase
     {
@@ -57,27 +56,212 @@ namespace backend.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+            [FromQuery] string sortBy = "id",
+            [FromQuery] string sortOrder = "asc",
+            [FromQuery] string[]? dataType = null,
+            [FromQuery] string[]? alignment = null,
+            [FromQuery] bool? isHidden = null,
+            [FromQuery] int[]? masterPlanIds = null,
+            [FromQuery] string? search = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10
+        )
         {
-            var fields = await _context
-                .MasterPlanFields.OrderBy(f => f.Name)
-                .Select(f => new MasterPlanFieldDto
-                {
-                    Id = f.Id,
-                    Name = f.Name,
-                    DataType = f.DataType,
-                    Alignment = f.Alignment,
-                    IsHidden = f.IsHidden,
-                })
-                .ToListAsync();
+            var lang = await GetLangAsync();
 
-            return Ok(fields);
+            IQueryable<MasterPlanField> query = _context
+                .MasterPlanFields.Include(mpf => mpf.MasterPlanToMasterPlanFields)
+                .ThenInclude(mpf => mpf.MasterPlan);
+
+            if (isHidden.HasValue)
+            {
+                query = query.Where(mp => mp.IsHidden == isHidden.Value);
+            }
+
+            if (masterPlanIds?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    mp.MasterPlanToMasterPlanFields.Any(mp =>
+                        masterPlanIds.Contains(mp.MasterPlanId)
+                    )
+                );
+            }
+
+            var parsedDataTypes = dataType
+                ?.Select(x => Enum.Parse<MasterPlanFieldDataType>(x))
+                .ToArray();
+
+            var parsedAlignments = alignment
+                ?.Select(x => Enum.Parse<MasterPlanFieldAlignment>(x))
+                .ToArray();
+
+            if (parsedDataTypes != null && parsedDataTypes.Length > 0)
+            {
+                query = query.Where(m => parsedDataTypes.Contains(m.DataType));
+            }
+
+            if (parsedAlignments != null && parsedAlignments.Length > 0)
+            {
+                query = query.Where(m => parsedAlignments.Contains(m.Alignment));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var lowered = search.ToLower();
+                query = query.Where(mp => mp.Name.ToLower().Contains(lowered));
+            }
+
+            var list = await query.ToListAsync();
+
+            if (sortBy.ToLower() == "datatype")
+            {
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x =>
+                                _t.GetAsync($"AuditTrail/{x.DataType}", lang).Result
+                            )
+                            .ToList()
+                        : list.OrderBy(x => _t.GetAsync($"AuditTrail/{x.DataType}", lang).Result)
+                            .ToList();
+            }
+            else if (sortBy.ToLower() == "alignment")
+            {
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x =>
+                                _t.GetAsync($"AuditTrail/{x.Alignment}", lang).Result
+                            )
+                            .ToList()
+                        : list.OrderBy(x => _t.GetAsync($"AuditTrail/{x.Alignment}", lang).Result)
+                            .ToList();
+            }
+            else
+            {
+                list = sortBy.ToLower() switch
+                {
+                    "name" => sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.Name.ToLower()).ToList()
+                        : list.OrderBy(x => x.Name.ToLower()).ToList(),
+
+                    "masterplancount" => sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.MasterPlanToMasterPlanFields.Count).ToList()
+                        : list.OrderBy(x => x.MasterPlanToMasterPlanFields.Count).ToList(),
+
+                    "visibilitycount" => sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.IsHidden).ToList()
+                        : list.OrderBy(x => x.IsHidden).ToList(),
+
+                    _ => sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.Id).ToList()
+                        : list.OrderBy(x => x.Id).ToList(),
+                };
+            }
+
+            var totalCount = list.Count;
+
+            // Filters.
+            var visibilityCount = new Dictionary<string, int>
+            {
+                ["Visible"] = list.Count(mpf => !mpf.IsHidden),
+                ["Hidden"] = list.Count(mpf => mpf.IsHidden),
+            };
+
+            var masterPlanCount = list.SelectMany(mpf => mpf.MasterPlanToMasterPlanFields)
+                .GroupBy(uuc => uuc.MasterPlanId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var dataTypeCount = list.GroupBy(mpf => mpf.DataType)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var alignmentCount = list.GroupBy(mpf => mpf.Alignment)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var masterPlanFields = list.Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => new MasterPlanFieldDto
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    DataType = t.DataType,
+                    Alignment = t.Alignment,
+                    MasterPlanIds = t
+                        .MasterPlanToMasterPlanFields.Select(mpf => mpf.MasterPlanId)
+                        .OrderBy(id => id)
+                        .ToList(),
+                    IsHidden = t.IsHidden,
+
+                    // Meta data.
+                    CreationDate = t.CreationDate,
+                    CreatedBy = t.CreatedBy,
+                    UpdateDate = t.UpdateDate,
+                    UpdatedBy = t.UpdatedBy,
+                })
+                .ToList();
+
+            var result = new
+            {
+                totalCount,
+                items = masterPlanFields,
+                counts = new
+                {
+                    visibilityCount,
+                    masterPlanCount,
+                    dataTypeCount,
+                    alignmentCount,
+                },
+            };
+
+            return Ok(result);
+        }
+
+        [HttpGet("fetch/{id}")]
+        public async Task<IActionResult> GetMasterPlanField(int id)
+        {
+            var lang = await GetLangAsync();
+            var masterPlanField = await _context
+                .MasterPlanFields.Include(m => m.MasterPlanToMasterPlanFields)
+                .ThenInclude(mp => mp.MasterPlan)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (masterPlanField == null)
+            {
+                return NotFound(
+                    new { message = await _t.GetAsync("MasterPlanField/NotFound", lang) }
+                );
+            }
+
+            var result = new MasterPlanFieldDto
+            {
+                Id = masterPlanField.Id,
+                Name = masterPlanField.Name,
+                DataType = masterPlanField.DataType,
+                Alignment = masterPlanField.Alignment,
+                IsHidden = masterPlanField.IsHidden,
+                MasterPlanIds = masterPlanField
+                    .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
+                    .ToList(),
+            };
+
+            return Ok(result);
         }
 
         [HttpDelete("delete/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteMasterPlanField(int id)
         {
             var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
+
             var field = await _context
                 .MasterPlanFields.Include(f => f.MasterPlanToMasterPlanFields)
                 .FirstOrDefaultAsync(f => f.Id == id);
@@ -89,6 +273,30 @@ namespace backend.Controllers
                 );
             }
 
+            if (field.MasterPlanToMasterPlanFields.Any())
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("MasterPlanField/InUse", lang) }
+                );
+            }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "MasterPlanField",
+                field.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = field.Id,
+                    ["Name"] = field.Name,
+                    ["DataType"] = field.DataType.ToString(),
+                    ["Alignment"] = field.Alignment.ToString(),
+                    ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
+                }
+            );
+
             _context.MasterPlanFields.Remove(field);
             await _context.SaveChangesAsync();
 
@@ -96,6 +304,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("create")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateMasterPlanField(CreateMasterPlanFieldDto dto)
         {
             var lang = await GetLangAsync();
@@ -131,15 +340,15 @@ namespace backend.Controllers
                 DataType = dto.DataType,
                 Alignment = dto.Alignment,
                 IsHidden = dto.IsHidden,
-                MasterPlanToMasterPlanFields =
-                    dto.MasterPlanIds != null
-                        ? dto
-                            .MasterPlanIds.Select(id => new MasterPlanToMasterPlanField
-                            {
-                                MasterPlanId = id,
-                            })
-                            .ToList()
-                        : new List<MasterPlanToMasterPlanField>(),
+                // MasterPlanToMasterPlanFields =
+                //     dto.MasterPlanIds != null
+                //         ? dto
+                //             .MasterPlanIds.Select(id => new MasterPlanToMasterPlanField
+                //             {
+                //                 MasterPlanId = id,
+                //             })
+                //             .ToList()
+                //         : new List<MasterPlanToMasterPlanField>(),
 
                 // Meta data.
                 CreationDate = now,
@@ -158,9 +367,9 @@ namespace backend.Controllers
                 DataType = field.DataType,
                 Alignment = field.Alignment,
                 IsHidden = field.IsHidden,
-                MasterPlanIds = field
-                    .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
-                    .ToList(),
+                // MasterPlanIds = field
+                //     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
+                //     .ToList(),
 
                 // Meta data.
                 CreationDate = field.CreationDate,
@@ -169,10 +378,28 @@ namespace backend.Controllers
                 UpdatedBy = field.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "MasterPlanField",
+                field.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = field.Id,
+                    ["Name"] = field.Name,
+                    ["DataType"] = field.DataType.ToString(),
+                    ["Alignment"] = field.Alignment.ToString(),
+                    ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
+                }
+            );
+
             return Ok(result);
         }
 
         [HttpPut("update/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateMasterPlanField(int id, UpdateMasterPlanFieldDto dto)
         {
             var lang = await GetLangAsync();
@@ -224,23 +451,32 @@ namespace backend.Controllers
                 );
             }
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = field.Id,
+                ["Name"] = field.Name,
+                ["DataType"] = field.DataType.ToString(),
+                ["Alignment"] = field.Alignment.ToString(),
+                ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
+            };
+
             field.Name = dto.Name;
             field.DataType = dto.DataType;
             field.Alignment = dto.Alignment;
             field.IsHidden = dto.IsHidden;
 
-            _context.MasterPlanToMasterPlanFields.RemoveRange(field.MasterPlanToMasterPlanFields);
+            // _context.MasterPlanToMasterPlanFields.RemoveRange(field.MasterPlanToMasterPlanFields);
 
-            field.MasterPlanToMasterPlanFields =
-                dto.MasterPlanIds != null
-                    ? dto
-                        .MasterPlanIds.Select(id => new MasterPlanToMasterPlanField
-                        {
-                            MasterPlanId = id,
-                            MasterPlanFieldId = field.Id,
-                        })
-                        .ToList()
-                    : new List<MasterPlanToMasterPlanField>();
+            // field.MasterPlanToMasterPlanFields =
+            //     dto.MasterPlanIds != null
+            //         ? dto
+            //             .MasterPlanIds.Select(id => new MasterPlanToMasterPlanField
+            //             {
+            //                 MasterPlanId = id,
+            //                 MasterPlanFieldId = field.Id,
+            //             })
+            //             .ToList()
+            //         : new List<MasterPlanToMasterPlanField>();
 
             // Meta data.
             field.UpdateDate = now;
@@ -255,14 +491,35 @@ namespace backend.Controllers
                 DataType = field.DataType,
                 Alignment = field.Alignment,
                 IsHidden = field.IsHidden,
-                MasterPlanIds = field
-                    .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
-                    .ToList(),
+                // MasterPlanIds = field
+                //     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
+                //     .ToList(),
 
                 // Meta data.
                 UpdateDate = field.UpdateDate,
                 UpdatedBy = field.UpdatedBy,
             };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "MasterPlanField",
+                field.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = field.Id,
+                        ["Name"] = field.Name,
+                        ["DataType"] = field.DataType.ToString(),
+                        ["Alignment"] = field.Alignment.ToString(),
+                        ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
+                    },
+                }
+            );
 
             return Ok(result);
         }

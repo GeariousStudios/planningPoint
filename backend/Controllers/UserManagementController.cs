@@ -262,10 +262,10 @@ namespace backend.Controllers
                 new Dictionary<string, object?>
                 {
                     ["ObjectID"] = user.Id,
-                    ["Username"] = user.Username,
-                    ["FirstName"] = user.FirstName,
-                    ["LastName"] = user.LastName,
-                    ["Email"] = user.Email,
+                    ["Username"] = user.Username ?? "—",
+                    ["FirstName"] = user.FirstName ?? "—",
+                    ["LastName"] = user.LastName ?? "—",
+                    ["Email"] = user.Email ?? "—",
                     ["Roles"] = user.GetRoleStrings(),
                     ["IsLocked"] = user.IsLocked ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
@@ -378,10 +378,10 @@ namespace backend.Controllers
                     new Dictionary<string, object?>
                     {
                         ["ObjectID"] = user.Id,
-                        ["Username"] = user.Username,
-                        ["FirstName"] = user.FirstName,
-                        ["LastName"] = user.LastName,
-                        ["Email"] = user.Email,
+                        ["Username"] = user.Username ?? "—",
+                        ["FirstName"] = user.FirstName ?? "—",
+                        ["LastName"] = user.LastName ?? "—",
+                        ["Email"] = user.Email ?? "—",
                         ["Roles"] = user.GetRoleStrings(),
                         ["IsLocked"] = user.IsLocked
                             ? new[] { "Common/Yes" }
@@ -484,12 +484,12 @@ namespace backend.Controllers
                     );
                 }
 
-                if (user.Roles != userRoles)
-                {
-                    return BadRequest(
-                        new { message = await _t.GetAsync("Users/CannotChangeRolesOnline", lang) }
-                    );
-                }
+                // if (user.Roles != userRoles)
+                // {
+                //     return BadRequest(
+                //         new { message = await _t.GetAsync("Users/CannotChangeRolesOnline", lang) }
+                //     );
+                // }
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Password) && dto.Password.Length < 8)
@@ -553,10 +553,10 @@ namespace backend.Controllers
                     NewValues = new Dictionary<string, object?>
                     {
                         ["ObjectID"] = user.Id,
-                        ["Username"] = user.Username,
-                        ["FirstName"] = user.FirstName,
-                        ["LastName"] = user.LastName,
-                        ["Email"] = user.Email,
+                        ["Username"] = user.Username ?? "—",
+                        ["FirstName"] = user.FirstName ?? "—",
+                        ["LastName"] = user.LastName ?? "—",
+                        ["Email"] = user.Email ?? "—",
                         ["Roles"] = user.GetRoleStrings(),
                         ["IsLocked"] = user.IsLocked
                             ? new[] { "Common/Yes" }

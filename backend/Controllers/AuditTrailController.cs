@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using backend.Data;
 using backend.Models;
 using backend.Services;
@@ -10,7 +11,7 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("audit-trail")]
-    [Authorize(Roles = "Admin,Developer,Reporter")]
+    [Authorize(Roles = "Admin,Developer,Reporter,Planner,MasterPlanner")]
     public class AuditTrailController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -141,6 +142,12 @@ namespace backend.Controllers
             if (User.IsInRole("Reporter"))
                 userRoles.Add("Reporter");
 
+            if (User.IsInRole("Planner"))
+                userRoles.Add("Planner");
+
+            if (User.IsInRole("MasterPlanner"))
+                userRoles.Add("MasterPlanner");
+
             List<(string? EntityName, string? Action)> allRules = new();
 
             foreach (var roleName in userRoles)
@@ -162,14 +169,12 @@ namespace backend.Controllers
             {
                 if (allRules.Any(r => r.EntityName == null && r.Action == null))
                 {
-                    // var list = await query.Take(500).ToListAsync();
                     var list = await query.ToListAsync();
                     await TranslateDetailsAsync(list, lang);
                     await TranslateEntitiesAndActionsAsync(list, lang);
                     return Ok(list);
                 }
 
-                // var items = await query.Take(500).ToListAsync();
                 var items = await query.ToListAsync();
                 items = items
                     .Where(a =>
@@ -185,7 +190,6 @@ namespace backend.Controllers
                 return Ok(items);
             }
 
-            // var trails = await query.Take(500).ToListAsync();
             var trails = await query.ToListAsync();
 
             foreach (var trail in trails)
@@ -221,6 +225,12 @@ namespace backend.Controllers
 
             if (User.IsInRole("Reporter"))
                 userRoles.Add("Reporter");
+
+            if (User.IsInRole("Planner"))
+                userRoles.Add("Planner");
+
+            if (User.IsInRole("MasterPlanner"))
+                userRoles.Add("MasterPlanner");
 
             if (userRoles.Count == 0)
                 return Unauthorized();
@@ -261,16 +271,19 @@ namespace backend.Controllers
                     "UnitColumn",
                     "Unit",
                     "UnitGroup",
-                    // "User",
+                    "User",
                     // "UserFavourites",
                     "UserManagement",
                     // "UserPreferences",
                     "ShiftChange",
                     "StopType",
                     "MasterPlan",
+                    "MasterPlanField",
+                    "MasterPlanElement",
+                    "MasterPlanImportRules",
                 };
 
-                actions = new[] { "All", "Create", "Update", "Delete" };
+                actions = new[] { "All", "Create", "Update", "Delete", "Move" };
             }
             else
             {
@@ -290,7 +303,7 @@ namespace backend.Controllers
                     .ToList();
 
                 if (actionList.Count == 0)
-                    actionList = new() { "Create", "Update", "Delete" };
+                    actionList = new() { "Create", "Update", "Delete", "Move" };
 
                 actions = new[] { "All" }.Concat(actionList);
             }
@@ -311,6 +324,7 @@ namespace backend.Controllers
                     "Create" => "AuditTrail/CreatedPosts",
                     "Update" => "AuditTrail/UpdatedPosts",
                     "Delete" => "AuditTrail/DeletedPosts",
+                    "Move" => "AuditTrail/MovedPosts",
                     _ => "AuditTrail/All",
                 };
                 translatedActions.Add(new { label = await _t.GetAsync(key, lang), value = a });
@@ -492,6 +506,53 @@ namespace backend.Controllers
                         }
                     }
                     return list;
+
+                case JsonValueKind.String:
+                    var strValue = element.GetString();
+                    if (!string.IsNullOrWhiteSpace(strValue))
+                    {
+                        if (strValue.StartsWith("AuditTrail/") || strValue.StartsWith("Common/"))
+                        {
+                            var translated = await t.GetAsync(strValue, lang);
+                            if (!string.IsNullOrWhiteSpace(translated) && translated != strValue)
+                                return translated;
+                        }
+
+                        var enumTranslated = await t.GetAsync($"AuditTrail/{strValue}", lang);
+                        if (
+                            !string.IsNullOrWhiteSpace(enumTranslated)
+                            && enumTranslated != $"AuditTrail/{strValue}"
+                        )
+                            return enumTranslated;
+
+                        if (strValue.Contains("AuditTrail/") || strValue.Contains("Common/"))
+                        {
+                            var rx = new Regex(
+                                @"(?<=^|[\s:>])(AuditTrail|Common)/([A-Za-z]+)(?=$|[\s<:,])"
+                            );
+                            strValue = await Task.Run(async () =>
+                            {
+                                var sb = new System.Text.StringBuilder();
+                                var last = 0;
+                                foreach (Match m in rx.Matches(strValue))
+                                {
+                                    sb.Append(strValue, last, m.Index - last);
+                                    var fullKey = m.Groups[1].Value + "/" + m.Groups[2].Value;
+                                    var translated = await t.GetAsync(fullKey, lang);
+                                    sb.Append(
+                                        string.IsNullOrWhiteSpace(translated)
+                                        || translated == fullKey
+                                            ? fullKey
+                                            : translated
+                                    );
+                                    last = m.Index + m.Length;
+                                }
+                                sb.Append(strValue, last, strValue.Length - last);
+                                return sb.ToString();
+                            });
+                        }
+                    }
+                    return strValue;
 
                 default:
                     return element.ToString();

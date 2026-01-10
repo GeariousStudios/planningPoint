@@ -88,6 +88,7 @@ const ReportModal = (props: Props) => {
   const hasSetInitialContent = useRef(false);
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   const [reports, setReports] = useState<Report[]>([]);
@@ -318,6 +319,8 @@ const ReportModal = (props: Props) => {
     const startTimeIso = localDateTimeToUtcIso(report.startTime);
     const date = report.startTime.slice(0, 10);
     const hour = parseInt(report.startTime.slice(11, 13), 10);
+    const content = editorRef.current?.getContent() ?? "";
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/report/create`, {
@@ -335,7 +338,8 @@ const ReportModal = (props: Props) => {
           subCategoryId: report.subCategoryId || null,
           categoryName: report.categoryName || null,
           subCategoryName: report.subCategoryName || null,
-          content: report.content,
+          // content: report.content,
+          content,
           date,
           hour,
         }),
@@ -355,11 +359,13 @@ const ReportModal = (props: Props) => {
 
       await fetchReportsForHour();
       props.onItemUpdated();
-      notify("success", t("ReportModal/Event") + t("Modal/created"));
+      notify("success", t("ReportModal/Event") + t("Modal/created1"));
       return true;
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
       return false;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -367,6 +373,8 @@ const ReportModal = (props: Props) => {
     const startTimeIso = localDateTimeToUtcIso(report.startTime);
     const date = report.startTime.slice(0, 10);
     const hour = parseInt(report.startTime.slice(11, 13), 10);
+    const content = editorRef.current?.getContent() ?? "";
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/report/update/${report.id}`, {
@@ -381,7 +389,8 @@ const ReportModal = (props: Props) => {
           stopTime: report.stopTime || null,
           categoryId: report.categoryId || null,
           subCategoryId: report.subCategoryId || null,
-          content: report.content,
+          // content: report.content,
+          content,
           date,
           hour,
         }),
@@ -401,11 +410,13 @@ const ReportModal = (props: Props) => {
 
       await fetchReportsForHour();
       props.onItemUpdated();
-      notify("success", t("ReportModal/Event") + t("Modal/updated"));
+      notify("success", t("ReportModal/Event") + t("Modal/updated1"));
       return true;
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
       return false;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -637,11 +648,11 @@ const ReportModal = (props: Props) => {
             >
               <ModalBase.Content>
                 <div className="flex items-center gap-2">
-                  <hr className="w-12 text-[var(--border-tertiary)]" />
-                  <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  <hr className="w-12 text-(--border-tertiary)" />
+                  <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                     {t("ReportModal/Info1")}
                   </h3>
-                  <hr className="w-full text-[var(--border-tertiary)]" />
+                  <hr className="w-full text-(--border-tertiary)" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -692,18 +703,18 @@ const ReportModal = (props: Props) => {
                   className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-6`}
                 >
                   <div className="mt-8 flex items-center gap-2">
-                    <hr className="w-12 text-[var(--border-tertiary)]" />
-                    <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    <hr className="w-12 text-(--border-tertiary)" />
+                    <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                       {t("ReportModal/Info2")}
                     </h3>
-                    <hr className="w-full text-[var(--border-tertiary)]" />
+                    <hr className="w-full text-(--border-tertiary)" />
                   </div>
 
                   <div className="grid grid-cols-1 gap-6 sm:gap-6">
                     {!canAddReport &&
                     conflictReport?.startTime.slice(0, 13) !==
                       `${selectedDate}T${selectedHour.padStart(2, "0")}` ? (
-                      <div className="text-sm text-[var(--note-error)]">
+                      <div className="text-sm text-(--note-error)">
                         {t("ReportModal/Blocking event")}
                         <br />
                         <button
@@ -763,7 +774,7 @@ const ReportModal = (props: Props) => {
                           .map((report, index) => (
                             <div
                               key={report.id}
-                              className="relative flex flex-col gap-4 rounded-2xl bg-[var(--bg-main)] p-4"
+                              className="relative flex flex-col gap-4 rounded-2xl bg-(--bg-main) p-4"
                             >
                               {report.categoryId && (
                                 <div className="flex justify-between gap-4">
@@ -776,7 +787,7 @@ const ReportModal = (props: Props) => {
                                       )?.name ?? report.categoryName}
                                     </div>
 
-                                    <div className="text-sm text-[var(--text-secondary)]">
+                                    <div className="text-sm text-(--text-secondary)">
                                       {report.subCategoryId && (
                                         <>
                                           {categories
@@ -834,7 +845,7 @@ const ReportModal = (props: Props) => {
                                 </div>
                               )}
                               <div className="flex justify-between gap-2">
-                                <div className="text-sm text-[var(--text-secondary)]">
+                                <div className="text-sm text-(--text-secondary)">
                                   {report.stopTime ? (
                                     (() => {
                                       const start = new Date(report.startTime);
@@ -890,7 +901,7 @@ const ReportModal = (props: Props) => {
                                         ?.slice(0, 16)
                                         .replace("T", " ")}{" "}
                                       -{" "}
-                                      <span className="font-semibold text-[var(--note-error)]">
+                                      <span className="font-semibold text-(--note-error)">
                                         {t("Unit/ongoing")}
                                       </span>
                                     </>
@@ -940,7 +951,7 @@ const ReportModal = (props: Props) => {
                                 }}
                               />
 
-                              <div className="mt-8 flex justify-end text-sm text-[var(--text-secondary)]">
+                              <div className="mt-8 flex justify-end text-sm text-(--text-secondary)">
                                 <div className="flex flex-col text-right">
                                   {report.creationDate && (
                                     <div>
@@ -970,7 +981,7 @@ const ReportModal = (props: Props) => {
                     )}
 
                     {isAddingReport && (
-                      <div className="flex flex-col gap-6 rounded-2xl bg-[var(--bg-main)] p-8">
+                      <div className="flex flex-col gap-6 rounded-2xl bg-(--bg-main) p-8">
                         {categories.length > 0 && (
                           <div
                             className={`${currentReport.categoryId && categories.map((s) => (s.subCategories.length > 0 ? "sm:grid-cols-2" : "sm:grid-cols-1"))} grid grid-cols-1 gap-6`}
@@ -1132,31 +1143,10 @@ const ReportModal = (props: Props) => {
                           />
                         </div>
 
-                        {/* <RichTextEditor
-                          ref={editorRef}
-                          value={currentReport.content}
-                          name="content"
-                          onReady={() => {
-                            setIsEditorReady(true);
-                          }}
-                          onChange={(val) =>
-                            setCurrentReport((prev) => ({
-                              ...prev,
-                              content: val,
-                            }))
-                          }
-                        /> */}
-
                         <RichTextEditor
                           ref={editorRef}
                           name="content"
                           onReady={() => setIsEditorReady(true)}
-                          onChange={(val) =>
-                            setCurrentReport((prev) => ({
-                              ...prev,
-                              content: val,
-                            }))
-                          }
                         />
 
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
@@ -1225,7 +1215,7 @@ const ReportModal = (props: Props) => {
 
                         {validationError && (
                           <div
-                            className="-mt-3 text-sm font-semibold text-[var(--note-error)]"
+                            className="-mt-3 text-sm font-semibold text-(--note-error)"
                             dangerouslySetInnerHTML={{
                               __html: validationError,
                             }}

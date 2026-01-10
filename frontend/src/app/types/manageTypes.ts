@@ -33,6 +33,7 @@ export type CategoryItem = {
     unitGroupName?: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
@@ -96,6 +97,7 @@ export type UnitGroupItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
@@ -124,6 +126,7 @@ export type UnitItem = {
   masterPlanName: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor?: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 
@@ -166,6 +169,7 @@ export type ShiftItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
@@ -174,12 +178,14 @@ export type ShiftItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
   isHidden?: boolean;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor?: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 
@@ -204,12 +210,14 @@ export type ShiftTeamItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
   isHidden?: boolean;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor?: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 
@@ -233,11 +241,13 @@ export type StopTypeItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor?: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
   isHidden?: boolean;
@@ -263,17 +273,17 @@ export type MasterPlanItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
   fields: {
     id: number;
     name: string;
-    dataType: MasterPlanFieldDataType;
-    alignment: "Left" | "Center" | "Right";
-    isHidden: boolean;
   }[];
   isHidden?: boolean;
+  allowRemovingElements?: boolean;
+  allowImport?: boolean;
 
   creationDate: string;
   updateDate: string;
@@ -286,9 +296,33 @@ export type MasterPlanFilters = {
   unitGroupIds?: number[];
   masterPlanFieldIds?: number[];
   isHidden?: boolean;
+  allowRemovingElements?: boolean;
+  allowImport?: boolean;
 };
 
-export type MasterPlanFieldDataType = "Number" | "Text" | "Boolean";
+// --- admin/manage/units/master-plan-fields/MasterPlanFieldsClient.tsx ---
+export type MasterPlanFieldItem = {
+  id: number;
+  name: string;
+  masterPlanIds: number[];
+  dataType: MasterPlanFieldDataType;
+  alignment: "Left" | "Center" | "Right";
+  isHidden: boolean;
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type MasterPlanFieldFilters = {
+  dataTypes?: MasterPlanFieldDataType[];
+  alignments?: ("Left" | "Center" | "Right")[];
+  masterPlanIds?: number[];
+  isHidden?: boolean;
+};
+
+export type MasterPlanFieldDataType = "Number" | "Text" | "Boolean" | "Date";
 export const getMasterPlanFieldDataTypeOptions = (
   t: (key: string) => string,
 ) => [
@@ -304,4 +338,26 @@ export const getMasterPlanFieldDataTypeOptions = (
   //   label: t("Common/Boolean"),
   //   value: "Boolean" as MasterPlanFieldDataType,
   // },
+  {
+    label: t("Common/Date"),
+    value: "Date" as MasterPlanFieldDataType,
+  },
+];
+
+export type MasterPlanFieldAlignment = "Left" | "Center" | "Right";
+export const getMasterPlanFieldAlignmentOptions = (
+  t: (key: string) => string,
+) => [
+  {
+    label: t("Common/Left"),
+    value: "Left" as MasterPlanFieldAlignment,
+  },
+  {
+    label: t("Common/Center"),
+    value: "Center" as MasterPlanFieldAlignment,
+  },
+  {
+    label: t("Common/Right"),
+    value: "Right" as MasterPlanFieldAlignment,
+  },
 ];

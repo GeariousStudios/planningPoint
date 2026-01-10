@@ -11,13 +11,11 @@ namespace backend.Dtos.MasterPlan
         [Required(ErrorMessage = "[3|MasterPlan/a group] Validation/Please select")]
         public int UnitGroupId { get; set; }
         public bool IsHidden { get; set; }
+        public bool AllowRemovingElements { get; set; }
+        public bool AllowImport { get; set; }
         public int[]? Units { get; set; }
         public int[]? MasterPlanFieldIds { get; set; }
         public int[]? MasterPlanElementIds { get; set; }
-        public List<CreateMasterPlanFieldDto>? NewMasterPlanFields { get; set; }
-        public Dictionary<int, string>? TempMasterPlanFieldNames { get; set; }
-        public string[]? NewMasterPlanElementNames { get; set; }
-        public int[]? OrderedMasterPlanFieldIds { get; set; }
-        public int[]? OrderedMasterPlanElementIds { get; set; }
+        public int? GroupFieldId { get; set; }
     }
 }

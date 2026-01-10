@@ -10,6 +10,8 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
+import { useEffect } from "react";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -127,7 +129,7 @@ const NewsTypesClient = (props: Props) => {
     {
       key: "name",
       getValue: (item: NewsTypeItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
@@ -170,6 +172,13 @@ const NewsTypesClient = (props: Props) => {
       responsivePriority: 0,
     },
   ];
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("News types");
+  }, []);
 
   return (
     <>

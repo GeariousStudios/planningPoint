@@ -27,6 +27,7 @@ import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -178,21 +179,33 @@ const UnitsClient = (props: Props) => {
     {
       key: "name, isHidden",
       getValue: (item: UnitItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <span className="flex items-center gap-4 text-2xl font-bold">
               <span
                 className="h-8 min-h-8 w-8 min-w-8 rounded-full"
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? item.darkColorHex
-                      : item.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? item.darkTextColorHex
-                      : item.lightTextColorHex,
-                }}
+                style={
+                  item.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? item.darkColorHex
+                            : item.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? item.darkColorHex
+                            : item.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? item.darkTextColorHex
+                            : item.lightTextColorHex,
+                      }
+                }
               />
               <span className="flex items-center">{item.name}</span>
             </span>
@@ -230,7 +243,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                      className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                     >
                       {col.name}
                     </span>
@@ -257,7 +270,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-[var(--badge-main-reverse)] text-[var(--text-reverse)]`}
+                      className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-reverse)`}
                     >
                       {cat.name}
                     </span>
@@ -283,16 +296,28 @@ const UnitsClient = (props: Props) => {
                     <span
                       key={id}
                       className={badgeClass}
-                      style={{
-                        backgroundColor:
-                          currentTheme === "dark"
-                            ? shift.darkColorHex
-                            : shift.lightColorHex,
-                        color:
-                          currentTheme === "dark"
-                            ? shift.darkTextColorHex
-                            : shift.lightTextColorHex,
-                      }}
+                      style={
+                        shift.reverseColor
+                          ? {
+                              boxShadow: `inset 0 0 0 1px ${
+                                currentTheme === "dark"
+                                  ? shift.darkColorHex
+                                  : shift.lightColorHex
+                              }`,
+                              backgroundColor: "transparent",
+                              color: "var(--text-main)",
+                            }
+                          : {
+                              backgroundColor:
+                                currentTheme === "dark"
+                                  ? shift.darkColorHex
+                                  : shift.lightColorHex,
+                              color:
+                                currentTheme === "dark"
+                                  ? shift.darkTextColorHex
+                                  : shift.lightTextColorHex,
+                            }
+                      }
                     >
                       {shift.name}
                     </span>
@@ -321,16 +346,28 @@ const UnitsClient = (props: Props) => {
                     <span
                       key={id}
                       className={badgeClass}
-                      style={{
-                        backgroundColor:
-                          currentTheme === "dark"
-                            ? stopType.darkColorHex
-                            : stopType.lightColorHex,
-                        color:
-                          currentTheme === "dark"
-                            ? stopType.darkTextColorHex
-                            : stopType.lightTextColorHex,
-                      }}
+                      style={
+                        stopType.reverseColor
+                          ? {
+                              boxShadow: `inset 0 0 0 1px ${
+                                currentTheme === "dark"
+                                  ? stopType.darkColorHex
+                                  : stopType.lightColorHex
+                              }`,
+                              backgroundColor: "transparent",
+                              color: "var(--text-main)",
+                            }
+                          : {
+                              backgroundColor:
+                                currentTheme === "dark"
+                                  ? stopType.darkColorHex
+                                  : stopType.lightColorHex,
+                              color:
+                                currentTheme === "dark"
+                                  ? stopType.darkTextColorHex
+                                  : stopType.lightTextColorHex,
+                            }
+                      }
                     >
                       {stopType.name}
                     </span>
@@ -342,7 +379,7 @@ const UnitsClient = (props: Props) => {
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
             <span
-              className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
+              className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
               {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
             </span>
@@ -384,16 +421,28 @@ const UnitsClient = (props: Props) => {
         <div className="flex items-center gap-4">
           <span
             className="h-4 min-h-4 w-4 min-w-4 rounded-full"
-            style={{
-              backgroundColor:
-                currentTheme === "dark"
-                  ? item.darkColorHex
-                  : item.lightColorHex,
-              color:
-                currentTheme === "dark"
-                  ? item.darkTextColorHex
-                  : item.lightTextColorHex,
-            }}
+            style={
+              item.reverseColor
+                ? {
+                    boxShadow: `inset 0 0 0 1px ${
+                      currentTheme === "dark"
+                        ? item.darkColorHex
+                        : item.lightColorHex
+                    }`,
+                    backgroundColor: "transparent",
+                    color: "var(--text-main)",
+                  }
+                : {
+                    backgroundColor:
+                      currentTheme === "dark"
+                        ? item.darkColorHex
+                        : item.lightColorHex,
+                    color:
+                      currentTheme === "dark"
+                        ? item.darkTextColorHex
+                        : item.lightTextColorHex,
+                  }
+            }
           />
           {item.name}
         </div>
@@ -435,7 +484,7 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
               >
                 {col.name}
               </span>
@@ -462,7 +511,7 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-[var(--badge-main-reverse)] text-[var(--text-reverse)]`}
+                className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-reverse)`}
               >
                 {cat.name}
               </span>
@@ -490,16 +539,28 @@ const UnitsClient = (props: Props) => {
               <span
                 key={id}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? shift.darkColorHex
-                      : shift.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? shift.darkTextColorHex
-                      : shift.lightTextColorHex,
-                }}
+                style={
+                  shift.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? shift.darkColorHex
+                            : shift.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? shift.darkColorHex
+                            : shift.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? shift.darkTextColorHex
+                            : shift.lightTextColorHex,
+                      }
+                }
               >
                 {shift.name}
               </span>
@@ -527,16 +588,28 @@ const UnitsClient = (props: Props) => {
               <span
                 key={id}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? stopType.darkColorHex
-                      : stopType.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? stopType.darkTextColorHex
-                      : stopType.lightTextColorHex,
-                }}
+                style={
+                  stopType.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? stopType.darkColorHex
+                            : stopType.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? stopType.darkColorHex
+                            : stopType.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? stopType.darkTextColorHex
+                            : stopType.lightTextColorHex,
+                      }
+                }
               >
                 {stopType.name}
               </span>
@@ -550,13 +623,13 @@ const UnitsClient = (props: Props) => {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
-      labelAsc: t("Units/hidden units"),
-      labelDesc: t("Units/visible units"),
+      labelAsc: t("Units/visible units"),
+      labelDesc: t("Units/hidden units"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: UnitItem) => (
         <span
-          className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
           {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
         </span>
@@ -740,6 +813,13 @@ const UnitsClient = (props: Props) => {
       })),
     },
   ];
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Units");
+  }, []);
 
   return (
     <>

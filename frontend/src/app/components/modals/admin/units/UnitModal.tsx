@@ -21,6 +21,7 @@ import { useTranslations } from "next-intl";
 import { unitConstraints } from "@/app/helpers/inputConstraints";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import HoverIcon from "@/app/components/common/HoverIcon";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -69,10 +70,12 @@ const UnitModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [isHidden, setIsHidden] = useState(false);
   const [lightColorHex, setLightColorHex] = useState("#212121");
   const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
+  const [reverseColor, setReverseColor] = useState(false);
   const [unitGroup, setUnitGroup] = useState("");
   const [unitColumnIds, setUnitColumnIds] = useState<number[]>([]);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
@@ -98,6 +101,7 @@ const UnitModal = (props: Props) => {
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
   const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
+  const [originalReverseColor, setOriginalReverseColor] = useState(false);
   const [originalIsPlannable, setOriginalIsPlannable] = useState(false);
   const [originalMasterPlan, setOriginalMasterPlan] = useState("");
   const [isDirty, setIsDirty] = useState(false);
@@ -136,6 +140,9 @@ const UnitModal = (props: Props) => {
       setDarkColorHex("#e0e0e0");
       setOriginalDarkColorHex("#e0e0e0");
 
+      setReverseColor(false);
+      setOriginalReverseColor(false);
+
       setUnitGroup("");
       setOriginalUnitGroup("");
 
@@ -160,9 +167,10 @@ const UnitModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add unit ---
-  const addUnit = async (event: FormEvent) => {
+  // --- Create unit ---
+  const createUnit = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/unit/create`, {
@@ -176,6 +184,7 @@ const UnitModal = (props: Props) => {
           name,
           lightColorHex,
           darkColorHex,
+          reverseColor,
           unitGroupId: parseInt(unitGroup),
           isHidden,
           unitColumnIds,
@@ -230,9 +239,11 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Modal/created"), 4000);
+      notify("success", t("Common/Unit") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -425,6 +436,9 @@ const UnitModal = (props: Props) => {
     setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
     setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
 
+    setReverseColor(result.reverseColor ?? false);
+    setOriginalReverseColor(result.reverseColor ?? false);
+
     setUnitColumnIds(result.unitColumnIds ?? []);
     setOriginalUnitColumnIds(result.unitColumnIds ?? []);
 
@@ -447,6 +461,7 @@ const UnitModal = (props: Props) => {
   // --- Update unit ---
   const updateUnit = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/unit/update/${props.itemId}`, {
@@ -460,6 +475,7 @@ const UnitModal = (props: Props) => {
           name,
           lightColorHex,
           darkColorHex,
+          reverseColor,
           unitGroupId: parseInt(unitGroup),
           isHidden,
           unitColumnIds,
@@ -514,9 +530,11 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Unit") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -543,16 +561,16 @@ const UnitModal = (props: Props) => {
       <>
         <button
           disabled={isDragging}
-          className={`${roundedButtonClass} group w-auto gap-2 !bg-[var(--bg-modal-link)] px-4`}
+          className={`${roundedButtonClass} group w-auto gap-2 bg-(--bg-modal-link)! px-4`}
           onClick={onDelete}
         >
           <span
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} truncate font-semibold transition-colors duration-[var(--fast)]`}
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} truncate font-semibold transition-colors duration-(--fast)`}
           >
             {label}
           </span>
           <XMarkIcon
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} h-6 w-6 transition-[color,rotate] duration-[var(--fast)]`}
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} h-6 w-6 transition-[color,rotate] duration-(--fast)`}
           />
         </button>
       </>
@@ -568,6 +586,7 @@ const UnitModal = (props: Props) => {
         isHidden !== false ||
         lightColorHex !== "#212121" ||
         darkColorHex !== "#e0e0e0" ||
+        reverseColor !== false ||
         JSON.stringify(unitColumnIds) !==
           JSON.stringify(originalUnitColumnIds) ||
         JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
@@ -586,6 +605,7 @@ const UnitModal = (props: Props) => {
       isHidden !== originalIsHidden ||
       lightColorHex !== originalLightColorHex ||
       darkColorHex !== originalDarkColorHex ||
+      reverseColor !== originalReverseColor ||
       JSON.stringify(unitColumnIds) !== JSON.stringify(originalUnitColumnIds) ||
       JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
       JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds) ||
@@ -600,6 +620,7 @@ const UnitModal = (props: Props) => {
     isHidden,
     lightColorHex,
     darkColorHex,
+    reverseColor,
     unitColumnIds,
     categoryIds,
     shiftIds,
@@ -611,6 +632,7 @@ const UnitModal = (props: Props) => {
     originalIsHidden,
     originalLightColorHex,
     originalDarkColorHex,
+    originalReverseColor,
     originalUnitColumnIds,
     originalCategoryIds,
     originalShiftIds,
@@ -624,7 +646,7 @@ const UnitModal = (props: Props) => {
       {props.isOpen && (
         <form
           ref={formRef}
-          onSubmit={(e) => (props.itemId ? updateUnit(e) : addUnit(e))}
+          onSubmit={(e) => (props.itemId ? updateUnit(e) : createUnit(e))}
         >
           <ModalBase
             ref={modalRef}
@@ -641,11 +663,11 @@ const UnitModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
@@ -693,29 +715,56 @@ const UnitModal = (props: Props) => {
                   onModal
                 />
 
-                <div className="flex items-center gap-2 truncate">
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isPlannable}
-                    className={switchClass(isPlannable)}
-                    onClick={() => setIsPlannable((prev) => !prev)}
-                  >
-                    <div className={switchKnobClass(isPlannable)} />
-                  </button>
-                  {t("UnitModal/Follow master plan")}
-                  <CustomTooltip
-                    content={t("UnitModal/Tooltip master plan")}
-                    showOnTouch
-                  >
-                    <span className="group min-h-4 min-w-4 cursor-help">
-                      <HoverIcon
-                        outline={Outline.InformationCircleIcon}
-                        solid={Solid.InformationCircleIcon}
-                        className="flex"
-                      />
-                    </span>
-                  </CustomTooltip>
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-center gap-2 truncate">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={reverseColor}
+                      className={switchClass(reverseColor)}
+                      onClick={() => setReverseColor((prev) => !prev)}
+                    >
+                      <div className={switchKnobClass(reverseColor)} />
+                    </button>
+                    {t("Modal/Reverse color")}
+                    <CustomTooltip
+                      content={t("Modal/Tooltip reverse color")}
+                      showOnTouch
+                    >
+                      <span className="group min-h-4 min-w-4 cursor-help">
+                        <HoverIcon
+                          outline={Outline.InformationCircleIcon}
+                          solid={Solid.InformationCircleIcon}
+                          className="flex"
+                        />
+                      </span>
+                    </CustomTooltip>
+                  </div>
+
+                  <div className="flex items-center gap-2 truncate">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isPlannable}
+                      className={switchClass(isPlannable)}
+                      onClick={() => setIsPlannable((prev) => !prev)}
+                    >
+                      <div className={switchKnobClass(isPlannable)} />
+                    </button>
+                    {t("UnitModal/Follow master plan")}
+                    <CustomTooltip
+                      content={t("UnitModal/Tooltip master plan")}
+                      showOnTouch
+                    >
+                      <span className="group min-h-4 min-w-4 cursor-help">
+                        <HoverIcon
+                          outline={Outline.InformationCircleIcon}
+                          solid={Solid.InformationCircleIcon}
+                          className="flex"
+                        />
+                      </span>
+                    </CustomTooltip>
+                  </div>
                 </div>
               </div>
               {isPlannable && (
@@ -736,11 +785,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info2")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <MultiDropdown
@@ -781,7 +830,7 @@ const UnitModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
                       t("Common/column") +
                       t("Modal/Drag and drop3")}
@@ -790,11 +839,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info3")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <MultiDropdown
@@ -835,7 +884,7 @@ const UnitModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
                       t("Common/category") +
                       t("Modal/Drag and drop3")}
@@ -844,11 +893,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info4")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <MultiDropdown
@@ -888,7 +937,7 @@ const UnitModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
                       t("Common/shift") +
                       t("Modal/Drag and drop3")}
@@ -897,11 +946,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info5")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <MultiDropdown
@@ -944,7 +993,7 @@ const UnitModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
                       t("Common/stop type") +
                       t("Modal/Drag and drop3")}
@@ -953,11 +1002,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("Common/Status")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="mb-8">
@@ -981,8 +1030,23 @@ const UnitModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

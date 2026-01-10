@@ -13,6 +13,6 @@ namespace backend.Dtos.MasterPlan
         public MasterPlanFieldDataType DataType { get; set; }
         public MasterPlanFieldAlignment Alignment { get; set; } = MasterPlanFieldAlignment.Left;
         public bool IsHidden { get; set; }
-        public int[]? MasterPlanIds { get; set; }
+        // public int[]? MasterPlanIds { get; set; }
     }
 }

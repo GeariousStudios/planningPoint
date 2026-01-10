@@ -170,7 +170,7 @@ const SettingsModal = (props: Props) => {
         return;
       }
 
-      notify("success", t("SettingsModal/Profile") + t("Modal/updated"), 4000);
+      notify("success", t("SettingsModal/Profile") + t("Modal/updated1"), 4000);
       setEditingField(null);
 
       if (props.onProfileUpdated) {
@@ -207,7 +207,7 @@ const SettingsModal = (props: Props) => {
   }, [props.isOpen]);
 
   // --- CLASSES ---
-  const hrClass = "mt-4 mb-4 rounded-full text-[var(--border-tertiary)]";
+  const hrClass = "mt-4 mb-4 rounded-full text-(--border-tertiary)";
   const itemRowClass = "flex-wrap flex items-center justify-between gap-2";
 
   return (
@@ -221,7 +221,7 @@ const SettingsModal = (props: Props) => {
       <ModalBase.Content>
         <div className="flex h-128 flex-col gap-4 sm:flex-row">
           {/* --- BUTTONS --- */}
-          <ul className="flex flex-wrap gap-2 rounded-lg bg-[var(--bg-navbar)] p-2 sm:flex-1 sm:flex-col sm:gap-0 sm:bg-transparent sm:p-0">
+          <ul className="flex flex-wrap gap-2 rounded-lg bg-(--bg-navbar) p-2 sm:flex-1 sm:flex-col sm:gap-0 sm:bg-transparent sm:p-0">
             {/* --- General --- */}
             <li>
               <ModalLink

@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -150,13 +151,19 @@ const UnitColumnsClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name, units",
+      key: "name, dataType, units, hasData",
       getValue: (item: UnitColumnItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
             </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("MasterPlanFieldModal/Data type")}:
+            </span>
+            <span className="-mt-2">{t("Common/" + item.dataType)}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
@@ -177,22 +184,44 @@ const UnitColumnsClient = (props: Props) => {
                   <span
                     key={i}
                     className={badgeClass}
-                    style={{
-                      backgroundColor:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkColorHex
-                          : matchingUnit?.lightColorHex,
-                      color:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkTextColorHex
-                          : matchingUnit?.lightTextColorHex,
-                    }}
+                    style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
                   >
                     {label}
                   </span>
                 );
               })
             )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Columns/Has data")}:
+            </span>
+            <span
+              className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
+            >
+              {item.hasData ? t("Common/Yes") : t("Common/No")}
+            </span>
           </div>
         </div>
       ),
@@ -230,10 +259,21 @@ const UnitColumnsClient = (props: Props) => {
       getValue: (item: UnitColumnItem) => item.name,
       responsivePriority: 0,
     },
+    // {
+    //   key: "datatyp",
+    //   label: t("Columns/Data type"),
+    //   getValue: (item: UnitColumnItem) => item.dataType,
+    //   responsivePriority: 1,
+    // },
     {
-      key: "datatyp",
+      key: "dataType",
       label: t("Columns/Data type"),
-      getValue: (item: UnitColumnItem) => item.dataType,
+      sortingItem: "datatype",
+      labelAsc: t("Columns/data type") + " Ö-A",
+      labelDesc: t("Columns/data type") + " A-Ö",
+      getValue: (item: UnitColumnItem) => (
+        <span>{t("Common/" + item.dataType)}</span>
+      ),
       responsivePriority: 1,
     },
     {
@@ -256,16 +296,28 @@ const UnitColumnsClient = (props: Props) => {
               <span
                 key={i}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkColorHex
-                      : matchingUnit?.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkTextColorHex
-                      : matchingUnit?.lightTextColorHex,
-                }}
+                style={
+                  matchingUnit?.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkTextColorHex
+                            : matchingUnit?.lightTextColorHex,
+                      }
+                }
               >
                 {label}
               </span>
@@ -285,7 +337,7 @@ const UnitColumnsClient = (props: Props) => {
       childClassNameAddition: "w-[92px] min-w-[92px]",
       getValue: (item: UnitColumnItem) => (
         <span
-          className={`${badgeClass} ${item.hasData ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+          className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
           {item.hasData ? t("Common/Yes") : t("Common/No")}
         </span>
@@ -406,6 +458,13 @@ const UnitColumnsClient = (props: Props) => {
       (item) => deletingItemIds.includes(item.id) && item.hasData,
     );
   };
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Unit columns");
+  }, []);
 
   return (
     <>

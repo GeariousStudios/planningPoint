@@ -12,6 +12,9 @@ namespace backend.Models
         public bool IsHidden { get; set; }
         public int UnitGroupId { get; set; }
         public required UnitGroup UnitGroup { get; set; }
+        public bool AllowRemovingElements { get; set; }
+        public bool AllowImport { get; set; }
+        public bool ReplaceOnImport { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }
@@ -27,5 +30,6 @@ namespace backend.Models
         public List<MasterPlanToMasterPlanField> MasterPlanToMasterPlanFields { get; set; } = new();
         public List<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; } =
             new();
+        public List<MasterPlanFieldMapping> FieldMappings { get; set; } = new();
     }
 }

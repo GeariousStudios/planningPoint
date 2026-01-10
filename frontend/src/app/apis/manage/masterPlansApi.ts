@@ -35,6 +35,20 @@ export const fetchContent = async ({
     params.append("isHidden", String(filters.isHidden));
   }
 
+  if (filters?.allowRemovingElements !== undefined) {
+    params.append(
+      "allowRemovingElements",
+      String(filters.allowRemovingElements),
+    );
+  }
+
+  if (filters?.allowImport !== undefined) {
+    params.append(
+      "allowImport",
+      String(filters.allowImport),
+    );
+  }
+
   if (filters?.unitGroupIds) {
     for (const id of filters.unitGroupIds) {
       params.append("unitGroupIds", id.toString());
@@ -146,7 +160,7 @@ export const fetchMasterPlanFields = async (): Promise<
 
   const result = await response.json();
 
-  return Array.isArray(result) ? result : [];
+  return result.items ?? [];
 };
 
 export type UnitOption = {
@@ -155,6 +169,7 @@ export type UnitOption = {
   unitGroupName?: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
   masterPlanId?: number;

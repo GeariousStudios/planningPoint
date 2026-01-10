@@ -7,7 +7,7 @@ using backend.Data;
 
 #nullable disable
 
-namespace eCommerce.Migrations
+namespace planningPoint.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -130,12 +130,19 @@ namespace eCommerce.Migrations
                     b.Property<int>("MasterPlanFieldId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsGroupKey")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Order")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("MasterPlanId", "MasterPlanFieldId");
 
                     b.HasIndex("MasterPlanFieldId");
+
+                    b.HasIndex("MasterPlanId")
+                        .IsUnique()
+                        .HasFilter("[IsGroupKey] = 1");
 
                     b.ToTable("MasterPlanToMasterPlanFields");
                 });
@@ -294,6 +301,12 @@ namespace eCommerce.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("AllowImport")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("AllowRemovingElements")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("CheckedOutAt")
                         .HasColumnType("TEXT");
 
@@ -317,6 +330,9 @@ namespace eCommerce.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("ReplaceOnImport")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("UnitGroupId")
                         .HasColumnType("INTEGER");
@@ -447,6 +463,32 @@ namespace eCommerce.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MasterPlanFields");
+                });
+
+            modelBuilder.Entity("backend.Models.MasterPlanFieldMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ExcelColumn")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FieldId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MasterPlanId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FieldId");
+
+                    b.HasIndex("MasterPlanId");
+
+                    b.ToTable("MasterPlanFieldMappings");
                 });
 
             modelBuilder.Entity("backend.Models.News", b =>
@@ -616,6 +658,9 @@ namespace eCommerce.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("ReverseColor")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("SystemKey")
                         .HasColumnType("INTEGER");
 
@@ -642,6 +687,7 @@ namespace eCommerce.Migrations
                             IsHidden = false,
                             LightColorHex = "#212121",
                             Name = "Unmanned",
+                            ReverseColor = false,
                             SystemKey = 0,
                             UpdateDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
                             UpdatedBy = "system"
@@ -678,6 +724,9 @@ namespace eCommerce.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("ReverseColor")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdateDate")
                         .HasColumnType("TEXT");
@@ -721,6 +770,9 @@ namespace eCommerce.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("ReverseColor")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdateDate")
                         .HasColumnType("TEXT");
@@ -864,6 +916,9 @@ namespace eCommerce.Migrations
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("ReverseColor")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("UnitGroupId")
                         .HasColumnType("INTEGER");
@@ -1378,6 +1433,25 @@ namespace eCommerce.Migrations
                     b.Navigation("MasterPlanField");
                 });
 
+            modelBuilder.Entity("backend.Models.MasterPlanFieldMapping", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlanField", "Field")
+                        .WithMany("FieldMappings")
+                        .HasForeignKey("FieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
+                        .WithMany("FieldMappings")
+                        .HasForeignKey("MasterPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Field");
+
+                    b.Navigation("MasterPlan");
+                });
+
             modelBuilder.Entity("backend.Models.Report", b =>
                 {
                     b.HasOne("backend.Models.Unit", "Unit")
@@ -1473,6 +1547,8 @@ namespace eCommerce.Migrations
 
             modelBuilder.Entity("backend.Models.MasterPlan", b =>
                 {
+                    b.Navigation("FieldMappings");
+
                     b.Navigation("MasterPlanToMasterPlanElements");
 
                     b.Navigation("MasterPlanToMasterPlanFields");
@@ -1487,6 +1563,8 @@ namespace eCommerce.Migrations
 
             modelBuilder.Entity("backend.Models.MasterPlanField", b =>
                 {
+                    b.Navigation("FieldMappings");
+
                     b.Navigation("MasterPlanToMasterPlanFields");
                 });
 
