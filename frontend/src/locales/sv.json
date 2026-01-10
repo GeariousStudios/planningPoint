@@ -361,7 +361,7 @@
   "ReportModal/Stop time": "Stopptid",
 
   "ShiftModal/Info1": "Uppgifter om skiftet",
-  "ShiftModal/Info2": "Lag",
+  "ShiftModal/Info2": "Arbetsschema",
   "ShiftModal/Hide shift": "Dölj skift",
   "ShiftModal/Display name": "Visningsnamn",
   "ShiftModal/TimesOverlap": "Tiderna för lag får inte överlappa",

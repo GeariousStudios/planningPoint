@@ -27,6 +27,7 @@ import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -812,6 +813,13 @@ const UnitsClient = (props: Props) => {
       })),
     },
   ];
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Units");
+  }, []);
 
   return (
     <>

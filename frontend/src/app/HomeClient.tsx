@@ -33,6 +33,7 @@ import { utcIsoToLocalDateTime } from "./helpers/timeUtils";
 import TrendingPanel from "./components/pulse/TrendingPanel";
 import DragDrop from "./components/common/DragDrop";
 import LoadingSpinner from "./components/common/LoadingSpinner";
+import { useHandbook } from "./context/HandbookContext";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -459,6 +460,13 @@ const HomeClient = (props: Props) => {
         return "col-span-1";
     }
   };
+
+  // --- Update handbook ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Home");
+  }, []);
 
   return (
     <>

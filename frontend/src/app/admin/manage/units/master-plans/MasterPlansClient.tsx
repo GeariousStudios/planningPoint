@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -159,7 +160,7 @@ const MasterPlansClient = (props: Props) => {
     {
       key: "name, units, isHidden, fields, unitGroupName, allowRemovingElements",
       getValue: (item: MasterPlanItem) => (
-        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-4 text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
@@ -234,12 +235,14 @@ const MasterPlansClient = (props: Props) => {
               })
             )}
           </div>
-           <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
             <span
               className={`${badgeClass} ${!item.allowRemovingElements ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
-              {item.allowRemovingElements ? t("Manage/Allowed") : t("Manage/Disallowed")}
+              {item.allowRemovingElements
+                ? t("Manage/Allowed")
+                : t("Manage/Disallowed")}
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -336,27 +339,27 @@ const MasterPlansClient = (props: Props) => {
                 key={i}
                 className={badgeClass}
                 style={
-                      matchingUnit?.reverseColor
-                        ? {
-                            boxShadow: `inset 0 0 0 1px ${
-                              currentTheme === "dark"
-                                ? matchingUnit?.darkColorHex
-                                : matchingUnit?.lightColorHex
-                            }`,
-                            backgroundColor: "transparent",
-                            color: "var(--text-main)",
-                          }
-                        : {
-                            backgroundColor:
-                              currentTheme === "dark"
-                                ? matchingUnit?.darkColorHex
-                                : matchingUnit?.lightColorHex,
-                            color:
-                              currentTheme === "dark"
-                                ? matchingUnit?.darkTextColorHex
-                                : matchingUnit?.lightTextColorHex,
-                          }
-                    }
+                  matchingUnit?.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkTextColorHex
+                            : matchingUnit?.lightTextColorHex,
+                      }
+                }
               >
                 {label}
               </span>
@@ -376,7 +379,7 @@ const MasterPlansClient = (props: Props) => {
       childClassNameAddition: "w-[88px] min-w-[88px]",
       getValue: (item: MasterPlanItem) => (
         <span
-          className={`${badgeClass} ${item.allowRemovingElements ? "bg-(--unlocked)" : "bg-(--locked)"} text-(--text-main-reverse) w-full`}
+          className={`${badgeClass} ${item.allowRemovingElements ? "bg-(--unlocked)" : "bg-(--locked)"} w-full text-(--text-main-reverse)`}
         >
           {item.allowRemovingElements
             ? t("Manage/Allowed")
@@ -395,7 +398,7 @@ const MasterPlansClient = (props: Props) => {
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: MasterPlanItem) => (
         <span
-          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
+          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
           {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
         </span>
@@ -562,6 +565,13 @@ const MasterPlansClient = (props: Props) => {
   //     (item) => deletingItemIds.includes(item.id) && item.units.length > 0,
   //   );
   // };
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Master plans");
+  }, []);
 
   return (
     <>

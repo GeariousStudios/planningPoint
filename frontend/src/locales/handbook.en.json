@@ -1,0 +1,55 @@
+{
+  "Handbook//Title": "Handbook",
+  "Handbook//Body": "<p>There is no content here yet.</p>",
+
+  "Handbook/Common/Handbook": "Handbook",
+  "Handbook/Common/Close handbook": "Close handbook",
+
+  "Handbook/News types/Title": "Manage news types",
+  "Handbook/News types/Body": "<p>Here you can add, edit or delete news types.</p> <br></br> <p>News types are used to categorize news published on the homepage.</p>",
+
+  "Handbook/Stop types/Title": "Manage stop types for units",
+  "Handbook/Stop types/Body": "<p>Here you can add, edit or delete stop types for units.</p> <br></br> <p>Stop types for units are used to describe what type of planned stop is taking place.</p> <br></br> <p><danger><b>Currently not in use.</b></danger></p>",
+
+  "Handbook/Shifts/Title": "Manage shifts",
+  "Handbook/Shifts/Body": "<p>Here you can add, edit or delete shifts.</p> <br></br> <p>Shifts are used alongside teams to show who is working, has worked, and will work. This can facilitate and enable trend analyses, follow-ups, etc.</p> <hr></hr> <p><b>Cycle length (weeks) - </b>Used to specify the length of a schedule cycle. If the work schedule always looks the same, this can be left at 1 week.</p> <br></br> <p><b>Reference week - </b>Only filled in when a new shift is created and cannot be edited afterwards. This is used so that week 1 has a reference point.</p> <br></br> <p><b>Teams - </b>Select which teams will work in this schedule. For example: If you create a 3-shift schedule, you should select 3 teams.</p>",
+
+  "Handbook/Shift teams/Title": "Manage teams",
+  "Handbook/Shift teams/Body": "<p>Here you can add, edit or delete teams.</p> <br></br> <p>Teams are used alongside shifts to show who is working, has worked, and will work. This can facilitate and enable trend analyses, follow-ups, etc.</p> <br></br> <p>A team can be used in multiple shifts. Example: If you have a team named \"Shift 1\" you can use it in your 3-shift and 5-shift.</p>",
+
+  "Handbook/Unit groups/Title": "Manage unit groups",
+  "Handbook/Unit groups/Body": "<p>Here you can add, edit or delete unit groups.</p> <br></br> <p>Unit groups are used to categorize units.</p>",
+
+  "Handbook/Units/Title": "Manage units",
+  "Handbook/Units/Body": "<p>Here you can add, edit or delete units.</p> <br></br> <p>Units are used to represent individual entities within the system. Example: A business has a production line called \"Filling\". This line can then be created as a unit with the same name.</p> <hr></hr> <p><b>Group - </b>Select which group the unit belongs to.</p> <br></br> <p><b>Plannable - </b>Whether the unit can be used for planning or not. If disabled, the unit will only be usable for reporting.</p> <br></br> <p><b>Columns - </b>These are used to report data in the reporting view. Example: If it is desired that a unit can report the hourly production output, a column needs to be added for this.</p> <br></br> <p><b>Categories - </b>If the unit reports a disruption, categories can be used to specify what type of disruption it is.</p> <br></br> <p><b>Shifts - </b>Select which shift types the unit can be staffed by.</p> <br></br> <p><b>Stop types - </b>Select which stop types the unit can use when reporting planned stops.</p>",
+
+  "Handbook/Categories/Title": "Manage categories",
+  "Handbook/Categories/Body": "<p>Here you can add, edit or delete categories.</p> <br></br> <p>Categories are used to specify types of disruptions on a unit.</p> <hr></hr> <p><b>Sub categories - </b>Here you can create sub categories for a category. Example: If you have a category called \"Machine failure\" you can create sub categories like \"Electrical failure\", \"Mechanical failure\", etc.</p>",
+
+  "Handbook/Unit columns/Title": "Manage unit columns",
+  "Handbook/Unit columns/Body": "<p>Here you can add, edit or delete unit columns.</p> <br></br> <p>Unit columns are used to report specific data related to each unit. Example: If you want to track the hourly production output of a unit, you would add a column for this purpose.</p> <hr></hr> <p><b>Data type - </b>What type of data the column will hold, such as number or text.</p> <br></br> <p><b>(Number only) Compare to previous hour - </b>If enabled, the reported value will be compared to the value from the previous hour to show trends.</p> <br></br> <p><b>(Text only) Large column - </b>If enabled, the column will be displayed larger in the reporting view for easier data entry.</p>",
+
+  "Handbook/Master plans/Title": "Manage master plans",
+  "Handbook/Master plans/Body": "<p>Here you can add, edit or delete master plans.</p> <br></br> <p>Master plans are used to plan activities within a unit.</p> <hr></hr> <p><b>Fields - </b>Here you can specify which fields can be filled in. Example: <i>Planned start date</i>, <i>Material number</i>, and <i>Material description</i>.</p> <br></br> <p><b>Allow removing elements - </b>If enabled, elements in the master plan can be removed after they have been created. Note that an element can always be striked through.</p>",
+
+  "Handbook/Master plan fields/Title": "Manage master plan fields",
+  "Handbook/Master plan fields/Body": "<p>Here you can add, edit or delete master plan fields.</p> <br></br> <p>Master plan fields are used to describe activities in the master plan.</p> <hr></hr> <p><b>Data type - </b>What type of data the column will hold, such as number, text, or date.</p> <br></br> <p><b>Alignment - </b>Whether the content in each cell should be left-aligned, centered, or right-aligned.</p>",
+
+  "Handbook/Import rules/Title": "Manage import rules",
+  "Handbook/Import rules/Body": "<p>If you wish to import Excel files for master plans, you need to map fields here. Example: The field <i>Planned start date</i> should get its data from the column named BC in the Excel file.</p> <br></br> <p>Fields that arent mapped will not be imported.</p>",
+
+  "Handbook/Users/Title": "Manage users",
+  "Handbook/Users/Body": "<p>Here you can add, edit or delete users.</p> <hr></hr> <p><b>Administrator - </b>An administrator can manage most of the system except user data.</p> <br></br> <p><b>Developer - </b>A developer can manage everything in the system.</p> <br></br> <p><b>Reporter - </b>A reporter can report in the system.</p> <br></br> <p><b>Planner - </b>A planner can view planning in the system.</p> <br></br> <p><b>Master Planner - </b>A master planner can view and manage planning in the system.</p>",
+
+  "Handbook/Audit trail/Title": "Audit trail",
+  "Handbook/Audit trail/Body": "<p>All events that change data in the system are logged here. You can only see information based on your permissions.</p>",
+
+  "Handbook/Home/Title": "Home page",
+  "Handbook/Home/Body": "<p>Here you can log in and see news. Users who are logged in can create trend panels to customize the tracking of data in the system.</p> <br></br> <p>Administrators can create, edit, or delete news on the home page.</p>",
+
+  "Handbook/Unit/Title": "Reporting view for unit",
+  "Handbook/Unit/Body": "<p>All users can view reporting for a unit, but the <i>Reporter</i> permission is required to actually report.</p> <br></br> <p>To report data in a column, click the <i>Report data</i> button at the top left or click the pencil in the cell you want to report in.</p> <br></br> <p>To report an event, such as a disruption, click the <i>Report events</i> button at the top left or click the row you want to report in and then the plus sign.</p> <br></br> <p>To change the staffing type, click the <i>Change staffing type</i> button at the top right.</p>",
+
+  "Handbook/Master plan/Title": "Master planning",
+  "Handbook/Master plan/Body": "<p>All users can view master planning, but the <i>Master Planner</i> permission is required to make changes to the master plan.</p> <br></br> <p>To make changes, the plan must first be checked out. Note that if you force a checkout, the person who had checked out the plan will lose their changes.</p> <br></br> <p>Once you have checked out the plan, you can:</p> <ul><li>Choose whether you want to affect a single element (Element mode) or all elements in the selected element's group (Group mode)</li> <li>Add new elements</li> <li>Duplicate the selected element</li> <li>Edit fields in elements</li> <li>Move elements up and down. Activate <i>Standalone element</i> if you want the selected element not to be able to connect to existing groups</li> <li>Strike through elements</li> <li>Delete elements (if this is allowed for the master plan)</li> <li>Import master plan to import from an Excel document. Note that you need to set up import rules first</li></ul> <p><danger><b>Changing the master plan is not recommended in mobile mode.</b></danger></p>"
+}

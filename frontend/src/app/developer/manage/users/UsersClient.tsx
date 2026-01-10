@@ -12,6 +12,8 @@ import { LockClosedIcon, WifiIcon } from "@heroicons/react/20/solid";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -145,14 +147,14 @@ const UsersClient = (props: Props) => {
     {
       key: "username, firstName, lastName, roles, isOnline",
       getValue: (item: UserItem) => (
-        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
               <span className="flex items-center gap-2">
                 {item.username}{" "}
                 {item.isLocked && (
                   <CustomTooltip content={t("Users/Locked user")} showOnTouch>
-                    <LockClosedIcon className="text-(--locked) h-5 w-5 cursor-help" />
+                    <LockClosedIcon className="h-5 w-5 cursor-help text-(--locked)" />
                   </CustomTooltip>
                 )}
               </span>
@@ -282,7 +284,7 @@ const UsersClient = (props: Props) => {
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: UserItem) => (
         <span
-          className={`${badgeClass} ${item.isLocked ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
+          className={`${badgeClass} ${item.isLocked ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
           {item.isLocked ? t("Users/Locked") : t("Users/Unlocked")}
         </span>
@@ -416,6 +418,13 @@ const UsersClient = (props: Props) => {
       ],
     },
   ];
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Users");
+  }, []);
 
   return (
     <>

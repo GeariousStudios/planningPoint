@@ -9,6 +9,11 @@ const messagesMap: Record<string, () => Promise<any>> = {
   en: () => import("@/locales/en.json"),
 };
 
+const handbookMessagesMap: Record<string, () => Promise<any>> = {
+  sv: () => import("@/locales/handbook.sv.json"),
+  en: () => import("@/locales/handbook.en.json"),
+};
+
 export default function DynamicIntlProvider({
   children,
 }: {
@@ -23,9 +28,14 @@ export default function DynamicIntlProvider({
 
     setLocale(lang);
 
-    messagesMap[lang]().then((mod) => {
-      setMessages(mod.default);
-    });
+     Promise.all([messagesMap[lang](), handbookMessagesMap[lang]()]).then(
+      ([baseMod, handbookMod]) => {
+        setMessages({
+          ...baseMod.default,
+          ...handbookMod.default,
+        });
+      },
+    );
   }, [currentLanguage]);
 
   if (!messages || Object.keys(messages).length === 0) return null;

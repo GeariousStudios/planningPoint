@@ -1,0 +1,55 @@
+{
+  "Handbook//Title": "Handbok",
+  "Handbook//Body": "<p>Det finns inget innehåll här ännu.</p>",
+
+  "Handbook/Common/Handbook": "Handbok",
+  "Handbook/Common/Close handbook": "Stäng handbok",
+
+  "Handbook/News types/Title": "Hantera nyhetstyper",
+  "Handbook/News types/Body": "<p>Här kan du skapa, redigera eller ta bort nyhetstyper.</p> <br></br> <p>Nyhetstyper används för att kategorisera nyheter som publiceras på startsidan.</p>",
+
+  "Handbook/Stop types/Title": "Hantera stopptyper för enheter",
+  "Handbook/Stop types/Body": "<p>Här kan du skapa, redigera eller ta bort stopptyper för enheter.</p> <br></br> <p>Stopptyper för enheter används för att beskriva vilken typ av planerat stopp som pågår.</p> <br></br> <p><danger><b>För närvarande ej i bruk.</b></danger></p>",
+
+  "Handbook/Shifts/Title": "Hantera skift",
+  "Handbook/Shifts/Body": "<p>Här kan du skapa, redigera eller ta bort skift.</p> <br></br> <p>Skift används tillsammans med lag för att visa vilka som arbetar, har arbetat och kommer att arbeta. Detta kan underlätta och möjliggöra trendanalyser, uppföljningar, med mera.</p> <hr></hr> <p><b>Cykellängd (veckor) - </b>Används för att ange längden på en schemacykel. Om arbetsschemat alltid ser likadant ut så kan denna lämnas på 1 vecka.</p> <br></br> <p><b>Referensvecka - </b>Fylls endast i när ett nytt skift skapas och kan inte ändras efteråt. Denna används för att vecka 1 ska ha en referenspunkt.</p> <br></br> <p><b>Lag - </b>Välj vilka lag som ska arbeta i detta schema. Exempel: Skapar du ett 3-skift så bör du välja 3 lag.</p>",
+
+  "Handbook/Shift teams/Title": "Hantera lag",
+  "Handbook/Shift teams/Body": "<p>Här kan du skapa, redigera eller ta bort lag.</p> <br></br> <p>Lag används tillsammans med skift för att visa vilka som arbetar, har arbetat och kommer att arbeta. Detta kan underlätta och möjliggöra trendanalyser, uppföljningar, etc.</p> <br></br> <p>Ett lag kan användas i flera skift. Exempel: Om du har ett lag som heter \"Skift 1\" kan du använda det i ditt 3-skift och 5-skift.</p>",
+
+  "Handbook/Unit groups/Title": "Hantera enhetsgrupper",
+  "Handbook/Unit groups/Body": "<p>Här kan du skapa, redigera eller ta bort enhetsgrupper.</p> <br></br> <p>Enhetsgrupper används för att kategorisera enheter.</p>",
+
+  "Handbook/Units/Title": "Hantera enheter",
+  "Handbook/Units/Body": "<p>Här kan du skapa, redigera eller ta bort enheter.</p> <br></br> <p>Enheter används för att representera individuella objekt inom systemet. Exempel: En verksamhet har en produktionslinje som heter \"Fyllning\". Denna linje kan då skapas som en enhet med samma namn.</p> <hr></hr> <p><b>Grupp - </b>Välj vilken grupp som enheten tillhör.</p> <br></br> <p><b>Planeringsbar - </b>Om enheten ska kunna användas vid planering eller inte. Om denna är inaktiverad så kommer enheten endast att kunna användas för rapportering.</p> <br></br> <p><b>Kolumner - </b>Dessa används för att rapportera data i rapporteringsvyn. Exempel: Om det önskas att en enhet ska kunna rapportera hur mycket som är producerat på linjen varje timme så behöver en kolumn läggas till för detta.</p> <br></br> <p><b>Kategorier - </b>Om enheten rapporterar en händelse så kan kategorier användas för att specificera vilken typ av händelse det är.</p> <br></br> <p><b>Skift - </b>Välj vilka skifttyper som enheten ska kunna bemannas av.</p> <br></br> <p><b>Stopptyper - </b>Välj vilka stopptyper som enheten kan använda vid rapportering av planerade stopp.</p>",
+
+  "Handbook/Categories/Title": "Hantera kategorier",
+  "Handbook/Categories/Body": "<p>Här kan du skapa, redigera eller ta bort kategorier.</p> <br></br> <p>Kategorier används för att specificera händelsetyper på en enhet.</p> <hr></hr> <p><b>Underkategorier - </b>Här kan du skapa underkategorier för en kategori. Exempel: Om du har en kategori som heter \"Maskinfel\" kan du skapa underkategorier som \"Elektriskt fel\", \"Mekaniskt fel\", etc.</p>",
+
+  "Handbook/Unit columns/Title": "Hantera enhetskolumner",
+  "Handbook/Unit columns/Body": "<p>Här kan du skapa, redigera eller ta bort enhetskolumner.</p> <br></br> <p>Enhetskolumner används för att rapportera specifik data relaterad till varje enhet. Exempel: Om du vill spåra den hur mycket enheten producerar varje timme, skulle du lägga till en kolumn för detta ändamål.</p> <hr></hr> <p><b>Datatyp - </b>Vilken typ av data kolumnen kommer att innehålla, såsom nummer eller text.</p> <br></br> <p><b>(Endast nummer) Jämför med föregående timme - </b>Om aktiverad kommer det rapporterade värdet att jämföras med värdet från föregående timme för att visa trender.</p> <br></br> <p><b>(Endast text) Lång kolumn - </b>Om aktiverad kommer kolumnen att visas större i rapporteringsvyn för enklare datainmatning.</p>",
+
+  "Handbook/Master plans/Title": "Hantera huvudplaner",
+  "Handbook/Master plans/Body": "<p>Här kan du skapa, redigera eller ta bort huvudplaner.</p> <br></br> <p>Huvudplaner används för att planera aktiviteter inom en enhet.</p> <hr></hr> <p><b>Fält - </b>Här kan du ange vilka fält som ska kunna fyllas i. Exempel: <i>Planerat startdatum</i>, <i>Materialnummer</i> och <i>Materialbeskrivning</i>.</p> <br></br> <p><b>Tillåt borttagning av element - </b>Om aktiverad kan element i huvudplanen tas bort efter att de har skapats. Notera att ett element alltid kan strykas.</p>",
+
+  "Handbook/Master plan fields/Title": "Hantera fält för huvudplaner",
+  "Handbook/Master plan fields/Body": "<p>Här kan du skapa, redigera eller ta bort fält för huvudplaner.</p> <br></br> <p>Fält för huvudplaner används för att beskriva aktiviteter i huvudplanen.</p> <hr></hr> <p><b>Datatyp - </b>Vilken typ av data kolumnen kommer att innehålla, såsom nummer, text eller datum.</p> <br></br> <p><b>Justering - </b>Om innehållet i varje cell ska vara vänsterjusterat, centrerat eller högerjusterat.</p>",
+
+  "Handbook/Import rules/Title": "Hantera importregler",
+  "Handbook/Import rules/Body": "<p>Om du vill importera Excel-filer för huvudplaner behöver du mappa fält här. Exempel: Fältet <i>Planerat startdatum</i> ska hämta sin data från kolumnen BC i Excel-filen.</p> <br></br> <p>Fält som inte är mappade kommer inte att importeras.</p>",
+
+  "Handbook/Users/Title": "Hantera användare",
+  "Handbook/Users/Body": "<p>Här kan du skapa, redigera eller ta bort användare.</p> <hr></hr> <p><b>Administratör - </b>En administratör kan hantera det mesta i systemet med undantaget användardata.</p> <br></br> <p><b>Utvecklare - </b>En utvecklare kan hantera allt i systemet.</p> <br></br> <p><b>Rapportör - </b>En rapportör kan rapportera i systemet.</p> <br></br> <p><b>Planerare - </b>En planerare kan se och hantera viss typ av planering i systemet.</p> <br></br> <p><b>Huvudplanerare - </b>En huvudplanerare kan hantera all typ av planering i systemet.</p>",
+
+  "Handbook/Audit trail/Title": "Revisionslogg",
+  "Handbook/Audit trail/Body": "<p>Alla händelser som ändrar data i systemet loggas här. Du kan endast se information baserat på dina behörigheter.</p>",
+
+  "Handbook/Home/Title": "Startsida",
+  "Handbook/Home/Body": "<p>Här kan du logga in och se nyheter. Inloggade användare kan skapa trendpaneler för att individanpassa uppföljning av data i systemet.</p> <br></br> <p>Administratörer kan skapa, redigera eller ta bort nyheter på startsidan.</p>",
+
+  "Handbook/Unit/Title": "Rapporteringsvy för enhet",
+  "Handbook/Unit/Body": "<p>Samtliga användare kan läsa rapportering för en enhet men det krävs behörigheten <i>Rapportör</i> för att kunna rapportera.</p> <br></br> <p>För att rapportera data i en kolumn, klicka på knappen <i>Rapportera data</i> uppe till vänster eller klicka på pennan i cellen du vill rapportera i.</p> <br></br> <p>För att rapportera en händelse, t.ex. en driftstörning, klicka på knappen <i>Rapportera händelser</i> uppe till vänster eller klicka på den rad du vill rapportera i och sedan på plusset.</p> <br></br> <p>För att ändra bemanningstyp, klicka på knappen <i>Ändra bemanningstyp</i> uppe till höger.</p>",
+
+  "Handbook/Master plan/Title": "Huvudplanering",
+  "Handbook/Master plan/Body": "<p>Samtliga användare kan se huvudplanering men det krävs behörigheten <i>Huvudplanerare</i> för att kunna göra ändringar i huvudplanen.</p> <br></br> <p>För att göra ändringar så behöver planen först checkas ut. Notera att om du forcerar en utcheckning så kommer personen som hade checkat ut planen att förlora sina ändringar.</p> <br></br> <p>När du har checkat ut planen så kan du:</p> <ul><li>Välja om du vill påverka enskilt element (Elementläge) eller alla element i det markerade elementets grupp (Gruppläge)</li> <li>Lägga till nya element</li> <li>Duplicera markerat element</li> <li>Redigera fält i element</li> <li>Flytta på element upp och ner. Aktivera <i>Fristående element</i> om du vill att det markerade elementet inte ska kunna anslutas till befintliga grupper</li> <li>Stryka element</li> <li>Ta bort element (om detta är tillåtet för huvudplanen)</li> <li>Importera huvudplan för att importera från ett Excel-dokument. Notera att du behöver sätta upp importregler först</li></ul> <p><danger><b>Ändring av huvudplan rekommenderas ej i mobilt läge.</b></danger></p>"
+}

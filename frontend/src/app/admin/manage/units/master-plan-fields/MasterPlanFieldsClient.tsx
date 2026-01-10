@@ -25,6 +25,7 @@ import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
 import { count } from "console";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -432,6 +433,13 @@ const MasterPlanFieldsClient = (props: Props) => {
   //     (item) => deletingItemIds.includes(item.id) && item.units.length > 0,
   //   );
   // };
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Master plan fields");
+  }, []);
 
   return (
     <>

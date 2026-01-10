@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -457,6 +458,13 @@ const UnitColumnsClient = (props: Props) => {
       (item) => deletingItemIds.includes(item.id) && item.hasData,
     );
   };
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Unit columns");
+  }, []);
 
   return (
     <>

@@ -9,7 +9,7 @@ import {
 } from "../../styles/buttonClasses";
 import Message from "../../components/common/Message";
 import CustomTooltip from "../../components/common/CustomTooltip";
-import React from "react";
+import React, { useEffect } from "react";
 import useClient, {
   shiftsClass,
   shiftsIconClass,
@@ -31,6 +31,7 @@ import { badgeClass } from "@/app/components/manage/ManageClasses";
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import ReportModal from "@/app/components/modals/report/ReportModal";
 import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type ShiftChange = {
   id: number;
@@ -50,6 +51,13 @@ const UnitClient = (props: any) => {
     return <Message content="invalid" fullscreen />;
   }
   if (c.isReady) {
+    // --- Update handbook ---
+    const { setHandbook } = useHandbook();
+
+    useEffect(() => {
+      setHandbook("Unit");
+    }, []);
+
     return (
       <>
         {/* --- MODALS --- */}
@@ -1077,14 +1085,6 @@ const UnitClient = (props: any) => {
                                         );
                                       },
                                     );
-
-                                    function toLocalDateString(
-                                      startDate: Date,
-                                    ): string | undefined {
-                                      throw new Error(
-                                        "Function not implemented.",
-                                      );
-                                    }
 
                                     return hourReports.map((report, index) => (
                                       <div

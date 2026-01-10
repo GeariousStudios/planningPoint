@@ -459,10 +459,10 @@ namespace backend.Controllers
             {
                 ["ObjectID"] = report.Id,
                 ["BelongsToUnit"] = $"{report.Unit.Name} (ID: {report.UnitId})",
-                ["StartTime"] = report.StartTime.ToString("yyyy-MM-dd HH:mm"),
-                ["StopTime"] = report.StopTime?.ToString("yyyy-MM-dd HH:mm") ?? "—",
                 ["Category"] = report.CategoryName,
                 ["SubCategory"] = report.SubCategoryName,
+                ["StartTime"] = report.StartTime.ToString("yyyy-MM-dd HH:mm"),
+                ["StopTime"] = report.StopTime?.ToString("yyyy-MM-dd HH:mm") ?? "—",
                 ["Content"] = report.Content,
             };
 

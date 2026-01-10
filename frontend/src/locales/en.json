@@ -361,7 +361,7 @@
   "ReportModal/Stop time": "Stop time",
 
   "ShiftModal/Info1": "Details about the shift",
-  "ShiftModal/Info2": "Teams",
+  "ShiftModal/Info2": "Work schedule",
   "ShiftModal/Hide shift": "Hide shift",
   "ShiftModal/Display name": "Display name",
   "ShiftModal/TimesOverlap": "Team times must not overlap",

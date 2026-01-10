@@ -31,6 +31,7 @@ import { useParams } from "next/navigation";
 import { useMasterPlan } from "@/app/hooks/useMasterPlan";
 import { tdClass, thClass } from "@/app/components/manage/ManageClasses";
 import { useAuth } from "@/app/context/AuthContext";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -108,6 +109,13 @@ const MasterPlanClient = (props: Props) => {
     importFile,
     setImportFile,
   } = useMasterPlan(t, apiUrl, token, masterPlanId);
+
+  // --- Update handbook ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Master plan");
+  }, []);
 
   return (
     <>

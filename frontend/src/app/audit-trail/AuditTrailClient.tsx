@@ -20,6 +20,7 @@ import React from "react";
 import { TdCell, ThCell } from "../components/manage/ManageComponents";
 import Message from "../components/common/Message";
 import SingleDropdown from "../components/common/SingleDropdown";
+import { useHandbook } from "../context/HandbookContext";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -300,9 +301,16 @@ const AuditTrailClient = (props: Props) => {
     );
   };
 
+  // --- Update handbook ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Audit trail");
+  }, []);
+
   return (
     <div className="grid gap-4">
-      <div className="bg-(--bg-modal) grid w-full rounded-2xl">
+      <div className="grid w-full rounded-2xl bg-(--bg-modal)">
         {/* --- HEADER --- */}
         <div className="flex items-center justify-between gap-4 px-6 pt-6">
           <h2 className="text-lg font-semibold whitespace-nowrap">
@@ -332,14 +340,14 @@ const AuditTrailClient = (props: Props) => {
               >
                 {/* --- FILTER SECTION --- */}
                 <div className="grid gap-6">
-                  <hr className="text-(--border-tertiary) -mx-6 mt-6" />
+                  <hr className="-mx-6 mt-6 text-(--border-tertiary)" />
 
                   <div className="flex items-center gap-2">
-                    <hr className="text-(--border-tertiary) w-12" />
-                    <h3 className="text-(--text-secondary) text-sm whitespace-nowrap">
+                    <hr className="w-12 text-(--border-tertiary)" />
+                    <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                       {t("AuditTrail/Filters")}
                     </h3>
-                    <hr className="text-(--border-tertiary) w-full" />
+                    <hr className="w-full text-(--border-tertiary)" />
                   </div>
 
                   <div className="mb-8 grid gap-6">
@@ -381,11 +389,11 @@ const AuditTrailClient = (props: Props) => {
                   {/* --- DATE SECTION --- */}
                   <div className="grid gap-6">
                     <div className="flex items-center gap-2">
-                      <hr className="text-(--border-tertiary) w-12" />
-                      <h3 className="text-(--text-secondary) text-sm whitespace-nowrap">
+                      <hr className="w-12 text-(--border-tertiary)" />
+                      <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                         {t("Common/Date range")}
                       </h3>
-                      <hr className="text-(--border-tertiary) w-full" />
+                      <hr className="w-full text-(--border-tertiary)" />
                     </div>
 
                     <div className="grid grid-cols-1 gap-6">
@@ -478,7 +486,7 @@ const AuditTrailClient = (props: Props) => {
       </div>
 
       {/* --- RESULT LIST --- */}
-      <div className="border-(--border-main) relative w-full overflow-x-auto rounded border">
+      <div className="relative w-full overflow-x-auto rounded border border-(--border-main)">
         <table className="w-full min-w-6xl table-fixed border-collapse">
           <thead className="bg-(--bg-grid-header)">
             <tr>
@@ -547,7 +555,7 @@ const AuditTrailClient = (props: Props) => {
               <tr>
                 <td
                   colSpan={6}
-                  className="text-(--text-secondary) h-57 text-center"
+                  className="h-57 text-center text-(--text-secondary)"
                 >
                   {isLoading ? (
                     <Message icon="loading" content={t("Message/Content")} />
@@ -564,7 +572,7 @@ const AuditTrailClient = (props: Props) => {
                 return (
                   <React.Fragment key={a.id}>
                     <tr
-                      className={`${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} duration-(--fast) hover:bg-(--bg-grid-header-hover) cursor-pointer transition-[background]`}
+                      className={`${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} cursor-pointer transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)`}
                       onClick={() => setExpandedRow(isExpanded ? null : a.id)}
                     >
                       <TdCell classNameAddition="sticky left-0 [background:inherit] z-[calc(var(--z-base)+1)]">
@@ -585,11 +593,11 @@ const AuditTrailClient = (props: Props) => {
                     {/* --- EXPANDED DETAILS --- */}
                     {isExpanded && a.details && (
                       <tr
-                        className={`${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} border-(--border-secondary) border-t-1`}
+                        className={`${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} border-t-1 border-(--border-secondary)`}
                       >
                         <td
                           colSpan={6}
-                          className="text-(--text-secondary) px-4 py-4 text-sm"
+                          className="px-4 py-4 text-sm text-(--text-secondary)"
                         >
                           {(() => {
                             try {
@@ -600,8 +608,8 @@ const AuditTrailClient = (props: Props) => {
                                 return (
                                   <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                     {/* --- Old values --- */}
-                                    <div className="bg-(--bg-modal) rounded p-4">
-                                      <h4 className="text-(--note-error) mb-2 font-semibold uppercase">
+                                    <div className="rounded bg-(--bg-modal) p-4">
+                                      <h4 className="mb-2 font-semibold text-(--note-error) uppercase">
                                         {t("AuditTrail/Before change")}
                                       </h4>
                                       <div className="-mx-4">
@@ -710,8 +718,8 @@ const AuditTrailClient = (props: Props) => {
                                     </div>
 
                                     {/* --- New values --- */}
-                                    <div className="bg-(--bg-modal) rounded p-4">
-                                      <h4 className="text-(--note-success) mb-2 font-semibold uppercase">
+                                    <div className="rounded bg-(--bg-modal) p-4">
+                                      <h4 className="mb-2 font-semibold text-(--note-success) uppercase">
                                         {t("AuditTrail/After change")}
                                       </h4>
                                       <div className="-mx-4">
@@ -824,7 +832,7 @@ const AuditTrailClient = (props: Props) => {
 
                               // --- CREATE or DELETE ---
                               return (
-                                <div className="bg-(--bg-modal) rounded p-4">
+                                <div className="rounded bg-(--bg-modal) p-4">
                                   <h4
                                     className={`${checkIfCreated(a.action) ? "text-(--note-success)" : "text-(--note-error)"} mb-2 font-semibold uppercase`}
                                   >
@@ -931,7 +939,7 @@ const AuditTrailClient = (props: Props) => {
                               );
                             } catch {
                               return (
-                                <span className="text-(--note-error) text-sm">
+                                <span className="text-sm text-(--note-error)">
                                   {t("AuditTrail/Invalid JSON")}
                                 </span>
                               );
@@ -951,7 +959,7 @@ const AuditTrailClient = (props: Props) => {
       {/* --- PAGINATION --- */}
       <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
         {/* --- Showing info --- */}
-        <span className="text-(--text-secondary) flex w-[175.23px]">
+        <span className="flex w-[175.23px] text-(--text-secondary)">
           {t("Manage/Viewing")}{" "}
           {totalItems === 0
             ? "0-0"
@@ -1019,7 +1027,7 @@ const AuditTrailClient = (props: Props) => {
                       currentPage === page
                         ? "bg-(--accent-color) text-(--text-main-reverse)"
                         : "hover:text-(--accent-color)"
-                    } duration-(--fast) flex min-w-7 cursor-pointer justify-center rounded-full px-[0.6rem] text-lg transition-colors`}
+                    } flex min-w-7 cursor-pointer justify-center rounded-full px-[0.6rem] text-lg transition-colors duration-(--fast)`}
                   >
                     {page}
                   </button>

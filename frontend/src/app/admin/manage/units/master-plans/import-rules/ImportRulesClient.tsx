@@ -17,6 +17,7 @@ import HoverIcon from "@/app/components/common/HoverIcon";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import Toast from "@/app/components/toast/Toast";
 import { useToast } from "@/app/components/toast/ToastProvider";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
@@ -187,6 +188,13 @@ const ImportRulesClient = (props: Props) => {
     }
     return { label: col, value: col };
   });
+
+  // --- Update handbook (Unique) ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    setHandbook("Import rules");
+  }, []);
 
   return (
     <div className="flex flex-col gap-4">

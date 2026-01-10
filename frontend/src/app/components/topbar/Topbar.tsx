@@ -5,6 +5,7 @@ import {
 import {
   BellIcon as SolidBellIcon,
   UserIcon as SolidUserIcon,
+  QuestionMarkCircleIcon as SolidQuestionMarkCircleIcon,
   ArrowLeftEndOnRectangleIcon as SolidArrowLeftEndOnRectangleIcon,
   ArrowRightEndOnRectangleIcon as SolidArrowRightEndOnRectangleIcon,
   Cog6ToothIcon as SolidCog6ToothIcon,
@@ -14,6 +15,7 @@ import {
 import {
   BellIcon as OutlineBellIcon,
   UserIcon as OutlineUserIcon,
+  QuestionMarkCircleIcon as OutlineQuestionMarkCircleIcon,
   ArrowLeftEndOnRectangleIcon as OutlineArrowLeftEndOnRectangleIcon,
   ArrowRightEndOnRectangleIcon as OutlineArrowRightEndOnRectangleIcon,
   Cog6ToothIcon as OutlineCog6ToothIcon,
@@ -33,6 +35,8 @@ import Link from "next/link";
 import useLanguage from "@/app/hooks/useLanguage";
 import { useTranslations } from "next-intl";
 import { badgeClass } from "../manage/ManageClasses";
+import HandbookModal from "../modals/HandbookModal";
+import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   hasScrollbar: boolean;
@@ -57,12 +61,14 @@ const Topbar = (props: Props) => {
 
   // --- States ---
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isHandbookModalOpen, setIsHandbookModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [userIconClicked, setUserIconClicked] = useState(false);
   const [bellIconClicked, setBellIconClicked] = useState(false);
 
   // --- Other ---
+  const { handbook } = useHandbook();
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
@@ -138,6 +144,11 @@ const Topbar = (props: Props) => {
   return (
     <>
       {/* --- MODAL(S) --- */}
+       <HandbookModal
+        isOpen={isHandbookModalOpen}
+        onClose={() => setIsHandbookModalOpen(false)}
+        content={handbook}
+      />
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
@@ -238,6 +249,28 @@ const Topbar = (props: Props) => {
 
             {/* --- BUTTONS AND THEIR CONTENT --- */}
             <div className="flex items-center justify-end gap-4">
+              {/* --- Handbook --- */}
+              <button
+                className={`${roundedButtonClass} group`}
+                onClick={() => {
+                  closeAllMenus();
+                  setIsHandbookModalOpen(!isHandbookModalOpen);
+                }}
+              >
+                <span className="group relative flex h-6 w-6 items-center text-2xl justify-center">
+                  <span
+                    className={`${isHandbookModalOpen ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
+                  >
+                    ?
+                  </span>
+                  <span
+                    className={`${isHandbookModalOpen ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
+                  >
+                    ?
+                  </span>
+                </span>
+              </button>
+
               {/* --- Alerts --- */}
               {isLoggedIn && (
                 <div className="relative">
