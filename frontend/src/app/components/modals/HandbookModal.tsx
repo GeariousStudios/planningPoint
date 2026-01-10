@@ -45,6 +45,9 @@ const HandbookModal = (props: Props) => {
         danger: (chunks: React.ReactNode) => (
           <span className="text-(--locked)">{chunks}</span>
         ),
+        accent: (chunks: React.ReactNode) => (
+          <span className="text-(--accent-color) uppercase">{chunks}</span>
+        ),
       });
 
       setBody(body);

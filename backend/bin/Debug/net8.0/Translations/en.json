@@ -122,6 +122,7 @@
   "MasterPlan/InUse": "Cannot delete a master plan that is in use",
   "MasterPlan/AtLeastOneFieldRequired": "At least one field is required to create a master plan",
   "MasterPlan/CheckedOutByAnotherUser": "Master plan is checked out by another user",
+  "MasterPlan/InvalidGroupField": "Invalid group field",
 
   "MasterPlanField/NotFound": "Field could not be found in the database",
   "MasterPlanField/Deleted": "Field deleted!",
@@ -245,6 +246,7 @@
   "AuditTrail/MasterPlanField": "Field",
   "AuditTrail/MasterPlanFields": "Fields",
   "AuditTrail/AllowRemovingElements": "Allow removing elements",
+  "AuditTrail/AllowImport": "Allow import from Excel",
   "AuditTrail/Number": "Number",
   "AuditTrail/Text": "Text",
   "AuditTrail/Boolean": "Boolean",
@@ -259,8 +261,10 @@
   "AuditTrail/OldOrder": "Old order",
   "AuditTrail/NewOrder": "New order",
   "AuditTrail/ReverseColor": "Reverse color",
-  "AuditTrail/Mappings": "Import mappings",
-  "AuditTrail/MasterPlanFieldMapping": "Master plan import rules",
+  "AuditTrail/Mappings": "Mappings",
+  "AuditTrail/MasterPlanImportRules": "Master plan import rules",
+  "AuditTrail/GroupKey": "Group key",
+  "AuditTrail/ReplaceOnImport": "Replace master plan on import",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

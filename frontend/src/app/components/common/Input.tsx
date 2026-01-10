@@ -36,6 +36,7 @@ type InputProps = {
   showAsterix?: boolean;
   classNameAddition?: string;
   disabled?: boolean;
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
 };
 
 const Input = ({
@@ -72,6 +73,7 @@ const Input = ({
   showAsterix = false,
   classNameAddition,
   disabled = false,
+  onFocus,
 }: InputProps & { icon?: ReactNode }) => {
   const { currentTheme } = useTheme();
 
@@ -194,6 +196,7 @@ const Input = ({
           max={max}
           tabIndex={isDisabled ? -1 : (tabIndex ?? 0)}
           disabled={disabled}
+          onFocus={onFocus}
         />
 
         {icon && (

@@ -291,6 +291,12 @@ namespace backend.Data
                 .WithMany(f => f.MasterPlanToMasterPlanFields)
                 .HasForeignKey(mpf => mpf.MasterPlanFieldId);
 
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanField>()
+                .HasIndex(x => x.MasterPlanId)
+                .IsUnique()
+                .HasFilter("[IsGroupKey] = 1");
+
             // MasterPlan <-> MasterPlanElement many-to-many relationship.
             modelBuilder
                 .Entity<MasterPlanToMasterPlanElement>()

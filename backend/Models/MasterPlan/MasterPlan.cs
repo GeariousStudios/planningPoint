@@ -13,6 +13,8 @@ namespace backend.Models
         public int UnitGroupId { get; set; }
         public required UnitGroup UnitGroup { get; set; }
         public bool AllowRemovingElements { get; set; }
+        public bool AllowImport { get; set; }
+        public bool ReplaceOnImport { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }

@@ -106,8 +106,8 @@ const MasterPlanClient = (props: Props) => {
     handleHoldEnd,
     duplicateSelected,
     handleImport,
-    importFile,
-    setImportFile,
+    importing,
+    setImporting,
   } = useMasterPlan(t, apiUrl, token, masterPlanId);
 
   // --- Update handbook ---
@@ -328,31 +328,39 @@ const MasterPlanClient = (props: Props) => {
               </div>
 
               {/* --- Import --- */}
-              {isEditing && !isCheckingIn && (
+              {isEditing && !isCheckingIn && masterPlans[0]?.allowImport && (
                 <div className="flex gap-4">
                   <input
                     id="excel-import-input"
                     type="file"
                     accept=".xlsx,.xls"
                     className="hidden"
-                    onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null;
+                      if (!file) {
+                        return;
+                      }
+
+                      handleImport(file);
+                      e.currentTarget.value = "";
+                    }}
                   />
 
                   <button
                     className={buttonSecondaryClass}
-                    onClick={() =>
-                      document.getElementById("excel-import-input")?.click()
-                    }
+                    onClick={() => {
+                      document.getElementById("excel-import-input")?.click();
+                    }}
+                    disabled={importing}
                   >
-                    {t("MasterPlan/Import master plan")}
-                  </button>
-
-                  <button
-                    className={buttonPrimaryClass}
-                    disabled={!importFile}
-                    onClick={handleImport}
-                  >
-                    {t("MasterPlan/Start import")}
+                    {importing ? (
+                      <div className="flex items-center justify-center gap-2 truncate">
+                        <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
+                        {t("MasterPlan/Importing master plan")}
+                      </div>
+                    ) : (
+                      t("MasterPlan/Import master plan")
+                    )}
                   </button>
                 </div>
               )}
@@ -417,7 +425,7 @@ const MasterPlanClient = (props: Props) => {
                       window.addEventListener("pointerup", handleUp);
                     }}
                   >
-                    <span className="text-xl font-semibold">
+                    <span className="text-xl font-semibold lg:w-lg">
                       {t("MasterPlan/Master Plan Toolbar")}
                     </span>
                     <Outline.Bars3Icon className="h-6 w-6 opacity-50" />

@@ -714,7 +714,7 @@ const HomeClient = (props: Props) => {
           >
             {/* --- News header --- */}
             <div className="flex h-[40px] items-center justify-between rounded-t border border-(--border-main) bg-(--bg-grid-header) px-3 py-2">
-              <span className="truncate font-semibold">{t("Common/News")}</span>
+              <span className="truncate font-semibold">{t("Home/News and information")}</span>
 
               {props.isLoggedIn !== false && props.isAdmin && (
                 // <CustomTooltip content={t("Home/Add news")} hideOnClick>

@@ -155,6 +155,7 @@
   "Home/Delete news": "Delete news item",
   "Home/No news": "There are no news at the moment!",
   "Home/Welcome": "Welcome, ",
+  "Home/News and information": "News and information",
 
   "Unit/Tooltip this hour": " this hour",
   "Unit/Tooltip report data": "Report data in one or more columns",
@@ -383,6 +384,7 @@
   "MasterPlanModal/Info1": "Details about the master plan",
   "MasterPlanModal/Info2": "Fields",
   "MasterPlanModal/Allow removing elements": "Allow removing elements",
+  "MasterPlanModal/Allow import": "Allow import from Excel",
   "MasterPlanModal/Hide master plan": "Hide master plan",
 
   "MasterPlanFieldModal/Info1": "Details about the field",
@@ -484,6 +486,7 @@
   "MasterPlans/Allowed master plans": "Allowed master plans",
   "MasterPlans/allowed master plans": "allowed master plans",
   "MasterPlans/Allow removing elements": "Allow removing elements",
+  "MasterPlans/Allow import": "Allow import from Excel",
 
   "MasterPlan/Edit master plan": "Checkout master plan",
   "MasterPlan/Add element": "Add element",
@@ -520,8 +523,10 @@
   "MasterPlan/Mark for deletion tooltip": "Flags the selected object for deletion",
   "MasterPlan/Duplicate object": "Duplicate",
   "MasterPlan/Tooltip duplicate object": "Duplicate the selected object",
-  "MasterPlan/Import master plan": "Import master plan",
-  "MasterPlan/Start import": "Start import",
+  "MasterPlan/Import master plan": "Import master plan (.xlsx)",
+  "MasterPlan/Importing master plan": "Importing...",
+  "MasterPlan/Successful import": "Import successful!",
+  "MasterPlan/Failed import": "Import failed. Make sure the file format is .xlsx and try again!",
 
   "MasterPlanFields/Hidden master plan fields": "Hidden fields",
   "MasterPlanFields/hidden master plan fields": "hidden fields",
@@ -547,6 +552,9 @@
   "ImportRules/Tooltip save rules": "Save the rules",
   "ImportRules/Tooltip revert changes": "Revert the changes",
   "ImportRules/Non-text fields cannot be mapped": "You can only map fields with the data type: Text",
+  "ImportRules/Group key": "Group key",
+  "ImportRules/Replace master plan": "Replace master plan on import",
+  "ImportRules/Master plan settings": "Import settings",
 
   "AuditTrail/Show all": "Show all",
   "AuditTrail/Entity": "Object",

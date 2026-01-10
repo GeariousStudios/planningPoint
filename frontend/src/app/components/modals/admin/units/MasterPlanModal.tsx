@@ -64,6 +64,7 @@ const MasterPlanModal = (props: Props) => {
   const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
   const [isHidden, setIsHidden] = useState(false);
   const [allowRemovingElements, setAllowRemovingElements] = useState(false);
+  const [allowImport, setAllowImport] = useState(false);
   const [masterPlanFieldIds, setMasterPlanFieldIds] = useState<number[]>([]);
   const [masterPlanFields, setMasterPlanFields] = useState<
     MasterPlanFieldOptions[]
@@ -73,6 +74,8 @@ const MasterPlanModal = (props: Props) => {
   const [originalUnitGroup, setOriginalUnitGroup] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalAllowRemovingElements, setOriginalAllowRemovingElements] =
+    useState(false);
+  const [originalAllowImport, setOriginalAllowImport] =
     useState(false);
   const [originalMasterPlanFieldIds, setOriginalMasterPlanFieldIds] = useState<
     number[]
@@ -111,6 +114,9 @@ const MasterPlanModal = (props: Props) => {
       setAllowRemovingElements(false);
       setOriginalAllowRemovingElements(false);
 
+      setAllowImport(true);
+      setOriginalAllowImport(true);
+
       setMasterPlanFieldIds([]);
       setOriginalMasterPlanFieldIds([]);
     }
@@ -135,6 +141,7 @@ const MasterPlanModal = (props: Props) => {
           unitGroupId: parseInt(unitGroup),
           isHidden,
           allowRemovingElements,
+          allowImport,
           masterPlanFieldIds,
         }),
       });
@@ -252,6 +259,9 @@ const MasterPlanModal = (props: Props) => {
     setAllowRemovingElements(result.allowRemovingElements ?? false);
     setOriginalAllowRemovingElements(result.allowRemovingElements ?? false);
 
+    setAllowImport(result.allowImport ?? false);
+    setOriginalAllowImport(result.allowImport ?? false);
+
     const fieldIds = result.fields?.map((f: any) => f.id) ?? [];
 
     setMasterPlanFieldIds(fieldIds);
@@ -301,6 +311,7 @@ const MasterPlanModal = (props: Props) => {
             unitGroupId: parseInt(unitGroup),
             isHidden,
             allowRemovingElements,
+            allowImport,
             masterPlanFieldIds,
           }),
         },
@@ -414,6 +425,7 @@ const MasterPlanModal = (props: Props) => {
         unitGroup !== "" ||
         isHidden !== false ||
         allowRemovingElements !== false ||
+        allowImport !== true ||
         JSON.stringify(masterPlanFieldIds) !==
           JSON.stringify(originalMasterPlanFieldIds);
 
@@ -426,6 +438,7 @@ const MasterPlanModal = (props: Props) => {
       unitGroup !== originalUnitGroup ||
       isHidden !== originalIsHidden ||
       allowRemovingElements !== originalAllowRemovingElements ||
+      allowImport !== originalAllowImport ||
       JSON.stringify(masterPlanFieldIds) !==
         JSON.stringify(originalMasterPlanFieldIds);
 
@@ -436,11 +449,13 @@ const MasterPlanModal = (props: Props) => {
     unitGroup,
     isHidden,
     allowRemovingElements,
+    allowImport,
     masterPlanFieldIds,
     originalName,
     originalUnitGroup,
     originalIsHidden,
     originalAllowRemovingElements,
+    originalAllowImport,
     originalMasterPlanFieldIds,
   ]);
 
@@ -582,6 +597,23 @@ const MasterPlanModal = (props: Props) => {
                   </button>
                   <span className="mb-0.5">
                     {t("MasterPlanModal/Allow removing elements")}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-between gap-6">
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={allowImport}
+                    className={switchClass(allowImport)}
+                    onClick={() => setAllowImport((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(allowImport)} />
+                  </button>
+                  <span className="mb-0.5">
+                    {t("MasterPlanModal/Allow import")}
                   </span>
                 </div>
               </div>

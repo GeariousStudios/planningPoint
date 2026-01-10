@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../context/AuthContext";
-import { skip } from "node:test";
 import { useDragControls } from "framer-motion";
 
 type MasterPlanElement = {
@@ -38,6 +37,7 @@ export const useMasterPlan = (
   const dragControls = useDragControls();
 
   // --- States ---
+  const [importing, setImporting] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +84,6 @@ export const useMasterPlan = (
   const minDelay = 100;
   const startDelay = 600;
   const acceleration = 100;
-  const [importFile, setImportFile] = useState<File | null>(null);
 
   // --- Other ---
   const { notify } = useToast();
@@ -185,34 +184,138 @@ export const useMasterPlan = (
   }, [refetchData]);
 
   // --- Handle import file ---
-  const handleImport = async () => {
-    if (!importFile) {
+  const handleImport = async (file: File) => {
+    if (!file) {
       return;
     }
 
-    const form = new FormData();
-    form.append("file", importFile);
-    form.append("masterPlanId", String(masterPlanId));
+    setImporting(true);
 
-    const res = await fetch(`${apiUrl}/master-plan/mapping/import`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: form,
-    });
+    try {
+      const rulesRes = await fetch(
+        `${apiUrl}/master-plan/import-rules/${masterPlanId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
-    const rows = await res.json();
-    console.log("IMPORT RESULT:", rows);
-
-    [...rows].reverse().forEach((row: any) => {
-      const dict: Record<number, string> = {};
-      for (const [fieldId, value] of Object.entries(row.values)) {
-        dict[Number(fieldId)] = value as string;
+      if (!rulesRes.ok) {
+        notify("error", t("MasterPlan/Failed import"));
+        return;
       }
 
-      handleAddElement(Number(masterPlanId), null, dict);
-    });
+      const rules = await rulesRes.json();
+      const groupFieldId: number | null = rules.groupFieldId ?? null;
+      const replaceOnImport: boolean = !!rules.replaceOnImport;
 
-    setImportFile(null);
+      const masterPlanIdValue = Array.isArray(masterPlanId)
+        ? masterPlanId[0]
+        : masterPlanId;
+
+      if (!masterPlanIdValue) {
+        notify("error", t("MasterPlan/Failed import"));
+        return;
+      }
+
+      const existingElements = replaceOnImport
+        ? []
+        : (masterPlans[0]?.elements ?? []);
+
+      if (replaceOnImport) {
+        const idsToDelete = (masterPlans[0]?.elements ?? [])
+          .map((e) => e.id)
+          .filter((id) => !isNaN(Number(id)));
+
+        setRemovedElementIds(idsToDelete);
+        setSelectedId(null);
+
+        setMasterPlans((prev) =>
+          prev.map((p) =>
+            String(p.id) === String(masterPlanIdValue)
+              ? { ...p, elements: [] }
+              : p,
+          ),
+        );
+
+        setCurrentPage(1);
+      }
+
+      const form = new FormData();
+      form.append("file", file);
+      form.append("masterPlanId", masterPlanIdValue);
+
+      const res = await fetch(`${apiUrl}/master-plan/import-rules/import`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+
+      if (!res.ok) {
+        notify("error", t("MasterPlan/Failed import"));
+        return;
+      }
+
+      const rows = await res.json();
+
+      const nextGroupId = () => {
+        const maxId = existingElements.length
+          ? Math.max(...existingElements.map((e) => e.groupId || 0))
+          : 0;
+        return maxId + 1;
+      };
+
+      let currentGroupId = nextGroupId();
+      const groupIdByKey = new Map<string, number>();
+
+      let failedRows = 0;
+
+      for (const row of [...rows].reverse()) {
+        try {
+          const dict: Record<number, string> = {};
+          for (const [fieldId, value] of Object.entries(row.values)) {
+            dict[Number(fieldId)] = value as string;
+          }
+
+          let finalGroupId: number | null = null;
+
+          if (groupFieldId) {
+            const raw = (dict[groupFieldId] ?? "").trim();
+            if (raw) {
+              const key = raw.toLowerCase();
+              if (!groupIdByKey.has(key)) {
+                groupIdByKey.set(key, currentGroupId);
+                currentGroupId++;
+              }
+              finalGroupId = groupIdByKey.get(key) ?? null;
+            } else {
+              finalGroupId = currentGroupId;
+              currentGroupId++;
+            }
+          } else {
+            finalGroupId = currentGroupId;
+            currentGroupId++;
+          }
+
+          handleAddElement(Number(masterPlanIdValue), finalGroupId, dict);
+        } catch {
+          failedRows++;
+        }
+      }
+
+      if (failedRows > 0) {
+        notify("error", t("MasterPlan/Failed import"));
+      } else {
+        notify("success", t("MasterPlan/Successful import"));
+      }
+    } catch {
+      notify("error", t("MasterPlan/Failed import"));
+    } finally {
+      setImporting(false);
+    }
   };
 
   // --- Handle search ---
@@ -276,40 +379,42 @@ export const useMasterPlan = (
         }));
 
         let insertIndex = 0;
-        let finalGroupId = null;
+        let finalGroupId: number | null = groupId;
 
-        if (selectedId) {
-          const selectedIndex = p.elements.findIndex(
-            (el) => String(el.id) === String(selectedId),
-          );
-          if (selectedIndex !== -1) {
-            const selected = p.elements[selectedIndex];
-            const groupIdentifier = selected.groupId ?? null;
-
-            const topIndex = p.elements.findIndex((el) =>
-              groupIdentifier
-                ? el.groupId === groupIdentifier
-                : el.id === selected.id,
+        if (finalGroupId == null) {
+          if (selectedId) {
+            const selectedIndex = p.elements.findIndex(
+              (el) => String(el.id) === String(selectedId),
             );
+            if (selectedIndex !== -1) {
+              const selected = p.elements[selectedIndex];
+              const groupIdentifier = selected.groupId ?? null;
 
-            insertIndex = topIndex;
+              const topIndex = p.elements.findIndex((el) =>
+                groupIdentifier
+                  ? el.groupId === groupIdentifier
+                  : el.id === selected.id,
+              );
 
-            if (editMode === "group" && selected.groupId != null) {
-              finalGroupId = selected.groupId;
-            } else {
-              finalGroupId =
-                p.elements.length > 0
-                  ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
-                  : 1;
+              insertIndex = topIndex;
+
+              if (editMode === "group" && selected.groupId != null) {
+                finalGroupId = selected.groupId;
+              } else {
+                finalGroupId =
+                  p.elements.length > 0
+                    ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
+                    : 1;
+              }
             }
           }
-        }
 
-        if (!selectedId) {
-          finalGroupId =
-            p.elements.length > 0
-              ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
-              : 1;
+          if (!selectedId) {
+            finalGroupId =
+              p.elements.length > 0
+                ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
+                : 1;
+          }
         }
 
         const newElement: MasterPlanElement = {
@@ -1181,7 +1286,7 @@ export const useMasterPlan = (
     handleHoldEnd,
     duplicateSelected,
     handleImport,
-    importFile,
-    setImportFile,
+    importing,
+    setImporting,
   };
 };

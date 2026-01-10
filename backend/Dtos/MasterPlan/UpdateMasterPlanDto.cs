@@ -12,8 +12,10 @@ namespace backend.Dtos.MasterPlan
         public int UnitGroupId { get; set; }
         public bool IsHidden { get; set; }
         public bool AllowRemovingElements { get; set; }
+        public bool AllowImport { get; set; }
         public int[]? Units { get; set; }
         public int[]? MasterPlanFieldIds { get; set; }
         public int[]? MasterPlanElementIds { get; set; }
+        public int? GroupFieldId { get; set; }
     }
 }

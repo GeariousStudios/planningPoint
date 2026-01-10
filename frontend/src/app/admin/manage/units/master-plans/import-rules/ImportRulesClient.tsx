@@ -9,6 +9,10 @@ import Message from "@/app/components/common/Message";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
+  smallSwitchClass,
+  smallSwitchKnobClass,
+  switchClass,
+  switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
@@ -18,6 +22,7 @@ import CustomTooltip from "@/app/components/common/CustomTooltip";
 import Toast from "@/app/components/toast/Toast";
 import { useToast } from "@/app/components/toast/ToastProvider";
 import { useHandbook } from "@/app/context/HandbookContext";
+import { fetchMasterPlanFields } from "@/app/apis/manage/masterPlansApi";
 
 type Props = {
   isConnected: boolean | null;
@@ -34,13 +39,19 @@ const ImportRulesClient = (props: Props) => {
   const [fields, setFields] = useState<
     { id: number; name: string; dataType: string }[]
   >([]);
+  const [groupFieldId, setGroupFieldId] = useState<number | null>(null);
   const [selectedMasterPlan, setSelectedMasterPlan] = useState<string>("");
   const [columnMapping, setColumnMapping] = useState<Record<number, string>>(
     {},
   );
+  const [replaceOnImport, setReplaceOnImport] = useState(false);
   const [originalMapping, setOriginalMapping] = useState<
     Record<number, string>
   >({});
+  const [originalGroupFieldId, setOriginalGroupFieldId] = useState<
+    number | null
+  >(null);
+  const [originalReplaceOnImport, setOriginalReplaceOnImport] = useState(false);
   const [isFetchingFields, setIsFetchingFields] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isReverting, setIsReverting] = useState(false);
@@ -54,22 +65,22 @@ const ImportRulesClient = (props: Props) => {
   // --- Fetch master plans ---
   useEffect(() => {
     const fetchMasterPlans = async () => {
-      const response = await fetch(`${apiUrl}/master-plan`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/master-plan?allowImport=true&pageSize=1000`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         return;
       }
 
       const result = await response.json();
-      setFields(result.fields || []);
-      await fetchMappings(String(selectedMasterPlan));
-
-      setMasterPlans(result.items);
+      setMasterPlans(result.items || []);
     };
 
     fetchMasterPlans();
@@ -102,7 +113,10 @@ const ImportRulesClient = (props: Props) => {
         const result = await response.json();
 
         setFields(result.fields || []);
-        await fetchMappings(selectedMasterPlan);
+        setGroupFieldId(result.groupFieldId ?? null);
+        setOriginalGroupFieldId(result.groupFieldId ?? null);
+
+        await fetchImportRules(selectedMasterPlan);
       } catch (error) {
       } finally {
         setIsFetchingFields(false);
@@ -112,9 +126,9 @@ const ImportRulesClient = (props: Props) => {
     fetchFields();
   }, [selectedMasterPlan]);
 
-  // --- Fetch existing mappings ---
-  const fetchMappings = async (id: string) => {
-    const response = await fetch(`${apiUrl}/master-plan/mapping/${id}`, {
+  // --- Fetch existing import rules ---
+  const fetchImportRules = async (id: string) => {
+    const response = await fetch(`${apiUrl}/master-plan/import-rules/${id}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -124,59 +138,88 @@ const ImportRulesClient = (props: Props) => {
     if (!response.ok) {
       setColumnMapping({});
       setOriginalMapping({});
+      setGroupFieldId(null);
+      setOriginalGroupFieldId(null);
+      setReplaceOnImport(false);
+      setOriginalReplaceOnImport(false);
       return;
     }
 
     const result = await response.json();
+
     const map: Record<number, string> = {};
-    result.forEach((m: { fieldId: number; excelColumn: string }) => {
+    result.mappings.forEach((m: { fieldId: number; excelColumn: string }) => {
       map[m.fieldId] = m.excelColumn;
     });
 
     setColumnMapping(map);
     setOriginalMapping(map);
+
+    setGroupFieldId(result.groupFieldId ?? null);
+    setOriginalGroupFieldId(result.groupFieldId ?? null);
+
+    setReplaceOnImport(!!result.replaceOnImport);
+    setOriginalReplaceOnImport(!!result.replaceOnImport);
   };
 
-  // --- Save mappings ---
-  const saveMappings = async () => {
+  // --- Save import rules ---
+  const saveImportRules = async () => {
     if (!selectedMasterPlan) {
       return;
     }
+
     setIsSaving(true);
 
     const response = await fetch(
-      `${apiUrl}/master-plan/mapping/${selectedMasterPlan}`,
+      `${apiUrl}/master-plan/import-rules/${selectedMasterPlan}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(columnMapping),
+        body: JSON.stringify({
+          mappings: columnMapping,
+          groupFieldId,
+          replaceOnImport,
+        }),
       },
     );
 
+    if (!response.ok) {
+      notify("error", t("Modal/Unknown error"));
+      setIsSaving(false);
+      return;
+    }
+
     notify("success", t("ImportRules/Rules saved"));
     setIsSaving(false);
+
     setOriginalMapping(columnMapping);
+    setOriginalGroupFieldId(groupFieldId);
+    setOriginalReplaceOnImport(replaceOnImport);
   };
 
-  // --- Revert mappings ---
-  const revertMappings = async () => {
+  // --- Revert import rules ---
+  const revertImportRules = async () => {
     if (!selectedMasterPlan) {
       return;
     }
 
     setIsReverting(true);
 
-    await fetchMappings(selectedMasterPlan);
+    setColumnMapping(originalMapping);
+    setGroupFieldId(originalGroupFieldId);
+    setReplaceOnImport(originalReplaceOnImport);
 
     notify("info", t("ImportRules/Changes reverted"));
     setIsReverting(false);
   };
 
   const hasChanges =
-    JSON.stringify(columnMapping) !== JSON.stringify(originalMapping);
+    JSON.stringify(columnMapping) !== JSON.stringify(originalMapping) ||
+    groupFieldId !== originalGroupFieldId ||
+    replaceOnImport !== originalReplaceOnImport;
 
   // --- Excel columns generation ---
   const excelColumns = Array.from({ length: 16384 }, (_, i) => {
@@ -188,6 +231,11 @@ const ImportRulesClient = (props: Props) => {
     }
     return { label: col, value: col };
   });
+
+  // --- Toggle group field ---
+  const toggleGroupField = (fieldId: number) => {
+    setGroupFieldId((prev) => (prev === fieldId ? null : fieldId));
+  };
 
   // --- Update handbook (Unique) ---
   const { setHandbook } = useHandbook();
@@ -211,7 +259,7 @@ const ImportRulesClient = (props: Props) => {
           longDelay
         >
           <button
-            onClick={saveMappings}
+            onClick={saveImportRules}
             className={`${buttonPrimaryClass} group lg:w-max lg:px-4`}
             disabled={
               fields.length === 0 ||
@@ -254,7 +302,7 @@ const ImportRulesClient = (props: Props) => {
           longDelay
         >
           <button
-            onClick={revertMappings}
+            onClick={revertImportRules}
             className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
             disabled={
               fields.length === 0 || isSaving || isReverting || isFetchingFields
@@ -312,13 +360,51 @@ const ImportRulesClient = (props: Props) => {
               }))}
               value={selectedMasterPlan}
               onChange={(id) => {
-                setSelectedMasterPlan(String(id));
+                const next = String(id);
+
+                if (next === selectedMasterPlan) {
+                  setSelectedMasterPlan("");
+                  setColumnMapping({});
+                  setGroupFieldId(null);
+                  setOriginalGroupFieldId(null);
+                  setFields([]);
+                  return;
+                }
+
+                setSelectedMasterPlan(next);
                 setColumnMapping({});
+                setGroupFieldId(null);
+                setOriginalGroupFieldId(null);
               }}
               required
               usePortal
               onModal
             />
+
+            {selectedMasterPlan && (
+              <>
+                <div className="flex items-center gap-2">
+                  <hr className="w-12 text-(--border-tertiary)" />
+                  <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
+                    {t("ImportRules/Master plan settings")}
+                  </h3>
+                  <hr className="w-full text-(--border-tertiary)" />
+                </div>
+
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={replaceOnImport}
+                    className={switchClass(replaceOnImport)}
+                    onClick={() => setReplaceOnImport((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(replaceOnImport)} />
+                  </button>
+                  {t("ImportRules/Replace master plan")}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -352,8 +438,47 @@ const ImportRulesClient = (props: Props) => {
                       className={`${f.dataType !== "Text" ? "bg-(--locked)/75" : "bg-(--bg-grid-header)"}`}
                     >
                       <tr>
-                        <ThCell
+                        {/* <ThCell
                           label={f.name}
+                          sortable={false}
+                          classNameAddition={
+                            f.dataType !== "Text" ? "border-b-(--locked)" : ""
+                          }
+                        /> */}
+
+                        <ThCell
+                          label={
+                            <div className="flex flex-wrap items-center justify-between gap-4">
+                              <span className="truncate">{f.name}</span>
+                              <div
+                                className={`${columnMapping[f.id] ? "" : "cursor-not-allowed opacity-25"} flex items-center gap-2`}
+                              >
+                                <button
+                                  type="button"
+                                  role="switch"
+                                  aria-checked={groupFieldId === f.id}
+                                  className={`${smallSwitchClass(
+                                    groupFieldId === f.id,
+                                  )} ${columnMapping[f.id] ? "" : "!cursor-not-allowed"}`}
+                                  onClick={() => toggleGroupField(f.id)}
+                                  disabled={
+                                    f.dataType !== "Text" ||
+                                    !columnMapping[f.id]
+                                  }
+                                >
+                                  <div
+                                    className={smallSwitchKnobClass(
+                                      groupFieldId === f.id,
+                                    )}
+                                  />
+                                </button>
+
+                                <span className="text-sm font-light whitespace-nowrap text-(--text-secondary)">
+                                  {t("ImportRules/Group key")}
+                                </span>
+                              </div>
+                            </div>
+                          }
                           sortable={false}
                           classNameAddition={
                             f.dataType !== "Text" ? "border-b-(--locked)" : ""
@@ -370,14 +495,29 @@ const ImportRulesClient = (props: Props) => {
                             key={columnMapping[f.id] ?? ""}
                             options={excelColumns}
                             value={columnMapping[f.id] ?? ""}
-                            onChange={(val) =>
-                              f.dataType === "Text"
-                                ? setColumnMapping((prev) => ({
-                                    ...prev,
-                                    [f.id]: val,
-                                  }))
-                                : undefined
-                            }
+                            // onChange={(val) =>
+                            //   f.dataType === "Text"
+                            //     ? setColumnMapping((prev) => ({
+                            //         ...prev,
+                            //         [f.id]: val,
+                            //       }))
+                            //     : undefined
+                            // }
+                            onChange={(val) => {
+                              if (f.dataType !== "Text") {
+                                return;
+                              }
+
+                              setColumnMapping((prev) => {
+                                const next = { ...prev, [f.id]: val };
+
+                                if (!val && groupFieldId === f.id) {
+                                  setGroupFieldId(null);
+                                }
+
+                                return next;
+                              });
+                            }}
                             placeholder={t("ImportRules/Select excel column")}
                             disabled={f.dataType !== "Text"}
                           />

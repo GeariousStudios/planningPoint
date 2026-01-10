@@ -42,6 +42,13 @@ export const fetchContent = async ({
     );
   }
 
+  if (filters?.allowImport !== undefined) {
+    params.append(
+      "allowImport",
+      String(filters.allowImport),
+    );
+  }
+
   if (filters?.unitGroupIds) {
     for (const id of filters.unitGroupIds) {
       params.append("unitGroupIds", id.toString());

@@ -58,6 +58,8 @@ export const Filter = ({
     divClassName += "xl:flex";
   } else if (breakpoint === "2xl") {
     divClassName += "2xl:flex";
+  } else if (breakpoint === "3xl") {
+    divClassName += "3xl:flex";
   }
 
   return (
@@ -210,7 +212,7 @@ export const ThCell = ({
   sortable = true,
 }: {
   sortingItem?: string;
-  label: string;
+  label: string | ReactNode;
   labelAsc?: string;
   labelDesc?: string;
   sortBy?: string;

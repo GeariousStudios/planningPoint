@@ -318,6 +318,7 @@ const ManageBase = <TItem extends { id: number }>({
         3: 1024, // lg:
         4: 1280, // xl:
         5: 1536, // 2xl:
+        6: 1920, // 3xl:
       };
 
       const screenWidth = window.innerWidth;
@@ -342,17 +343,10 @@ const ManageBase = <TItem extends { id: number }>({
     return (
       <>
         <div className="hidden md:block">
-          {/* <Message icon="loading" content="Nästan klar..." fullscreen /> */}
           <Message icon="loading" content="loading" fullscreen />
         </div>
 
         <div className="block md:hidden">
-          {/* <Message
-            icon="loading"
-            content="Nästan klar..."
-            fullscreen
-            withinContainer
-          /> */}
           <Message
             icon="loading"
             content="loading"

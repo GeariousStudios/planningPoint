@@ -156,6 +156,7 @@
   "Home/Delete news": "Ta bort nyhet",
   "Home/No news": "Det finns inga nyheter för tillfället!",
   "Home/Welcome": "Välkommen, ",
+  "Home/News and information": "Nyheter och information",
 
   "Unit/Tooltip this hour": " denna timme",
   "Unit/Tooltip report data": "Rapportera data i en eller flera kolumner",
@@ -383,6 +384,7 @@
   "MasterPlanModal/Info1": "Uppgifter om huvudplanen",
   "MasterPlanModal/Info2": "Fält",
   "MasterPlanModal/Allow removing elements": "Tillåt borttagning av element",
+  "MasterPlanModal/Allow import": "Tillåt import från Excel",
   "MasterPlanModal/Hide master plan": "Dölj huvudplan",
 
   "MasterPlanFieldModal/Info1": "Uppgifter om fältet",
@@ -484,6 +486,7 @@
   "MasterPlans/Allowed master plans": "Tillåtna huvudplaner",
   "MasterPlans/allowed master plans": "tillåtna huvudplaner",
   "MasterPlans/Allow removing elements": "Tillåt borttagning av element",
+  "MasterPlans/Allow import": "Tillåt import från Excel",
 
   "MasterPlan/Edit master plan": "Checka ut huvudplan",
   "MasterPlan/Add element": "Lägg till element",
@@ -520,8 +523,10 @@
   "MasterPlan/Mark for deletion tooltip": "Flaggar objekt för borttagning",
   "MasterPlan/Duplicate object": "Duplicera",
   "MasterPlan/Tooltip duplicate object": "Duplicera markerat objekt",
-  "MasterPlan/Import master plan": "Importera huvudplan",
-  "MasterPlan/Start import": "Starta import",
+  "MasterPlan/Import master plan": "Importera huvudplan (.xlsx)",
+  "MasterPlan/Importing master plan": "Importerar...",
+  "MasterPlan/Successful import": "Import lyckades!",
+  "MasterPlan/Failed import": "Import misslyckades. Säkerställ att filformatet är .xlsx och försök igen!",
 
   "MasterPlanFields/Hidden master plan fields": "Dolda fält",
   "MasterPlanFields/hidden master plan fields": "dolda fält",
@@ -547,6 +552,9 @@
   "ImportRules/Tooltip save rules": "Spara regler",
   "ImportRules/Tooltip revert changes": "Återställ ändringar",
   "ImportRules/Non-text fields cannot be mapped": "Du kan endast mappa fält med datatypen: Text",
+  "ImportRules/Group key": "Gruppnyckel",
+  "ImportRules/Replace master plan": "Ersätt huvudplan vid import",
+  "ImportRules/Master plan settings": "Importinställningar",
 
   "AuditTrail/Show all": "Visa allt",
   "AuditTrail/Entity": "Objekt",

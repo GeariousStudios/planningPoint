@@ -12,7 +12,10 @@ namespace backend.Dtos.MasterPlan
         public List<MasterPlanFieldDto> Fields { get; set; } = new();
         public List<MasterPlanElementDto> Elements { get; set; } = new();
         public bool AllowRemovingElements { get; set; }
+        public bool AllowImport { get; set; }
+        public bool ReplaceOnImport { get; set; }
         public bool IsHidden { get; set; }
+        public int? GroupFieldId { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }

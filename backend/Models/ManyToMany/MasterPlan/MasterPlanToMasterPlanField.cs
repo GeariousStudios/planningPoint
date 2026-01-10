@@ -8,6 +8,8 @@ namespace backend.Models.ManyToMany
         public int MasterPlanFieldId { get; set; }
         public MasterPlanField MasterPlanField { get; set; } = null!;
 
+        public bool IsGroupKey { get; set; }
+
         public int Order { get; set; }
     }
 }

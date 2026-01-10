@@ -283,6 +283,7 @@ export type MasterPlanItem = {
   }[];
   isHidden?: boolean;
   allowRemovingElements?: boolean;
+  allowImport?: boolean;
 
   creationDate: string;
   updateDate: string;
@@ -296,6 +297,7 @@ export type MasterPlanFilters = {
   masterPlanFieldIds?: number[];
   isHidden?: boolean;
   allowRemovingElements?: boolean;
+  allowImport?: boolean;
 };
 
 // --- admin/manage/units/master-plan-fields/MasterPlanFieldsClient.tsx ---

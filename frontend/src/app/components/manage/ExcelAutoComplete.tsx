@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Input from "@/app/components/common/Input";
 import { createPortal } from "react-dom";
 
@@ -21,28 +21,45 @@ export default function ExcelAutocomplete({
   const [inputValue, setInputValue] = useState(value);
   const ref = useRef<HTMLDivElement>(null);
 
-  const matches = options.filter((o) =>
-    o.label.startsWith(inputValue.toUpperCase()),
-  );
+  const matches = useMemo(() => {
+    const q = inputValue.toUpperCase();
+    if (q === "") return options.slice(0, 200);
+    return options.filter((o) => o.label.startsWith(q)).slice(0, 200);
+  }, [options, inputValue]);
 
   const [portalPos, setPortalPos] = useState({ top: 0, left: 0, width: 0 });
 
-  useEffect(() => {
-    if (!open) return;
+  const updatePos = () => {
     if (!ref.current) return;
-
     const rect = ref.current.getBoundingClientRect();
-
     setPortalPos({
       top: rect.bottom,
       left: rect.left + 8,
       width: rect.width - 16,
     });
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    updatePos();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onResize = () => updatePos();
+    const onScroll = () => updatePos();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onScroll, true);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll, true);
+    };
   }, [open]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (!ref.current?.contains(target)) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -54,20 +71,19 @@ export default function ExcelAutocomplete({
     if (clean === "") {
       setInputValue("");
       onChange("");
-      setOpen(false);
+      setOpen(true);
       return;
     }
 
     if (clean.length > 3) return;
 
-    const matching = options.filter((o) => o.value.startsWith(clean));
-    if (matching.length === 0) return;
+    const hasAny = options.some((o) => o.value.startsWith(clean));
+    if (!hasAny) return;
 
     setInputValue(clean);
     setOpen(true);
 
-    const exact = options.find((o) => o.value === clean);
-    if (exact) onChange(clean);
+    if (options.some((o) => o.value === clean)) onChange(clean);
   };
 
   useEffect(() => {
@@ -81,6 +97,10 @@ export default function ExcelAutocomplete({
         placeholder={placeholder ?? ""}
         value={inputValue}
         onChange={(val) => trySetValue(String(val))}
+        onFocus={() => {
+          if (disabled) return;
+          setOpen(true);
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter" && matches.length > 0) {
             const v = matches[0].value;
@@ -88,17 +108,18 @@ export default function ExcelAutocomplete({
             onChange(v);
             setOpen(false);
           }
+          if (e.key === "Escape") setOpen(false);
         }}
         disabled={disabled}
       />
 
-      {!disabled && open &&
-        inputValue !== "" &&
+      {!disabled &&
+        open &&
         matches.length > 0 &&
         createPortal(
           <div
             style={{
-              position: "absolute",
+              position: "fixed",
               top: portalPos.top,
               left: portalPos.left,
               width: portalPos.width,

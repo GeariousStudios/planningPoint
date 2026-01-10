@@ -158,7 +158,7 @@ const MasterPlansClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name, units, isHidden, fields, unitGroupName, allowRemovingElements",
+      key: "name, units, isHidden, fields, unitGroupName, allowRemovingElements, allowImport",
       getValue: (item: MasterPlanItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
@@ -236,11 +236,25 @@ const MasterPlansClient = (props: Props) => {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span className="w-full font-semibold">
+              {t("MasterPlans/Allow removing elements")}:
+            </span>
             <span
               className={`${badgeClass} ${!item.allowRemovingElements ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
               {item.allowRemovingElements
+                ? t("Manage/Allowed")
+                : t("Manage/Disallowed")}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("MasterPlans/Allow import")}:
+            </span>
+            <span
+              className={`${badgeClass} ${!item.allowImport ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
+            >
+              {item.allowImport
                 ? t("Manage/Allowed")
                 : t("Manage/Disallowed")}
             </span>
@@ -389,6 +403,25 @@ const MasterPlansClient = (props: Props) => {
       responsivePriority: 5,
     },
     {
+      key: "allowImport",
+      label: t("MasterPlans/Allow import"),
+      sortingItem: "allowimportcount",
+      labelAsc: t("MasterPlans/allowed master plans"),
+      labelDesc: t("MasterPlans/disallowed master plans"),
+      classNameAddition: "w-[216px] min-w-[216px]",
+      childClassNameAddition: "w-[88px] min-w-[88px]",
+      getValue: (item: MasterPlanItem) => (
+        <span
+          className={`${badgeClass} ${item.allowImport ? "bg-(--unlocked)" : "bg-(--locked)"} w-full text-(--text-main-reverse)`}
+        >
+          {item.allowImport
+            ? t("Manage/Allowed")
+            : t("Manage/Disallowed")}
+        </span>
+      ),
+      responsivePriority: 6,
+    },
+    {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
@@ -425,19 +458,35 @@ const MasterPlansClient = (props: Props) => {
       }));
     },
 
-    showAllowed: filters.allowRemovingElements === true,
-    setShowAllowed: (val: boolean) => {
+    showAllowedRemove: filters.allowRemovingElements === true,
+    setShowAllowedRemove: (val: boolean) => {
       setFilters((prev) => ({
         ...prev,
         allowRemovingElements: val ? true : undefined,
       }));
     },
 
-    showDisallowed: filters.allowRemovingElements === false,
-    setShowDisallowed: (val: boolean) => {
+    showDisallowedRemove: filters.allowRemovingElements === false,
+    setShowDisallowedRemove: (val: boolean) => {
       setFilters((prev) => ({
         ...prev,
         allowRemovingElements: val ? false : undefined,
+      }));
+    },
+
+    showAllowedImport: filters.allowImport === true,
+    setShowAllowedImport: (val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        allowImport: val ? true : undefined,
+      }));
+    },
+
+    showDisallowedImport: filters.allowImport === false,
+    setShowDisallowedImport: (val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        allowImport: val ? false : undefined,
       }));
     },
 
@@ -545,15 +594,33 @@ const MasterPlansClient = (props: Props) => {
       options: [
         {
           label: t("MasterPlans/Allowed master plans"),
-          isSelected: filterControls.showAllowed,
-          setSelected: filterControls.setShowAllowed,
+          isSelected: filterControls.showAllowedRemove,
+          setSelected: filterControls.setShowAllowedRemove,
           count: counts?.allowRemovingElementsCount?.["Allowed"] ?? 0,
         },
         {
           label: t("MasterPlans/Disallowed master plans"),
-          isSelected: filterControls.showDisallowed,
-          setSelected: filterControls.setShowDisallowed,
+          isSelected: filterControls.showDisallowedRemove,
+          setSelected: filterControls.setShowDisallowedRemove,
           count: counts?.allowRemovingElementsCount?.["Disallowed"] ?? 0,
+        },
+      ],
+    },
+    {
+      label: t("MasterPlans/Allow import"),
+      breakpoint: "3xl",
+      options: [
+        {
+          label: t("MasterPlans/Allowed master plans"),
+          isSelected: filterControls.showAllowedImport,
+          setSelected: filterControls.setShowAllowedImport,
+          count: counts?.allowImportCount?.["Allowed"] ?? 0,
+        },
+        {
+          label: t("MasterPlans/Disallowed master plans"),
+          isSelected: filterControls.showDisallowedImport,
+          setSelected: filterControls.setShowDisallowedImport,
+          count: counts?.allowImportCount?.["Disallowed"] ?? 0,
         },
       ],
     },

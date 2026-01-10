@@ -122,6 +122,7 @@
   "MasterPlan/InUse": "Kan inte ta bort en huvudplan som används",
   "MasterPlan/AtLeastOneFieldRequired": "Minst ett fält måste läggas till i huvudplanen",
   "MasterPlan/CheckedOutByAnotherUser": "Huvudplanen är utcheckad av en annan användare",
+  "MasterPlan/InvalidGroupField": "Ogiltigt grupperingsfält",
 
   "MasterPlanField/NotFound": "Fältet kunde inte hittas i databasen",
   "MasterPlanField/Deleted": "Fältet borttagen!",
@@ -244,6 +245,7 @@
   "AuditTrail/MasterPlanField": "Fält",
   "AuditTrail/MasterPlanFields": "Fält",
   "AuditTrail/AllowRemovingElements": "Tillåt borttagning av element",
+  "AuditTrail/AllowImport": "Tillåt import från Excel",
   "AuditTrail/Number": "Nummer",
   "AuditTrail/Text": "Text",
   "AuditTrail/Boolean": "Boolean",
@@ -260,8 +262,10 @@
   "AuditTrail/OldOrder": "Gammal ordning",
   "AuditTrail/NewOrder": "Ny ordning",
   "AuditTrail/ReverseColor": "Omvänd färg",
-  "AuditTrail/Mappings": "Importregler",
-  "AuditTrail/MasterPlanFieldMapping": "Importregler för huvudplan",
+  "AuditTrail/Mappings": "Mappningar",
+  "AuditTrail/MasterPlanImportRules": "Importregler för huvudplan",
+  "AuditTrail/GroupKey": "Gruppnyckel",
+  "AuditTrail/ReplaceOnImport": "Ersätt huvudplan vid import",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

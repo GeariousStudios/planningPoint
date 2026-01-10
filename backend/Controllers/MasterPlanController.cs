@@ -69,6 +69,7 @@ namespace backend.Controllers
             [FromQuery] int[]? fieldIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] bool? allowRemovingElements = null,
+            [FromQuery] bool? allowImport = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
@@ -91,6 +92,11 @@ namespace backend.Controllers
             if (allowRemovingElements.HasValue)
             {
                 query = query.Where(mp => mp.AllowRemovingElements == allowRemovingElements.Value);
+            }
+
+            if (allowImport.HasValue)
+            {
+                query = query.Where(mp => mp.AllowImport == allowImport.Value);
             }
 
             if (unitGroupIds?.Any() == true)
@@ -140,6 +146,9 @@ namespace backend.Controllers
                 "allowremovingelements" => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.AllowRemovingElements)
                     : query.OrderBy(mp => mp.AllowRemovingElements),
+                "allowimport" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.AllowImport)
+                    : query.OrderBy(mp => mp.AllowImport),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.Id)
                     : query.OrderBy(mp => mp.Id),
@@ -160,6 +169,12 @@ namespace backend.Controllers
                 ["Disallowed"] = await _context.MasterPlans.CountAsync(mp =>
                     !mp.AllowRemovingElements
                 ),
+            };
+
+            var allowImportCount = new Dictionary<string, int>
+            {
+                ["Allowed"] = await _context.MasterPlans.CountAsync(mp => mp.AllowImport),
+                ["Disallowed"] = await _context.MasterPlans.CountAsync(mp => !mp.AllowImport),
             };
 
             var unitGroupCount = _context
@@ -202,6 +217,7 @@ namespace backend.Controllers
                         .ToList(),
                     IsHidden = t.IsHidden,
                     AllowRemovingElements = t.AllowRemovingElements,
+                    AllowImport = t.AllowImport,
                     UnitGroupId = t.UnitGroupId,
                     UnitGroupName = t.UnitGroup.Name,
                     Fields = t
@@ -237,6 +253,10 @@ namespace backend.Controllers
                                 .ToList(),
                         })
                         .ToList(),
+                    GroupFieldId = t
+                        .MasterPlanToMasterPlanFields.Where(x => x.IsGroupKey)
+                        .Select(x => (int?)x.MasterPlanFieldId)
+                        .FirstOrDefault(),
 
                     // Meta data.
                     CreationDate = t.CreationDate,
@@ -259,6 +279,7 @@ namespace backend.Controllers
                 {
                     visibilityCount,
                     allowRemovingElementsCount,
+                    allowImportCount,
                     unitGroupCount,
                     unitCount,
                     fieldCount,
@@ -304,6 +325,8 @@ namespace backend.Controllers
                     .ToListAsync(),
                 IsHidden = masterPlan.IsHidden,
                 AllowRemovingElements = masterPlan.AllowRemovingElements,
+                AllowImport = masterPlan.AllowImport,
+                ReplaceOnImport = masterPlan.ReplaceOnImport,
                 UnitGroupId = masterPlan.UnitGroupId,
                 UnitGroupName = masterPlan.UnitGroup.Name ?? unknownGroup,
                 Fields = masterPlan
@@ -342,6 +365,10 @@ namespace backend.Controllers
                             .ToList(),
                     })
                     .ToList(),
+                GroupFieldId = masterPlan
+                    .MasterPlanToMasterPlanFields.Where(x => x.IsGroupKey)
+                    .Select(x => (int?)x.MasterPlanFieldId)
+                    .FirstOrDefault(),
 
                 // Check-out system.
                 IsCheckedOut = masterPlan.IsCheckedOut,
@@ -430,6 +457,9 @@ namespace backend.Controllers
                     ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
+                    ["AllowImport"] = masterPlan.AllowImport
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["IsHidden"] = masterPlan.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -503,6 +533,16 @@ namespace backend.Controllers
                 );
             }
 
+            if (
+                dto.GroupFieldId.HasValue
+                && !dto.MasterPlanFieldIds.Contains(dto.GroupFieldId.Value)
+            )
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("MasterPlan/InvalidGroupField", lang) }
+                );
+            }
+
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -511,6 +551,7 @@ namespace backend.Controllers
                 Name = dto.Name,
                 IsHidden = dto.IsHidden,
                 AllowRemovingElements = dto.AllowRemovingElements,
+                AllowImport = dto.AllowImport,
                 UnitGroup = unitGroup,
                 MasterPlanToMasterPlanFields = dto
                     .MasterPlanFieldIds.Select(
@@ -519,6 +560,8 @@ namespace backend.Controllers
                             {
                                 MasterPlanFieldId = id,
                                 Order = index,
+                                IsGroupKey =
+                                    dto.GroupFieldId.HasValue && dto.GroupFieldId.Value == id,
                                 MasterPlanField = _context.MasterPlanFields.First(m => m.Id == id),
                             }
                     )
@@ -540,6 +583,7 @@ namespace backend.Controllers
                 Name = masterPlan.Name,
                 IsHidden = masterPlan.IsHidden,
                 AllowRemovingElements = masterPlan.AllowRemovingElements,
+                AllowImport = masterPlan.AllowImport,
                 UnitGroupId = masterPlan.UnitGroupId,
                 Fields = masterPlan
                     .MasterPlanToMasterPlanFields.OrderBy(x => x.Order)
@@ -584,6 +628,9 @@ namespace backend.Controllers
                         )
                         : "—",
                     ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["AllowImport"] = masterPlan.AllowImport
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
                     ["IsHidden"] = masterPlan.IsHidden
@@ -661,6 +708,16 @@ namespace backend.Controllers
                 );
             }
 
+            if (
+                dto.GroupFieldId.HasValue
+                && !dto.MasterPlanFieldIds.Contains(dto.GroupFieldId.Value)
+            )
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("MasterPlan/InvalidGroupField", lang) }
+                );
+            }
+
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -682,19 +739,25 @@ namespace backend.Controllers
                 ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
                     ? new[] { "Common/Yes" }
                     : new[] { "Common/No" },
+                ["AllowImport"] = masterPlan.AllowImport
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["IsHidden"] = masterPlan.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
             masterPlan.Name = dto.Name;
             masterPlan.IsHidden = dto.IsHidden;
             masterPlan.AllowRemovingElements = dto.AllowRemovingElements;
+            masterPlan.AllowImport = dto.AllowImport;
             masterPlan.MasterPlanToMasterPlanFields = dto
                 .MasterPlanFieldIds.Select(
                     (id, index) =>
                         new MasterPlanToMasterPlanField
                         {
+                            MasterPlanId = masterPlan.Id,
                             MasterPlanFieldId = id,
                             Order = index,
+                            IsGroupKey = dto.GroupFieldId.HasValue && dto.GroupFieldId.Value == id,
                             MasterPlanField = _context.MasterPlanFields.First(m => m.Id == id),
                         }
                 )
@@ -712,6 +775,7 @@ namespace backend.Controllers
                 Name = masterPlan.Name,
                 IsHidden = masterPlan.IsHidden,
                 AllowRemovingElements = masterPlan.AllowRemovingElements,
+                AllowImport = masterPlan.AllowImport,
                 UnitGroupId = masterPlan.UnitGroupId,
                 Fields = masterPlan
                     .MasterPlanToMasterPlanFields.OrderBy(x => x.Order)
@@ -757,6 +821,9 @@ namespace backend.Controllers
                             )
                             : "—",
                         ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                        ["AllowImport"] = masterPlan.AllowImport
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },
                         ["IsHidden"] = masterPlan.IsHidden

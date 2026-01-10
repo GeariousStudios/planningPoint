@@ -26,7 +26,7 @@ namespace backend.Services
                 ("MasterPlan", null),
                 ("MasterPlanField", null),
                 ("MasterPlanElement", null),
-                ("MasterPlanFieldMapping", null),
+                ("MasterPlanImportRules", null),
             },
 
             // Developers can see all actions.
@@ -41,7 +41,7 @@ namespace backend.Services
                 ("MasterPlan", null),
                 ("MasterPlanField", null),
                 ("MasterPlanElement", null),
-                ("MasterPlanFieldMapping", null),
+                ("MasterPlanImportRules", null),
             },
         };
     }
