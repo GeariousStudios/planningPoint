@@ -118,20 +118,24 @@ const LayoutWrapper = (props: Props) => {
   const breadcrumbTranslation = useMemo<CrumbMap>(
     () => ({
       // --- General ---
-      manage: { label: t("Common/Manage"), clickable: false },
+      manage: { label: t("Common/Manage"), clickable: true },
       "audit-trail": { label: t("Navbar/Audit trail"), clickable: false },
 
       // --- Report ---
-      report: { label: t("Navbar/Report"), clickable: false },
+      report: { label: t("Navbar/Report"), clickable: true },
       unit: { label: t("Common/Units"), clickable: false },
 
       // --- Plan ---
-      plan: { label: t("Navbar/Plan"), clickable: false },
-      "master-plans": { label: t("Common/Master plans"), clickable: false },
-      "import-rules": { label: t("ImportRules/Import rules"), clickable: false },
+      plan: { label: t("Navbar/Plan"), clickable: true },
+      "plan/master-plans": {
+        label: t("Common/Master plans"),
+        clickable: false,
+      },
+      "master-plans": { label: t("Common/Master plans"), clickable: true },
+      "import-rules": { label: t("ImportRules/Import rules"), clickable: true },
       "master-plan-fields": {
         label: t("Common/Master plan fields"),
-        clickable: false,
+        clickable: true,
       },
 
       // --- Admin ---
@@ -139,27 +143,27 @@ const LayoutWrapper = (props: Props) => {
 
       "unit-groups": {
         label: t("Common/Groups"),
-        clickable: false,
+        clickable: true,
       },
       units: { label: t("Common/Units"), clickable: false },
-      categories: { label: t("Common/Categories"), clickable: false },
+      categories: { label: t("Common/Categories"), clickable: true },
       "unit-columns": {
         label: t("Common/Columns"),
-        clickable: false,
+        clickable: true,
       },
 
       news: { label: t("Common/News"), clickable: false },
-      "news-types": { label: t("Common/News types"), clickable: false },
+      "news-types": { label: t("Common/News types"), clickable: true },
 
-      shifts: { label: t("Common/Shifts"), clickable: false },
-      "shift-teams": { label: t("Common/Shift teams"), clickable: false },
+      shifts: { label: t("Common/Shifts"), clickable: true },
+      "shift-teams": { label: t("Common/Shift teams"), clickable: true },
 
       "planned-stops": { label: t("Common/Planned stops"), clickable: false },
-      "stop-types": { label: t("Common/Stop types"), clickable: false },
+      "stop-types": { label: t("Common/Stop types"), clickable: true },
 
       // --- Developer ---
       developer: { label: t("Common/Developer"), clickable: false },
-      users: { label: t("Common/Users"), clickable: false },
+      users: { label: t("Common/Users"), clickable: true },
     }),
     [t],
   );
@@ -192,7 +196,12 @@ const LayoutWrapper = (props: Props) => {
     for (let index = 0; index < filteredParts.length; index++) {
       const part = filteredParts[index];
       const key = part.toLowerCase();
-      const translation = breadcrumbTranslation[key];
+      const prefixKey = filteredParts
+        .slice(0, index + 1)
+        .join("/")
+        .toLowerCase();
+      const translation =
+        breadcrumbTranslation[prefixKey] ?? breadcrumbTranslation[key];
       const isLast = index === filteredParts.length - 1;
 
       // --- Special cases ---
@@ -243,7 +252,7 @@ const LayoutWrapper = (props: Props) => {
         {
           label: t("Message/Invalid"),
           href: "/",
-          clickable: false,
+          clickable: true,
           isActive: true,
         },
       ];

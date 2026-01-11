@@ -22,6 +22,7 @@ import {
   MoonIcon as OutlineMoonIcon,
   SunIcon as OutlineSunIcon,
   Bars2Icon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
@@ -58,6 +59,7 @@ const Topbar = (props: Props) => {
   // --- Refs ---
   const userIconRef = useRef<HTMLButtonElement>(null);
   const bellIconRef = useRef<HTMLButtonElement>(null);
+  const crumbsIconRef = useRef<HTMLButtonElement>(null);
 
   // --- States ---
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -66,6 +68,7 @@ const Topbar = (props: Props) => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [userIconClicked, setUserIconClicked] = useState(false);
   const [bellIconClicked, setBellIconClicked] = useState(false);
+  const [crumbsIconClicked, setCrumbsIconClicked] = useState(false);
 
   // --- Other ---
   const { handbook } = useHandbook();
@@ -84,6 +87,8 @@ const Topbar = (props: Props) => {
   } = useAuth();
   const { toggleTheme, currentTheme } = useTheme();
   const { toggleLanguage, currentLanguage } = useLanguage();
+  const breadcrumbs = props.breadcrumbs ?? [];
+  const hasBreadcrumbs = breadcrumbs.length > 0;
 
   // --- HIDE TOPBAR ON SCROLL ---
   useEffect(() => {
@@ -139,12 +144,13 @@ const Topbar = (props: Props) => {
   const closeAllMenus = () => {
     setUserIconClicked(false);
     setBellIconClicked(false);
+    setCrumbsIconClicked(false);
   };
 
   return (
     <>
       {/* --- MODAL(S) --- */}
-       <HandbookModal
+      <HandbookModal
         isOpen={isHandbookModalOpen}
         onClose={() => setIsHandbookModalOpen(false)}
         content={handbook}
@@ -182,53 +188,103 @@ const Topbar = (props: Props) => {
 
               {props.breadcrumbsLoading ? (
                 <span className="animate-shimmer h-6 w-64" />
-              ) : props.breadcrumbs?.length ? (
+              ) : breadcrumbs.length ? (
                 <div className="flex items-center">
-                  {/* <div className="flex flex-wrap md:hidden">
-                    {props.breadcrumbs.length > 1 && (
-                      <>
-                        <span className="xs:inline hidden md:hidden">
-                          ...&nbsp;/&nbsp;
-                        </span>
-                        <span className="font-semibold break-all text-(--accent-color)">
-                          {props.breadcrumbs.at(-1)?.label}
-                        </span>
-                      </>
-                    )}
-                    {props.breadcrumbs.length === 1 && (
-                      <span className="font-semibold text-(--accent-color)">
-                        {props.breadcrumbs[0].label}
-                      </span>
-                    )}
-                  </div> 
+                  {breadcrumbs.length ? (
+                    <>
+                      {/* --- Mobile (<640px) --- */}
+                      <div className="flex flex-wrap items-center sm:hidden">
+                        {breadcrumbs.length > 1 && (
+                          <div className="relative">
+                            <button
+                              ref={crumbsIconRef}
+                              onClick={() => {
+                                closeAllMenus();
+                                setCrumbsIconClicked(!crumbsIconClicked);
+                              }}
+                              aria-label="Breadcrumbs"
+                              className={`${crumbsIconClicked ? "bg-(--bg-navbar-link) text-(--accent-color)" : ""} flex h-8 min-h-8 w-8 min-w-8 cursor-pointer items-center justify-center rounded-full font-semibold transition-colors hover:bg-(--bg-navbar-link) hover:text-(--accent-color)`}
+                            >
+                              <span className="">. . .</span>
+                            </button>
 
-                  <div className="hidden flex-wrap items-center md:flex"> */}
-                  <div className="flex flex-wrap items-center">
-                    {props.breadcrumbs.map((item, idx) => (
-                      <span key={item.href}>
-                        {item.clickable ? (
-                          <Link href={item.href} className="">
-                            {item.label}
-                          </Link>
-                        ) : (
-                          <span
-                            className={
-                              item.isActive
-                                ? "font-semibold text-(--accent-color)"
-                                : !item.clickable
-                                  ? "opacity-50"
-                                  : ""
-                            }
-                          >
-                            {item.label}
+                            <MenuDropdown
+                              triggerRef={crumbsIconRef}
+                              isOpen={crumbsIconClicked}
+                              onClose={() => setCrumbsIconClicked(false)}
+                              autoWidth
+                              alignLeft
+                            >
+                              <div className="flex flex-col gap-2">
+                                {breadcrumbs.slice(0, -1).map((item) =>
+                                  item.clickable ? (
+                                    <span
+                                      key={item.href}
+                                      className="transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline"
+                                    >
+                                      <Link
+                                        href={item.href}
+                                        onClick={() =>
+                                          setCrumbsIconClicked(false)
+                                        }
+                                        className="flex items-center gap-2 whitespace-nowrap"
+                                      >
+                                        {item.label}
+                                        <ArrowRightIcon className="h-3 min-h-3 w-3 min-w-3" />
+                                      </Link>
+                                    </span>
+                                  ) : (
+                                    <span
+                                      key={item.href}
+                                      className="whitespace-nowrap opacity-50"
+                                    >
+                                      {item.label}
+                                    </span>
+                                  ),
+                                )}
+                              </div>
+                            </MenuDropdown>
+                          </div>
+                        )}
+
+                        {breadcrumbs.length > 1 && <span>&nbsp;/&nbsp;</span>}
+
+                        {/* --- Active crumb --- */}
+                        <span className="font-semibold text-(--accent-color)">
+                          {breadcrumbs.at(-1)?.label}
+                        </span>
+                      </div>
+
+                      {/* --- Desktop (>=640px) --- */}
+                      <div className="hidden flex-wrap items-center sm:flex">
+                        {breadcrumbs.map((item, idx) => (
+                          <span key={item.href}>
+                            {item.clickable ? (
+                              <Link
+                                href={item.href}
+                                className="transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline"
+                              >
+                                {item.label}
+                              </Link>
+                            ) : (
+                              <span
+                                className={
+                                  item.isActive
+                                    ? "font-semibold text-(--accent-color)"
+                                    : "opacity-50"
+                                }
+                              >
+                                {item.label}
+                              </span>
+                            )}
+                            {idx !== breadcrumbs.length - 1 && (
+                              <span>&nbsp;/&nbsp;</span>
+                            )}
                           </span>
-                        )}
-                        {idx !== (props.breadcrumbs?.length ?? 0) - 1 && (
-                          <span>&nbsp;/&nbsp;</span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
                 </div>
               ) : isLoggedIn ? (
                 <div className="flex flex-wrap items-center">
@@ -257,7 +313,7 @@ const Topbar = (props: Props) => {
                   setIsHandbookModalOpen(!isHandbookModalOpen);
                 }}
               >
-                <span className="group relative flex h-6 w-6 items-center text-2xl justify-center">
+                <span className="group relative flex h-6 w-6 items-center justify-center text-2xl">
                   <span
                     className={`${isHandbookModalOpen ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                   >

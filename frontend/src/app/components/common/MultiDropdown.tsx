@@ -164,6 +164,7 @@ const MultiDropdown = ({
             : undefined
         }
         onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
         <li role="option" aria-hidden="true" hidden></li>
