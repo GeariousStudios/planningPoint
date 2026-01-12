@@ -24,6 +24,14 @@ type MasterPlanElement = {
   originalStruckElement?: boolean | null;
 };
 
+type MasterPlanRevision = {
+  id: number;
+  revisionNumber: number;
+  label: string;
+  archivedAt: string;
+  archivedBy: string;
+};
+
 export const useMasterPlan = (
   t: any,
   apiUrl: string | undefined,
@@ -34,6 +42,7 @@ export const useMasterPlan = (
   // --- Refs ---
   const skipNextInfoRef = useRef(false);
   const constraintsRef = useRef(null);
+  const isViewingRevisionRef = useRef(false);
   const dragControls = useDragControls();
 
   // --- States ---
@@ -42,7 +51,7 @@ export const useMasterPlan = (
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isManualRefresh, setIsManualRefresh] = useState(false);
-  const [refetchData, setRefetchData] = useState(false);
+  const [refetchTick, setRefetchTick] = useState(0);
   const [masterPlans, setMasterPlans] = useState<
     { id: number | string; elements: MasterPlanElement[]; [key: string]: any }[]
   >([]);
@@ -85,6 +94,11 @@ export const useMasterPlan = (
   const startDelay = 600;
   const acceleration = 100;
 
+  const [revisions, setRevisions] = useState<MasterPlanRevision[]>([]);
+  const [selectedRevisionId, setSelectedRevisionId] =
+    useState<string>("latest");
+  const [isViewingRevision, setIsViewingRevision] = useState(false);
+
   // --- Other ---
   const { notify } = useToast();
   const { username } = useAuth();
@@ -99,7 +113,10 @@ export const useMasterPlan = (
   // --- Initialization ---
   useEffect(() => {
     const fetchMasterPlan = async () => {
-      if (!masterPlanId) return;
+      if (!masterPlanId) {
+        return;
+      }
+
       try {
         if (firstFetch) setIsLoading(true);
         const response = await fetch(
@@ -113,24 +130,22 @@ export const useMasterPlan = (
           },
         );
 
-        if (!response.ok) return;
+        if (!response.ok) {
+          return;
+        }
 
         const data = await response.json();
-        setMasterPlans([
-          {
-            ...data,
-            elements: (data.elements ?? []).map((el: any, index: number) => ({
-              ...el,
-              originalOrder: index,
-              originalGroupId: el.groupId,
-              originalStruckElement: el.struckElement,
-              values: el.values.map((v: any) => ({
-                ...v,
-                originalValue: v.value,
-              })),
-            })),
-          },
-        ]);
+
+        if (!isViewingRevisionRef.current) {
+          applyPlanToState(data);
+          setIsViewingRevision(false);
+          setSelectedRevisionId("latest");
+        }
+
+        if (!Array.isArray(masterPlanId)) {
+          fetchRevisions(String(masterPlanId));
+        }
+
         setTotalItems(data.elements?.length ?? 0);
 
         const options =
@@ -147,7 +162,10 @@ export const useMasterPlan = (
 
         // --- Check initial check status ---
         const checkInitialStatus = async () => {
-          if (!masterPlanId || !apiUrl) return;
+          if (!masterPlanId || !apiUrl) {
+            return;
+          }
+
           try {
             const response = await fetch(
               `${apiUrl}/master-plan/check/status/${masterPlanId}`,
@@ -160,15 +178,21 @@ export const useMasterPlan = (
                 },
               },
             );
-            if (!response.ok) return;
+
+            if (!response.ok) {
+              return;
+            }
+
             const data = await response.json();
             setIsEditing(data.isCheckedOutByMe || false);
             setCheckedOutBy(data.checkedOutBy || null);
           } catch {}
         };
-        checkInitialStatus();
+
+        if (!isViewingRevision) {
+          checkInitialStatus();
+        }
       } finally {
-        setRefetchData(false);
         setIsManualRefresh(false);
 
         if (firstFetch) {
@@ -178,14 +202,16 @@ export const useMasterPlan = (
       }
     };
 
-    if (refetchData || firstFetch) {
-      fetchMasterPlan();
-    }
-  }, [refetchData]);
+    fetchMasterPlan();
+  }, [refetchTick, masterPlanId, apiUrl, token]);
 
   // --- Handle import file ---
   const handleImport = async (file: File) => {
     if (!file) {
+      return;
+    }
+
+    if (isViewingRevision) {
       return;
     }
 
@@ -316,6 +342,116 @@ export const useMasterPlan = (
     } finally {
       setImporting(false);
     }
+  };
+
+  // --- Revision management ---
+  const fetchRevisions = async (id: string) => {
+    const res = await fetch(`${apiUrl}/master-plan/${id}/revisions`, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Language": localStorage.getItem("language") || "sv",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    setRevisions(data.items ?? []);
+  };
+
+  const fetchRevisionSnapshot = async (id: string, revisionId: string) => {
+    const res = await fetch(
+      `${apiUrl}/master-plan/${id}/revisions/${revisionId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return data.masterPlan ?? null;
+  };
+
+  const applyPlanToState = (data: any) => {
+    setMasterPlans([
+      {
+        ...data,
+        elements: (data.elements ?? []).map((el: any, index: number) => ({
+          ...el,
+          originalOrder: index,
+          originalGroupId: el.groupId,
+          originalStruckElement: el.struckElement,
+          values: (el.values ?? []).map((v: any) => ({
+            ...v,
+            originalValue: v.value,
+          })),
+        })),
+      },
+    ]);
+
+    setTotalItems(data.elements?.length ?? 0);
+
+    const options =
+      data.fields?.map((f: any) => ({
+        label: f.name,
+        value: f.id.toString(),
+        dataType: f.dataType,
+        alignment: f.alignment,
+        isHidden: f.isHidden ?? false,
+        id: f.id,
+      })) ?? [];
+
+    setFieldOptions(options);
+  };
+
+  const selectRevision = async (value: string) => {
+    const id = Array.isArray(masterPlanId) ? masterPlanId[0] : masterPlanId;
+    if (!id) {
+      return;
+    }
+
+    if (value === "latest") {
+      setSelectedRevisionId("latest");
+      setIsViewingRevision(false);
+      isViewingRevisionRef.current = false;
+      requestRefetch();
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const snapshot = await fetchRevisionSnapshot(String(id), value);
+      if (!snapshot) {
+        return;
+      }
+
+      setSelectedRevisionId(value);
+      setIsViewingRevision(true);
+      isViewingRevisionRef.current = true;
+      setIsEditing(false);
+      setEditMode("element");
+      clearRemovedElements();
+      setSelectedId(null);
+      applyPlanToState(snapshot);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    isViewingRevisionRef.current = isViewingRevision;
+  }, [isViewingRevision]);
+
+  const refreshRevisions = async () => {
+    const id = Array.isArray(masterPlanId) ? masterPlanId[0] : masterPlanId;
+    if (!id) return;
+    await fetchRevisions(String(id));
   };
 
   // --- Handle search ---
@@ -616,7 +752,13 @@ export const useMasterPlan = (
 
   // --- Handle save ---
   const handleSave = async () => {
-    if (!masterPlans.length) return;
+    if (!masterPlans.length) {
+      return;
+    }
+
+    if (isViewingRevision) {
+      return;
+    }
 
     const plan = masterPlans[0];
     try {
@@ -736,7 +878,7 @@ export const useMasterPlan = (
 
       setIsEditing(false);
       setEditMode("element");
-      setRefetchData(true);
+      requestRefetch();
       await handleCheck(true);
       clearRemovedElements();
       setSelectedId(null);
@@ -749,7 +891,7 @@ export const useMasterPlan = (
   const handleAbortChanges = async () => {
     setIsEditing(false);
     setEditMode("element");
-    setRefetchData(true);
+    requestRefetch();
     await handleCheck(true, true);
     clearRemovedElements();
     setSelectedId(null);
@@ -816,70 +958,103 @@ export const useMasterPlan = (
 
     connection.on(
       "MasterPlanForceTakenOver",
-      ({ masterPlanId: id, message, forcedBy }) => {
-        if (String(id) === String(masterPlanId)) {
-          if (!skipNextInfoRef.current) {
-            notify("error", t(message, { forcedBy }, 6000));
-          }
+      async ({ masterPlanId: id, message, forcedBy }) => {
+        if (String(id) !== String(masterPlanId)) {
+          return;
+        }
 
-          skipNextInfoRef.current = false;
-          setIsEditing(false);
+        if (!skipNextInfoRef.current) {
+          notify("error", t(message, { forcedBy }, 6000));
+        }
+
+        skipNextInfoRef.current = false;
+
+        setCheckedOutBy(forcedBy || null);
+        setIsEditing(false);
+
+        await refreshRevisions();
+
+        if (!isViewingRevisionRef.current) {
           setEditMode("element");
           clearRemovedElements();
           setSelectedId(null);
-          setRefetchData(true);
+          requestRefetch();
         }
       },
     );
 
     connection.on(
       "MasterPlanCheckedIn",
-      ({ masterPlanId: id, message, checkedInBy }) => {
-        if (String(id) === String(masterPlanId)) {
-          if (checkedInBy !== username && !skipNextInfoRef.current) {
-            notify("info", t(message, { checkedInBy }, 6000));
-          }
+      async ({ masterPlanId: id, message, checkedInBy }) => {
+        if (String(id) !== String(masterPlanId)) {
+          return;
+        }
 
-          skipNextInfoRef.current = false;
-          setIsEditing(false);
+        if (checkedInBy !== username && !skipNextInfoRef.current) {
+          notify("info", t(message, { checkedInBy }, 6000));
+        }
+
+        skipNextInfoRef.current = false;
+
+        setCheckedOutBy(null);
+        setIsEditing(false);
+
+        await refreshRevisions();
+
+        if (!isViewingRevisionRef.current) {
           setEditMode("element");
           clearRemovedElements();
           setSelectedId(null);
-          setRefetchData(true);
+          requestRefetch();
         }
       },
     );
 
     connection.on(
       "MasterPlanCheckInAborted",
-      ({ masterPlanId: id, message, checkedInBy }) => {
-        if (String(id) === String(masterPlanId)) {
-          if (checkedInBy !== username && !skipNextInfoRef.current) {
-            notify("info", t(message, { checkedInBy }, 6000));
-          }
+      async ({ masterPlanId: id, message, checkedInBy }) => {
+        if (String(id) !== String(masterPlanId)) {
+          return;
+        }
 
-          skipNextInfoRef.current = false;
-          setIsEditing(false);
+        if (checkedInBy !== username && !skipNextInfoRef.current) {
+          notify("info", t(message, { checkedInBy }, 6000));
+        }
+
+        skipNextInfoRef.current = false;
+        setIsEditing(false);
+
+        await refreshRevisions();
+
+        if (!isViewingRevisionRef.current) {
           setEditMode("element");
           clearRemovedElements();
           setSelectedId(null);
-          setRefetchData(true);
+          requestRefetch();
         }
       },
     );
 
     connection.on(
       "MasterPlanCheckedOut",
-      ({ masterPlanId: id, message, checkedOutBy }) => {
-        if (String(id) === String(masterPlanId)) {
-          if (checkedOutBy !== username && !skipNextInfoRef.current) {
-            notify("info", t(message, { checkedOutBy }, 6000));
-          }
+      async ({ masterPlanId: id, message, checkedOutBy }) => {
+        if (String(id) !== String(masterPlanId)) {
+          return;
+        }
 
-          skipNextInfoRef.current = false;
-          setCheckedOutBy(checkedOutBy || null);
-          setIsEditing(false);
-          setRefetchData(true);
+        if (checkedOutBy !== username && !skipNextInfoRef.current) {
+          notify("info", t(message, { checkedOutBy }, 6000));
+        }
+
+        skipNextInfoRef.current = false;
+
+        setCheckedOutBy(checkedOutBy || null);
+        setIsEditing(false);
+
+        await refreshRevisions();
+
+        if (!isViewingRevisionRef.current) {
+          requestRefetch();
         }
       },
     );
@@ -1222,6 +1397,8 @@ export const useMasterPlan = (
   const totalGroups = groupedElements.length;
   const totalPages = Math.max(1, Math.ceil(totalGroups / itemsPerPage));
 
+  const requestRefetch = () => setRefetchTick((x) => x + 1);
+
   return {
     setIsCheckingOut,
     setIsCheckingIn,
@@ -1229,7 +1406,8 @@ export const useMasterPlan = (
     isCheckingIn,
     isLoading,
     isManualRefresh,
-    refetchData,
+    requestRefetch,
+    refetchTick,
     masterPlans,
     fieldOptions,
     selectedFields,
@@ -1250,7 +1428,6 @@ export const useMasterPlan = (
     setItemsPerPage,
     setIsEditing,
     setIsManualRefresh,
-    setRefetchData,
     setGroupCounter,
     setIsStrikeMode,
     checkedOutBy,
@@ -1288,5 +1465,9 @@ export const useMasterPlan = (
     handleImport,
     importing,
     setImporting,
+    revisions,
+    selectedRevisionId,
+    isViewingRevision,
+    selectRevision,
   };
 };

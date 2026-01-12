@@ -1,7 +1,7 @@
-import DeveloperManageWrapper from "./DeveloperManageWrapper";
+import DeveloperManageNavWrapper from "./DeveloperManageNavWrapper";
 
-const DeveloperManage = () => {
-  return <DeveloperManageWrapper />;
+const DeveloperManageNav = () => {
+  return <DeveloperManageNavWrapper />;
 };
 
-export default DeveloperManage;
+export default DeveloperManageNav;

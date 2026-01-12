@@ -1,4 +1,3 @@
-using System.Net.Mail;
 using System.Text.Json;
 using backend.Data;
 using backend.Dtos.MasterPlan;
@@ -1031,6 +1030,72 @@ namespace backend.Controllers
                     masterPlan.CheckedOutBy,
                     masterPlan.CheckedOutAt,
                     IsCheckedOutByMe = masterPlan.CheckedOutBy == username,
+                }
+            );
+        }
+
+        [HttpGet("{id}/revisions")]
+        public async Task<IActionResult> GetRevisions(int id)
+        {
+            var lang = await GetLangAsync();
+            var exists = await _context.MasterPlans.AnyAsync(x => x.Id == id);
+
+            if (!exists)
+            {
+                return NotFound(new { message = await _t.GetAsync("MasterPlan/NotFound", lang) });
+            }
+
+            var items = await _context
+                .MasterPlanRevisions.AsNoTracking()
+                .Where(r => r.MasterPlanId == id)
+                .OrderByDescending(r => r.RevisionNumber)
+                .Select(r => new MasterPlanRevisionDto
+                {
+                    Id = r.Id,
+                    RevisionNumber = r.RevisionNumber,
+                    Label = "R-" + r.RevisionNumber,
+                    ArchivedAt = r.ArchivedAt,
+                    ArchivedBy = r.ArchivedBy,
+                })
+                .ToListAsync();
+
+            return Ok(new { items });
+        }
+
+        [HttpGet("{id}/revisions/{revisionId}")]
+        public async Task<IActionResult> GetRevision(int id, int revisionId)
+        {
+            var lang = await GetLangAsync();
+
+            var revision = await _context
+                .MasterPlanRevisions.AsNoTracking()
+                .Where(r => r.MasterPlanId == id && r.Id == revisionId)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.RevisionNumber,
+                    r.ArchivedAt,
+                    r.ArchivedBy,
+                    r.SnapshotJson,
+                })
+                .FirstOrDefaultAsync();
+
+            if (revision == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("MasterPlan/NotFound", lang) });
+            }
+
+            var dto = JsonSerializer.Deserialize<MasterPlanDto>(revision.SnapshotJson);
+
+            return Ok(
+                new
+                {
+                    revisionId = revision.Id,
+                    revisionNumber = revision.RevisionNumber,
+                    label = "R-" + revision.RevisionNumber,
+                    archivedAt = revision.ArchivedAt,
+                    archivedBy = revision.ArchivedBy,
+                    masterPlan = dto,
                 }
             );
         }

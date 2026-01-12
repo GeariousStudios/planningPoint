@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Message from "../../components/common/Message";
 import { useAuth } from "@/app/context/AuthContext";
 
-const DeveloperManageClient = dynamic(() => import("./DeveloperManageClient"), {
+const DeveloperManageNavClient = dynamic(() => import("./DeveloperManageNavClient"), {
   ssr: false,
   loading: () => (
     <>
@@ -19,7 +19,7 @@ const DeveloperManageClient = dynamic(() => import("./DeveloperManageClient"), {
   ),
 });
 
-const DeveloperManageWrapper = () => {
+const DeveloperManageNavWrapper = () => {
   const { isAuthReady, isDev, isConnected } = useAuth();
 
   if (!isAuthReady) {
@@ -55,7 +55,7 @@ const DeveloperManageWrapper = () => {
     );
   }
 
-  return <DeveloperManageClient isConnected={isConnected} />;
+  return <DeveloperManageNavClient isConnected={isConnected} />;
 };
 
-export default DeveloperManageWrapper;
+export default DeveloperManageNavWrapper;

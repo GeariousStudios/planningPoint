@@ -18,18 +18,21 @@ namespace backend.Controllers
         private readonly UserService _userService;
         private readonly ITranslationService _t;
         private readonly AuditTrailService _audit;
+        private readonly MasterPlanRevisionService _revisionService;
 
         public MasterPlanElementController(
             AppDbContext context,
             UserService userService,
             ITranslationService t,
-            AuditTrailService audit
+            AuditTrailService audit,
+            MasterPlanRevisionService revisionService
         )
         {
             _context = context;
             _userService = userService;
             _t = t;
             _audit = audit;
+            _revisionService = revisionService;
         }
 
         private async Task<string> GetLangAsync()
@@ -92,6 +95,8 @@ namespace backend.Controllers
                 UpdateDate = now,
                 UpdatedBy = createdBy,
             };
+
+            await _revisionService.ArchiveAsync(masterPlanId, createdBy);
 
             _context.MasterPlanElements.Add(newElement);
             await _context.SaveChangesAsync();
@@ -258,6 +263,11 @@ namespace backend.Controllers
                 }
             );
 
+            if (masterPlanId != 0)
+            {
+                await _revisionService.ArchiveAsync(masterPlanId, deletedBy);
+            }
+
             _context.MasterPlanElementValues.RemoveRange(element.Values);
             _context.MasterPlanToMasterPlanElements.RemoveRange(
                 element.MasterPlanToMasterPlanElements
@@ -323,6 +333,8 @@ namespace backend.Controllers
             var currentBefore = element.CurrentElement;
             var nextBefore = element.NextElement;
 
+            var currentOrder = element.MasterPlanToMasterPlanElements.FirstOrDefault()?.Order;
+
             var valueChanged =
                 dto.Values != null
                 && dto.Values.Any(v =>
@@ -332,6 +344,35 @@ namespace backend.Controllers
                         ?.Value;
                     return oldVal != v.Value;
                 });
+
+            var groupChanged = dto.GroupId.HasValue && dto.GroupId.Value != element.GroupId;
+            var struckChanged = dto.StruckElement != element.StruckElement;
+            var currentChanged = dto.CurrentElement != element.CurrentElement;
+            var nextChanged = dto.NextElement != element.NextElement;
+            var orderChangedIntended =
+                dto.Order.HasValue
+                && (!currentOrder.HasValue || dto.Order.Value != currentOrder.Value);
+
+            var groupListChanged = dto.GroupList != null;
+
+            var willChange =
+                valueChanged
+                || groupChanged
+                || struckChanged
+                || currentChanged
+                || nextChanged
+                || orderChangedIntended
+                || groupListChanged;
+
+            if (!willChange)
+            {
+                return Ok(new { message = await _t.GetAsync("MasterPlanElement/Updated", lang) });
+            }
+
+            if (masterPlan != null)
+            {
+                await _revisionService.ArchiveAsync(masterPlan.Id, updatedBy);
+            }
 
             if (dto.Values != null)
             {
@@ -423,13 +464,17 @@ namespace backend.Controllers
             var newOrder = newValues["Order"];
             var orderChanged = oldOrder == null || !Equals(oldOrder, newOrder);
 
-            var groupChanged = groupBefore != element.GroupId;
-            var struckChanged = struckBefore != element.StruckElement;
-            var currentChanged = currentBefore != element.CurrentElement;
-            var nextChanged = nextBefore != element.NextElement;
+            var groupChangedAfter = groupBefore != element.GroupId;
+            var struckChangedAfter = struckBefore != element.StruckElement;
+            var currentChangedAfter = currentBefore != element.CurrentElement;
+            var nextChangedAfter = nextBefore != element.NextElement;
 
             var otherChanges =
-                groupChanged || struckChanged || currentChanged || nextChanged || valueChanged;
+                groupChangedAfter
+                || struckChangedAfter
+                || currentChangedAfter
+                || nextChangedAfter
+                || valueChanged;
 
             if (orderChanged)
             {

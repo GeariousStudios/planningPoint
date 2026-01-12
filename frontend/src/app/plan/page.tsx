@@ -1,7 +1,7 @@
-import PlanWrapper from "./PlanWrapper";
+import PlanNavWrapper from "./PlanNavWrapper";
 
-const Plan = () => {
-  return <PlanWrapper />;
+const PlanNav = () => {
+  return <PlanNavWrapper />;
 };
 
-export default Plan;
+export default PlanNav;

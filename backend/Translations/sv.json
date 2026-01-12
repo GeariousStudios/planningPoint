@@ -263,7 +263,7 @@
   "AuditTrail/NewOrder": "Ny ordning",
   "AuditTrail/ReverseColor": "Omvänd färg",
   "AuditTrail/Mappings": "Mappningar",
-  "AuditTrail/MasterPlanImportRules": "Importregler för huvudplan",
+  "AuditTrail/MasterPlanImportRules": "Huvudplan importregler",
   "AuditTrail/GroupKey": "Gruppnyckel",
   "AuditTrail/ReplaceOnImport": "Ersätt huvudplan vid import",
 

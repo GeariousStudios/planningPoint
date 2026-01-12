@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Message from "../components/common/Message";
 import { useAuth } from "@/app/context/AuthContext";
 
-const ReportClient = dynamic(() => import("./ReportClient"), {
+const ReportNavClient = dynamic(() => import("./ReportNavClient"), {
   ssr: false,
   loading: () => (
     <>
@@ -19,7 +19,7 @@ const ReportClient = dynamic(() => import("./ReportClient"), {
   ),
 });
 
-const ReportWrapper = () => {
+const ReportNavWrapper = () => {
   const { isAuthReady, isConnected } = useAuth();
 
   if (!isAuthReady) {
@@ -41,7 +41,7 @@ const ReportWrapper = () => {
     );
   }
 
-  return <ReportClient isConnected={isConnected} />;
+  return <ReportNavClient isConnected={isConnected} />;
 };
 
-export default ReportWrapper;
+export default ReportNavWrapper;

@@ -1,7 +1,7 @@
-import AdminManageWrapper from "./AdminManageWrapper";
+import AdminManageNavWrapper from "./AdminManageNavWrapper";
 
-const AdminManage = () => {
-  return <AdminManageWrapper />;
+const AdminManageNav = () => {
+  return <AdminManageNavWrapper />;
 };
 
-export default AdminManage;
+export default AdminManageNav;

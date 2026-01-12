@@ -33,6 +33,7 @@ namespace backend.Data
         public DbSet<MasterPlanElementValue> MasterPlanElementValues { get; set; }
         public DbSet<MasterPlanField> MasterPlanFields { get; set; }
         public DbSet<MasterPlanFieldMapping> MasterPlanFieldMappings { get; set; }
+        public DbSet<MasterPlanRevision> MasterPlanRevisions { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
@@ -154,7 +155,7 @@ namespace backend.Data
                 .HasForeignKey(tp => tp.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // TrendingPanel <-> UnitColumn many-to-one relationship.
+            // TrendingPanel <-> UnitColumn many-to-1 relationship.
             modelBuilder
                 .Entity<TrendingPanel>()
                 .HasOne(tp => tp.UnitColumn)
@@ -314,7 +315,7 @@ namespace backend.Data
                 .WithMany(e => e.MasterPlanToMasterPlanElements)
                 .HasForeignKey(mpe => mpe.MasterPlanElementId);
 
-            // MasterPlanFieldMapping <-> MasterPlan and MasterPlanField many-to-one relationships.
+            // MasterPlanFieldMapping <-> MasterPlan and MasterPlanField many-to-1 relationships.
             modelBuilder
                 .Entity<MasterPlanFieldMapping>()
                 .HasOne(m => m.MasterPlan)
@@ -326,6 +327,19 @@ namespace backend.Data
                 .HasOne(m => m.Field)
                 .WithMany(f => f.FieldMappings)
                 .HasForeignKey(m => m.FieldId);
+
+            // MasterPlanRevision <-> MasterPlan many-to-1 relationship.
+            modelBuilder
+                .Entity<MasterPlanRevision>()
+                .HasIndex(x => new { x.MasterPlanId, x.RevisionNumber })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<MasterPlanRevision>()
+                .HasOne(x => x.MasterPlan)
+                .WithMany()
+                .HasForeignKey(x => x.MasterPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public override int SaveChanges()

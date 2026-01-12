@@ -491,6 +491,42 @@ namespace planningPoint.Migrations
                     b.ToTable("MasterPlanFieldMappings");
                 });
 
+            modelBuilder.Entity("backend.Models.MasterPlanRevision", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("ArchivedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ArchivedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MasterPlanId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RevisionNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MasterPlanId", "RevisionNumber")
+                        .IsUnique();
+
+                    b.ToTable("MasterPlanRevisions");
+                });
+
             modelBuilder.Entity("backend.Models.News", b =>
                 {
                     b.Property<int>("Id")
@@ -1448,6 +1484,17 @@ namespace planningPoint.Migrations
                         .IsRequired();
 
                     b.Navigation("Field");
+
+                    b.Navigation("MasterPlan");
+                });
+
+            modelBuilder.Entity("backend.Models.MasterPlanRevision", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
+                        .WithMany()
+                        .HasForeignKey("MasterPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("MasterPlan");
                 });

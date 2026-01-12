@@ -1,16 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import useTheme from "@/app/hooks/useTheme";
 import Input from "@/app/components/common/Input";
-import MultiDropdown from "@/app/components/common/MultiDropdown";
 import {
-  buttonAddPrimaryClass,
   buttonDeletePrimaryClass,
   buttonDeleteSecondaryClass,
   buttonPrimaryClass,
   buttonSecondaryClass,
-  hyperLinkButtonClass,
   iconButtonPrimaryClass,
   switchClass,
   switchKnobClass,
@@ -20,8 +16,8 @@ import {
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
 import * as SmallerSolid from "@heroicons/react/20/solid";
-import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import React, { useEffect } from "react";
 import { TdCell, ThCell } from "../../components/manage/ManageComponents";
 import Message from "../../components/common/Message";
 import SingleDropdown from "../../components/common/SingleDropdown";
@@ -30,8 +26,8 @@ import HoverIcon from "@/app/components/common/HoverIcon";
 import { useParams } from "next/navigation";
 import { useMasterPlan } from "@/app/hooks/useMasterPlan";
 import { tdClass, thClass } from "@/app/components/manage/ManageClasses";
-import { useAuth } from "@/app/context/AuthContext";
 import { useHandbook } from "@/app/context/HandbookContext";
+import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -54,45 +50,30 @@ const MasterPlanClient = (props: Props) => {
     isCheckingIn,
     isLoading,
     isManualRefresh,
-    refetchData,
+    requestRefetch,
     masterPlans,
     fieldOptions,
-    showHidden,
-    sortBy,
-    sortOrder,
-    totalItems,
     totalGroups,
     currentPage,
     itemsPerPage,
     isEditing,
     isStrikeMode,
-    handleSearch,
-    handleReset,
     handleAddElement,
     handleCellChange,
     toggleStrikeThrough,
     handleSave,
     handleAbortChanges,
     handleCheck,
-    setShowHidden,
-    setIsEditing,
     setIsManualRefresh,
-    setRefetchData,
-    setIsStrikeMode,
     setCurrentPage,
     setItemsPerPage,
     visibleElements,
     checkedOutBy,
     checkedOutByMe,
-    moveElement,
-    moveGroup,
     toggleRemoveElement,
     removedElementIds,
-    clearRemovedElements,
     constraintsRef,
     dragControls,
-    isExpanded,
-    setIsExpanded,
     selectedId,
     setSelectedId,
     editMode,
@@ -100,14 +81,16 @@ const MasterPlanClient = (props: Props) => {
     isKeepSeparate,
     setIsKeepSeparate,
     showForceColor,
-    selectedElement,
     isSelectedStruck,
     handleHoldStart,
     handleHoldEnd,
     duplicateSelected,
     handleImport,
     importing,
-    setImporting,
+    revisions,
+    selectedRevisionId,
+    isViewingRevision,
+    selectRevision,
   } = useMasterPlan(t, apiUrl, token, masterPlanId);
 
   // --- Update handbook ---
@@ -134,167 +117,87 @@ const MasterPlanClient = (props: Props) => {
       <div
         className={`grid gap-4 ${isEditing ? "relative z-[calc(var(--z-edit)-1)]" : ""}`}
       >
-        {/* --- HEADER --- */}
-        {/* <div className="grid w-full rounded-2xl bg-(--bg-modal)">
-          <div className="flex items-center justify-between gap-4 px-6 pt-6">
-            <h2 className="text-lg font-semibold whitespace-nowrap">
-              {t("Common/Settings")}
-            </h2>
-
-            <button onClick={() => setIsExpanded((prev) => !prev)}>
-              <motion.div
-                animate={{ rotate: isExpanded ? 0 : 180 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-                className={iconButtonPrimaryClass}
-              >
-                <Outline.ChevronUpIcon />
-              </motion.div>
-            </button>
-          </div>
-
-          <div className="overflow-hidden px-6 pb-6">
-            <AnimatePresence initial={false}>
-              {isExpanded && (
-                <motion.div
-                  key="filter-section"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                >
-                  <div className="grid gap-6">
-                    <hr className="-mx-6 mt-6 text-(--border-tertiary)" />
-
-                    <div className="flex items-center gap-2">
-                      <hr className="w-12 text-(--border-tertiary)" />
-                      <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                        {t("AuditTrail/Filters")}
-                      </h3>
-                      <hr className="w-full text-(--border-tertiary)" />
-                    </div>
-
-                    <div className="mb-8 grid gap-6">
-                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2"></div>
-                    </div>
-
-                    <div className="grid gap-6">
-                      <div className="flex items-center gap-2">
-                        <hr className="w-12 text-(--border-tertiary)" />
-                        <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                          {t("Common/Status")}
-                        </h3>
-                        <hr className="w-full text-(--border-tertiary)" />
-                      </div>
-
-                      <div className="mb-8">
-                        <div className="flex items-center gap-2 truncate">
-                          <button
-                            type="button"
-                            role="switch"
-                            aria-checked={showHidden}
-                            className={switchClass(showHidden)}
-                            onClick={() => setShowHidden((prev) => !prev)}
-                          >
-                            <div className={switchKnobClass(showHidden)} />
-                          </button>
-                          <span className="mb-0.5">PLACEHOLDER</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                      <button
-                        className={`${buttonPrimaryClass} md:col-span-2 lg:col-span-3 xl:col-span-4 2xl:col-span-5`}
-                        onClick={handleSearch}
-                        disabled={isLoading}
-                      >
-                        {t("Common/Search")}
-                      </button>
-
-                      <button
-                        className={`${buttonSecondaryClass} col-span-1`}
-                        onClick={handleReset}
-                      >
-                        {t("Common/Reset")}
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div> */}
-
         {/* --- CHECKING BAR --- */}
         {props.isMasterPlanner ? (
           <>
             <div className="flex w-full flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap gap-4">
-                <button
-                  className={` ${buttonPrimaryClass} group lg:w-max lg:px-4 ${
-                    isEditing
-                      ? "!bg-(--note-success) text-(--text-main-reverse) hover:!bg-(--note-success-hover)"
-                      : showForceColor
-                        ? "!bg-(--note-error) text-(--text-main-reverse) hover:!bg-(--note-error-hover)"
-                        : ""
-                  } `}
-                  disabled={isCheckingOut || isCheckingIn || isLoading}
-                  onClick={() => {
-                    if (!isEditing) {
-                      if (checkedOutBy && !checkedOutByMe) {
-                        setIsCheckingOut(true);
-                        handleCheck(true);
-                      } else {
-                        setIsCheckingOut(true);
-                        handleCheck(false);
-                      }
-                    } else {
-                      setIsCheckingIn(true);
-                      setIsKeepSeparate(false);
-                      handleSave();
-                    }
-                  }}
+                <CustomTooltip
+                  content={`${isViewingRevision ? t("MasterPlan/Viewing revision tooltip") : ""}`}
+                  showOnTouch
+                  shortDelay
                 >
-                  <div className="flex items-center justify-center gap-2 truncate">
-                    {(isCheckingOut || isCheckingIn) && (
-                      <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />
-                    )}
-
-                    {!isCheckingOut && !isCheckingIn && (
-                      <HoverIcon
-                        outline={
-                          isEditing
-                            ? Outline.CheckIcon
-                            : showForceColor
-                              ? Outline.ExclamationTriangleIcon
-                              : Outline.PencilIcon
-                        }
-                        solid={
-                          isEditing
-                            ? Solid.CheckIcon
-                            : showForceColor
-                              ? Solid.ExclamationTriangleIcon
-                              : Solid.PencilIcon
-                        }
-                        className="h-6 w-6"
-                      />
-                    )}
-
-                    <span className="hidden lg:block">
-                      {isCheckingOut || isCheckingIn
-                        ? isEditing && isCheckingIn
-                          ? t("MasterPlan/Checking in")
-                          : isCheckingOut
-                            ? t("MasterPlan/Checking out")
-                            : t("MasterPlan/Checking in")
+                  <button
+                    className={` ${buttonPrimaryClass} group lg:w-max lg:px-4 ${
+                      isEditing
+                        ? "!bg-(--note-success) text-(--text-main-reverse) hover:!bg-(--note-success-hover)"
                         : showForceColor
-                          ? t("MasterPlan/Force checkout")
-                          : isEditing
-                            ? t("MasterPlan/Save and push")
-                            : t("MasterPlan/Edit master plan")}
-                    </span>
-                  </div>
-                </button>
+                          ? "!bg-(--note-error) text-(--text-main-reverse) hover:!bg-(--note-error-hover)"
+                          : ""
+                    } `}
+                    disabled={
+                      isCheckingOut ||
+                      isCheckingIn ||
+                      isLoading ||
+                      isViewingRevision
+                    }
+                    onClick={() => {
+                      if (!isEditing) {
+                        if (checkedOutBy && !checkedOutByMe) {
+                          setIsCheckingOut(true);
+                          handleCheck(true);
+                        } else {
+                          setIsCheckingOut(true);
+                          handleCheck(false);
+                        }
+                      } else {
+                        setIsCheckingIn(true);
+                        setIsKeepSeparate(false);
+                        handleSave();
+                      }
+                    }}
+                  >
+                    <div className="flex items-center justify-center gap-2 truncate">
+                      {(isCheckingOut || isCheckingIn) && (
+                        <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />
+                      )}
+
+                      {!isCheckingOut && !isCheckingIn && (
+                        <HoverIcon
+                          outline={
+                            isEditing
+                              ? Outline.CheckIcon
+                              : showForceColor
+                                ? Outline.ExclamationTriangleIcon
+                                : Outline.PencilIcon
+                          }
+                          solid={
+                            isEditing
+                              ? Solid.CheckIcon
+                              : showForceColor
+                                ? Solid.ExclamationTriangleIcon
+                                : Solid.PencilIcon
+                          }
+                          className="h-6 w-6"
+                        />
+                      )}
+
+                      <span className="hidden lg:block">
+                        {isCheckingOut || isCheckingIn
+                          ? isEditing && isCheckingIn
+                            ? t("MasterPlan/Checking in")
+                            : isCheckingOut
+                              ? t("MasterPlan/Checking out")
+                              : t("MasterPlan/Checking in")
+                          : showForceColor
+                            ? t("MasterPlan/Force checkout")
+                            : isEditing
+                              ? t("MasterPlan/Save and push")
+                              : t("MasterPlan/Edit master plan")}
+                      </span>
+                    </div>
+                  </button>
+                </CustomTooltip>
 
                 {/* --- Abort --- */}
                 {isEditing && !isCheckingIn && (
@@ -347,7 +250,7 @@ const MasterPlanClient = (props: Props) => {
                   />
 
                   <button
-                    className={buttonSecondaryClass}
+                    className={`${buttonSecondaryClass} lg:w-max lg:px-4`}
                     onClick={() => {
                       document.getElementById("excel-import-input")?.click();
                     }}
@@ -359,16 +262,46 @@ const MasterPlanClient = (props: Props) => {
                         {t("MasterPlan/Importing master plan")}
                       </div>
                     ) : (
-                      t("MasterPlan/Import master plan")
+                      <div className="flex items-center justify-center gap-2 truncate">
+                        <HoverIcon
+                          outline={Outline.ArrowUpTrayIcon}
+                          solid={Solid.ArrowUpTrayIcon}
+                          className="h-6 w-6"
+                        />
+                        <span className="xs:block hidden">
+                          {t("MasterPlan/Import master plan")}
+                        </span>
+                      </div>
                     )}
                   </button>
+                </div>
+              )}
+
+              {/* --- Revisions --- */}
+              {!isEditing && !isCheckingOut && !isCheckingIn && (
+                <div className="min-w-[240px]">
+                  <SingleDropdown
+                    options={[
+                      {
+                        label: t("MasterPlan/Latest revision"),
+                        value: "latest",
+                      },
+                      ...revisions.map((r) => ({
+                        label: `${r.label} (${utcIsoToLocalDateTime(r.archivedAt)})`,
+                        value: String(r.id),
+                      })),
+                    ]}
+                    value={selectedRevisionId}
+                    onChange={(val) => selectRevision(String(val))}
+                    showMore
+                  />
                 </div>
               )}
 
               {/* --- Manual refresh --- */}
               {!isEditing && !isCheckingOut && !isCheckingIn && (
                 <CustomTooltip
-                  content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Common/Update page")}`}
+                  content={`${isManualRefresh && isLoading ? t("Common/Updating") : t("Common/Update page")}`}
                   veryLongDelay
                   showOnTouch
                 >
@@ -376,13 +309,13 @@ const MasterPlanClient = (props: Props) => {
                     className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
                     onClick={() => {
                       setIsManualRefresh(true);
-                      setRefetchData(true);
+                      requestRefetch();
                     }}
                     aria-label={t("Common/Update page")}
-                    disabled={isManualRefresh && refetchData}
+                    disabled={isManualRefresh && isLoading}
                   >
                     <Outline.ArrowPathIcon
-                      className={`${refetchData && isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
+                      className={`${isManualRefresh && isLoading ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
                     />
                   </button>
                 </CustomTooltip>
@@ -608,7 +541,9 @@ const MasterPlanClient = (props: Props) => {
 
                     <hr className="-mr-4 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
 
-                    <div className="flex gap-4 lg:grid lg:grid-cols-3">
+                    <div
+                      className={`${masterPlans[0]?.allowRemovingElements ? "lg:grid-cols-3" : ""} flex gap-4 lg:grid`}
+                    >
                       {/* --- Strike mode --- */}
                       <CustomTooltip
                         content={t("MasterPlan/Strike tooltip")}
@@ -620,7 +555,7 @@ const MasterPlanClient = (props: Props) => {
                             isSelectedStruck
                               ? buttonPrimaryClass
                               : buttonSecondaryClass
-                          } group col-span-1 flex items-center justify-center gap-2 lg:w-full lg:px-4`}
+                          } ${masterPlans[0]?.allowRemovingElements ? "lg:w-full" : "w-full"} group col-span-1 flex items-center justify-center gap-2 lg:px-4`}
                           onClick={() => {
                             if (selectedId !== null) {
                               toggleStrikeThrough(String(selectedId), editMode);
@@ -633,7 +568,9 @@ const MasterPlanClient = (props: Props) => {
                             solid={Solid.NoSymbolIcon}
                             className="h-6 w-6"
                           />
-                          <span className="hidden lg:block">
+                          <span
+                            className={`${masterPlans[0]?.allowRemovingElements ? "hidden lg:block" : ""}`}
+                          >
                             {t("MasterPlan/Strike")}
                           </span>
                         </button>
@@ -686,25 +623,44 @@ const MasterPlanClient = (props: Props) => {
             )}
           </>
         ) : (
-          <CustomTooltip
-            content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Common/Update page")}`}
-            veryLongDelay
-            showOnTouch
-          >
-            <button
-              className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
-              onClick={() => {
-                setIsManualRefresh(true);
-                setRefetchData(true);
-              }}
-              aria-label={t("Common/Update page")}
-              disabled={isManualRefresh && refetchData}
+          <div className="flex flex-wrap gap-4">
+            {/* --- Revisions --- */}
+            {!isEditing && !isCheckingOut && !isCheckingIn && (
+              <div className="min-w-[240px]">
+                <SingleDropdown
+                  options={[
+                    { label: t("MasterPlan/Latest revision"), value: "latest" },
+                    ...revisions.map((r) => ({
+                      label: `${r.label} (${new Date(r.archivedAt).toLocaleString()})`,
+                      value: String(r.id),
+                    })),
+                  ]}
+                  value={selectedRevisionId}
+                  onChange={(val) => selectRevision(String(val))}
+                />
+              </div>
+            )}
+
+            <CustomTooltip
+              content={`${isManualRefresh && isLoading ? t("Common/Updating") : t("Common/Update page")}`}
+              veryLongDelay
+              showOnTouch
             >
-              <Outline.ArrowPathIcon
-                className={`${refetchData && isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
-              />
-            </button>
-          </CustomTooltip>
+              <button
+                className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
+                onClick={() => {
+                  setIsManualRefresh(true);
+                  requestRefetch();
+                }}
+                aria-label={t("Common/Update page")}
+                disabled={isManualRefresh && isLoading}
+              >
+                <Outline.ArrowPathIcon
+                  className={`${isManualRefresh && isLoading ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
+                />
+              </button>
+            </CustomTooltip>
+          </div>
         )}
 
         {/* --- RESULT LIST --- */}

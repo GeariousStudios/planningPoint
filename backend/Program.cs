@@ -94,6 +94,7 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AuditTrailService>();
+builder.Services.AddScoped<MasterPlanRevisionService>();
 
 builder.Services.AddSignalR();
 

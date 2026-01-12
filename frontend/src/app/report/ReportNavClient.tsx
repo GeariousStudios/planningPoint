@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import NavbarLink from "@/app/components/navbar/NavbarLink";
 import { useEffect, useState } from "react";
 import Message from "../components/common/Message";
+import NavPage from "../components/navbar/NavPage";
 
 type Props = {
   isConnected: boolean | null;
@@ -29,7 +30,7 @@ type LinkSection = {
   items: Link[];
 };
 
-const ReportClient = (props: Props) => {
+const ReportNavClient = (props: Props) => {
   const t = useTranslations();
 
   const [sections, setSections] = useState<LinkSection[]>([]);
@@ -108,32 +109,12 @@ const ReportClient = (props: Props) => {
   }
 
   return (
-    <div className="flex w-full flex-col gap-8">
-      {/* <div className="xs:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-3 xl:grid-cols-4"> */}
-      <div>
-        <div className="p-4">
-          <hr className="my-2 flex rounded-full text-(--border-main)" />
-          <div className="font-semibold uppercase">{t("Common/Units")}</div>
-          <hr className="my-2 flex rounded-full text-(--border-main)" />
-          {sections.map((section, sectionIndex) => (
-            <div key={section.sectionLabel} className="flex flex-col gap-2">
-              {section.items.map((item, itemIndex) => (
-                <div key={item.href} className="flex flex-col">
-                  {itemIndex === 0 && (
-                    <div className={`${sectionIndex !== 0 ? "mt-6" : "mt-2"} mb-1 text-sm font-semibold uppercase`}>
-                      {section.sectionLabel}
-                    </div>
-                  )}
-
-                  <NavbarLink href={item.href} label={item.label} />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+    <NavPage
+      sections={sections}
+      variant="single-grouped"
+      pageLabel={t("Common/Units")}
+    />
   );
 };
 
-export default ReportClient;
+export default ReportNavClient;

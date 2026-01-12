@@ -1,7 +1,7 @@
-import ReportWrapper from "./ReportWrapper";
+import ReportNavWrapper from "./ReportNavWrapper";
 
-const Report = () => {
-  return <ReportWrapper />;
+const ReportNav = () => {
+  return <ReportNavWrapper />;
 };
 
-export default Report;
+export default ReportNav;

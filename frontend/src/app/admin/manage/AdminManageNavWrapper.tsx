@@ -1,10 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Message from "../components/common/Message";
+import Message from "../../components/common/Message";
 import { useAuth } from "@/app/context/AuthContext";
 
-const PlanClient = dynamic(() => import("./PlanClient"), {
+const AdminManageNavClient = dynamic(() => import("./AdminManageNavClient"), {
   ssr: false,
   loading: () => (
     <>
@@ -19,8 +19,8 @@ const PlanClient = dynamic(() => import("./PlanClient"), {
   ),
 });
 
-const PlanWrapper = () => {
-  const { isAuthReady, isConnected } = useAuth();
+const AdminManageNavWrapper = () => {
+  const { isAuthReady, isAdmin, isConnected } = useAuth();
 
   if (!isAuthReady) {
     return (
@@ -41,7 +41,21 @@ const PlanWrapper = () => {
     );
   }
 
-  return <PlanClient isConnected={isConnected} />;
+  if (!isAdmin) {
+    return (
+      <>
+        <div className="hidden md:block">
+          <Message icon="deny" content="deny" fullscreen />
+        </div>
+
+        <div className="block md:hidden">
+          <Message icon="deny" content="deny" fullscreen withinContainer />
+        </div>
+      </>
+    );
+  }
+
+  return <AdminManageNavClient isConnected={isConnected} />;
 };
 
-export default PlanWrapper;
+export default AdminManageNavWrapper;

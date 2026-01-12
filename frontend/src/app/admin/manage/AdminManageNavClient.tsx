@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import NavbarLink from "@/app/components/navbar/NavbarLink";
+import NavPage from "@/app/components/navbar/NavPage";
 
 type Props = {
   isConnected: boolean | null;
@@ -19,7 +20,7 @@ type LinkSection = {
   items: Link[];
 };
 
-const AdminManageClient = (props: Props) => {
+const AdminManageNavClient = (props: Props) => {
   const t = useTranslations();
 
   const sections: LinkSection[] = [
@@ -82,33 +83,7 @@ const AdminManageClient = (props: Props) => {
     },
   ];
 
-  return (
-    <div className="flex w-full flex-col gap-8">
-      <div className="xs:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-        {sections.map((section, sectionIndex) => (
-          <div key={section.sectionLabel} className="p-4">
-            <hr className="my-2 flex rounded-full text-(--border-main)" />
-            <div className="uppercase font-semibold">{section.sectionLabel}</div>
-            <hr className="my-2 flex rounded-full text-(--border-main)" />
-
-            <div className="flex flex-col gap-2">
-              {section.items.map((item) => (
-                <div key={item.href} className="flex flex-col">
-                  {item.title && (
-                    <div className={`${sectionIndex !== 0 ? "mt-6" : "mt-2"} mb-1 text-sm font-semibold uppercase`}>
-                      {item.title}
-                    </div>
-                  )}
-
-                  <NavbarLink href={item.href} label={item.label} />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <NavPage sections={sections} variant="grid-sections" />;
 };
 
-export default AdminManageClient;
+export default AdminManageNavClient;

@@ -517,6 +517,7 @@ const AuditTrailClient = (props: Props) => {
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
+                classNameAddition="w-64"
               />
               <ThCell
                 sortingItem="entityId"

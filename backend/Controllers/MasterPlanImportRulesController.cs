@@ -153,7 +153,7 @@ namespace backend.Controllers
             {
                 ["ObjectID"] = masterPlanId,
                 ["BelongsToMasterPlan"] = masterPlan.Name + $" (ID: {masterPlanId})",
-                ["ReplaceMasterPlan"] = masterPlan.ReplaceOnImport
+                ["ReplaceOnImport"] = masterPlan.ReplaceOnImport
                     ? new[] { "Common/Yes" }
                     : new[] { "Common/No" },
                 ["GroupKey"] = oldGroupFieldId.HasValue
@@ -226,7 +226,7 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = masterPlanId,
                         ["BelongsToMasterPlan"] = masterPlan.Name + $" (ID: {masterPlanId})",
-                        ["ReplaceMasterPlan"] = dto.ReplaceOnImport
+                        ["ReplaceOnImport"] = dto.ReplaceOnImport
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },
                         ["GroupKey"] = dto.GroupFieldId.HasValue
