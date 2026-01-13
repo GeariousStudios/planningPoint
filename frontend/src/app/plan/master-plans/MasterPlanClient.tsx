@@ -118,7 +118,7 @@ const MasterPlanClient = (props: Props) => {
         className={`grid gap-4 ${isEditing ? "relative z-[calc(var(--z-edit)-1)]" : ""}`}
       >
         {/* --- CHECKING BAR --- */}
-        {props.isMasterPlanner ? (
+        {props.isMasterPlanner && (
           <>
             <div className="flex w-full flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap gap-4">
@@ -275,50 +275,6 @@ const MasterPlanClient = (props: Props) => {
                     )}
                   </button>
                 </div>
-              )}
-
-              {/* --- Revisions --- */}
-              {!isEditing && !isCheckingOut && !isCheckingIn && (
-                <div className="min-w-[240px]">
-                  <SingleDropdown
-                    options={[
-                      {
-                        label: t("MasterPlan/Latest revision"),
-                        value: "latest",
-                      },
-                      ...revisions.map((r) => ({
-                        label: `${r.label} (${utcIsoToLocalDateTime(r.archivedAt)})`,
-                        value: String(r.id),
-                      })),
-                    ]}
-                    value={selectedRevisionId}
-                    onChange={(val) => selectRevision(String(val))}
-                    showMore
-                  />
-                </div>
-              )}
-
-              {/* --- Manual refresh --- */}
-              {!isEditing && !isCheckingOut && !isCheckingIn && (
-                <CustomTooltip
-                  content={`${isManualRefresh && isLoading ? t("Common/Updating") : t("Common/Update page")}`}
-                  veryLongDelay
-                  showOnTouch
-                >
-                  <button
-                    className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
-                    onClick={() => {
-                      setIsManualRefresh(true);
-                      requestRefetch();
-                    }}
-                    aria-label={t("Common/Update page")}
-                    disabled={isManualRefresh && isLoading}
-                  >
-                    <Outline.ArrowPathIcon
-                      className={`${isManualRefresh && isLoading ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
-                    />
-                  </button>
-                </CustomTooltip>
               )}
             </div>
 
@@ -621,46 +577,50 @@ const MasterPlanClient = (props: Props) => {
                 </motion.div>
               </div>
             )}
-          </>
-        ) : (
-          <div className="flex flex-wrap gap-4">
+
             {/* --- Revisions --- */}
             {!isEditing && !isCheckingOut && !isCheckingIn && (
-              <div className="min-w-[240px]">
-                <SingleDropdown
-                  options={[
-                    { label: t("MasterPlan/Latest revision"), value: "latest" },
-                    ...revisions.map((r) => ({
-                      label: `${r.label} (${new Date(r.archivedAt).toLocaleString()})`,
-                      value: String(r.id),
-                    })),
-                  ]}
-                  value={selectedRevisionId}
-                  onChange={(val) => selectRevision(String(val))}
-                />
+              <div className="flex flex-wrap gap-4">
+                <div className="min-w-[240px]">
+                  <SingleDropdown
+                    options={[
+                      {
+                        label: t("MasterPlan/Latest revision"),
+                        value: "latest",
+                      },
+                      ...revisions.map((r) => ({
+                        label: `${r.label} (${new Date(r.archivedAt).toLocaleString()})`,
+                        value: String(r.id),
+                      })),
+                    ]}
+                    value={selectedRevisionId}
+                    onChange={(val) => selectRevision(String(val))}
+                  />
+                </div>
+
+                {/* --- Manual refresh --- */}
+                {/* <CustomTooltip
+                  content={`${isManualRefresh && isLoading ? t("Common/Updating") : t("Common/Update page")}`}
+                  veryLongDelay
+                  showOnTouch
+                >
+                  <button
+                    className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
+                    onClick={() => {
+                      setIsManualRefresh(true);
+                      requestRefetch();
+                    }}
+                    aria-label={t("Common/Update page")}
+                    disabled={isManualRefresh && isLoading}
+                  >
+                    <Outline.ArrowPathIcon
+                      className={`${isManualRefresh && isLoading ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
+                    />
+                  </button>
+                </CustomTooltip> */}
               </div>
             )}
-
-            <CustomTooltip
-              content={`${isManualRefresh && isLoading ? t("Common/Updating") : t("Common/Update page")}`}
-              veryLongDelay
-              showOnTouch
-            >
-              <button
-                className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
-                onClick={() => {
-                  setIsManualRefresh(true);
-                  requestRefetch();
-                }}
-                aria-label={t("Common/Update page")}
-                disabled={isManualRefresh && isLoading}
-              >
-                <Outline.ArrowPathIcon
-                  className={`${isManualRefresh && isLoading ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
-                />
-              </button>
-            </CustomTooltip>
-          </div>
+          </>
         )}
 
         {/* --- RESULT LIST --- */}
