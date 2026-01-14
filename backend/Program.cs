@@ -59,6 +59,7 @@ builder
 
 builder.Services.AddEndpointsApiExplorer();
 
+// --- Windows = Local, Linux = Render ---
 var sqlitePath = OperatingSystem.IsWindows() ? "planningPoint.db" : "/var/data/planningPoint.db";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
