@@ -82,7 +82,8 @@ builder.Services.AddCors(options =>
                     "http://192.168.1.75:3000",
                     "http://10.160.14.124:3000",
                     "https://geariousstudios.github.io",
-                    "https://eCommerce-1-eng1.onrender.com"
+                    "https://eCommerce-1-eng1.onrender.com",
+                    "https://www.planningpoint.se"
                 ) // Change to live url after dev.
                 .AllowAnyHeader()
                 .AllowAnyMethod()
