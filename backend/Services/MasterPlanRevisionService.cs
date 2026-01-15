@@ -142,5 +142,36 @@ namespace backend.Services
 
             return revision;
         }
+
+        public async Task<MasterPlanRevision?> ArchiveOncePerCheckoutAsync(
+            int masterPlanId,
+            string archivedBy
+        )
+        {
+            var plan = await _context.MasterPlans.FirstOrDefaultAsync(x => x.Id == masterPlanId);
+            if (plan == null)
+                return null;
+
+            if (plan.IsCheckedOut && plan.CheckedOutAt.HasValue)
+            {
+                if (
+                    plan.RevisionArchivedForCheckoutAt.HasValue
+                    && plan.RevisionArchivedForCheckoutAt.Value == plan.CheckedOutAt.Value
+                )
+                {
+                    return null;
+                }
+            }
+
+            var revision = await ArchiveAsync(masterPlanId, archivedBy);
+
+            if (revision != null && plan.IsCheckedOut && plan.CheckedOutAt.HasValue)
+            {
+                plan.RevisionArchivedForCheckoutAt = plan.CheckedOutAt.Value;
+                await _context.SaveChangesAsync();
+            }
+
+            return revision;
+        }
     }
 }

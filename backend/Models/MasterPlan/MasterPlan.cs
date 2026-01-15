@@ -26,6 +26,7 @@ namespace backend.Models
         public bool IsCheckedOut { get; set; } = false;
         public string? CheckedOutBy { get; set; }
         public DateTime? CheckedOutAt { get; set; }
+        public DateTime? RevisionArchivedForCheckoutAt { get; set; }
 
         public List<MasterPlanToMasterPlanField> MasterPlanToMasterPlanFields { get; set; } = new();
         public List<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; } =

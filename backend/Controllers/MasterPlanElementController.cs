@@ -96,7 +96,7 @@ namespace backend.Controllers
                 UpdatedBy = createdBy,
             };
 
-            await _revisionService.ArchiveAsync(masterPlanId, createdBy);
+            await _revisionService.ArchiveOncePerCheckoutAsync(masterPlanId, createdBy);
 
             _context.MasterPlanElements.Add(newElement);
             await _context.SaveChangesAsync();
@@ -265,7 +265,7 @@ namespace backend.Controllers
 
             if (masterPlanId != 0)
             {
-                await _revisionService.ArchiveAsync(masterPlanId, deletedBy);
+                await _revisionService.ArchiveOncePerCheckoutAsync(masterPlanId, deletedBy);
             }
 
             _context.MasterPlanElementValues.RemoveRange(element.Values);
@@ -371,7 +371,7 @@ namespace backend.Controllers
 
             if (masterPlan != null)
             {
-                await _revisionService.ArchiveAsync(masterPlan.Id, updatedBy);
+                await _revisionService.ArchiveOncePerCheckoutAsync(masterPlan.Id, updatedBy);
             }
 
             if (dto.Values != null)
