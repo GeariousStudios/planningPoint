@@ -529,6 +529,9 @@
   "MasterPlan/Failed import": "Import misslyckades. Säkerställ att filformatet är .xlsx och försök igen!",
   "MasterPlan/Latest revision": "Senaste revision",
   "MasterPlan/Viewing revision tooltip": "Du måste vara på den senaste revisionen för att kunna göra ändringar",
+  "MasterPlan/Not started": "Ej påbörjad",
+  "MasterPlan/In progress": "Pågående",
+  "MasterPlan/Finished": "Avslutad",
 
   "MasterPlanFields/Hidden master plan fields": "Dolda fält",
   "MasterPlanFields/hidden master plan fields": "dolda fält",

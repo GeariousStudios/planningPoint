@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("planningPoint")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+30997c51646a2085b7eac01d83fa16b8136de563")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+48980ea0995e922a987bebabce6316079e557656")]
 [assembly: System.Reflection.AssemblyProductAttribute("planningPoint")]
 [assembly: System.Reflection.AssemblyTitleAttribute("planningPoint")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

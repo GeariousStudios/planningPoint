@@ -1,4 +1,4 @@
-using backend.Dtos.Unit;
+using backend.Models;
 
 namespace backend.Dtos.MasterPlan
 {
@@ -10,5 +10,6 @@ namespace backend.Dtos.MasterPlan
         public bool StruckElement { get; set; }
         public bool CurrentElement { get; set; }
         public bool NextElement { get; set; }
+        public MasterPlanElementStatus Status { get; set; }
     }
 }

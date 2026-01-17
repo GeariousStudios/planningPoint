@@ -178,8 +178,8 @@ const useClient = (props: Props) => {
   const [nowTs, setNowTs] = useState<number>(() => Date.now());
 
   const isBootstrapping = isLoadingUnits || isLoadingColumns || isLoadingShifts;
-  const canShowLock = !isBootstrapping && isHidden && !isInvalid;
-  const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
+  const canShowLock = isHidden && !isInvalid;
+  const canShowInvalid = isInvalid && !isHidden;
   const isReady = !isHidden && !isInvalid;
 
   // --- Other ---
@@ -373,6 +373,9 @@ const useClient = (props: Props) => {
           result?.unitGroupId !== parsedGroupId
         ) {
           setIsInvalid(true);
+          setIsLoadingUnits(false);
+          setIsLoadingColumns(false);
+          setIsLoadingShifts(false);
           return;
         }
 

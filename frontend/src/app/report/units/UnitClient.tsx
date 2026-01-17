@@ -43,6 +43,16 @@ type ShiftChange = {
 
 const UnitClient = (props: any) => {
   const c = useClient(props);
+  // --- Update handbook ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    if (!c.isReady) {
+      return;
+    }
+
+    setHandbook("Unit");
+  }, [c.isReady, setHandbook]);
 
   if (c.canShowLock) {
     return <Message icon="lock" content="lock" fullscreen />;
@@ -51,13 +61,6 @@ const UnitClient = (props: any) => {
     return <Message content="invalid" fullscreen />;
   }
   if (c.isReady) {
-    // --- Update handbook ---
-    const { setHandbook } = useHandbook();
-
-    useEffect(() => {
-      setHandbook("Unit");
-    }, []);
-
     return (
       <>
         {/* --- MODALS --- */}

@@ -236,6 +236,7 @@ namespace backend.Controllers
                         .Select(mpe => new MasterPlanElementDto
                         {
                             Id = mpe.MasterPlanElement.Id,
+                            Status = mpe.MasterPlanElement.Status,
                             Values = t
                                 .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                                 .Select(mpf => new MasterPlanElementValueDto
@@ -344,6 +345,7 @@ namespace backend.Controllers
                     .Select(mpe => new MasterPlanElementDto
                     {
                         Id = mpe.MasterPlanElement.Id,
+                        Status = mpe.MasterPlanElement.Status,
                         GroupId = mpe.MasterPlanElement.GroupId,
                         StruckElement = mpe.MasterPlanElement.StruckElement,
                         CurrentElement = mpe.MasterPlanElement.CurrentElement,

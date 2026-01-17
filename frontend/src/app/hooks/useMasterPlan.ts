@@ -5,9 +5,11 @@ import * as signalR from "@microsoft/signalr";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../context/AuthContext";
 import { useDragControls } from "framer-motion";
+import { useParams } from "next/navigation";
 
 type MasterPlanElement = {
   id: number | string;
+  status?: MasterPlanElementStatus | null;
   values: {
     masterPlanFieldId: number;
     masterPlanFieldName: string;
@@ -32,6 +34,8 @@ type MasterPlanRevision = {
   archivedBy: string;
 };
 
+export type MasterPlanElementStatus = "NotStarted" | "InProgress" | "Finished";
+
 export const useMasterPlan = (
   t: any,
   apiUrl: string | undefined,
@@ -46,6 +50,8 @@ export const useMasterPlan = (
   const dragControls = useDragControls();
 
   // --- States ---
+  const [isHidden, setIsHidden] = useState(false);
+  const [isInvalid, setIsInvalid] = useState(false);
   const [importing, setImporting] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
@@ -100,6 +106,9 @@ export const useMasterPlan = (
   const [isViewingRevision, setIsViewingRevision] = useState(false);
 
   // --- Other ---
+  const { groupId } = useParams() as { groupId?: string };
+  const parsedGroupId = groupId ? Number(groupId) : undefined;
+
   const { notify } = useToast();
   const { username } = useAuth();
   const checkedOutByMe = checkedOutBy !== null && checkedOutBy === username;
@@ -110,15 +119,48 @@ export const useMasterPlan = (
     checkedOutBy &&
     !checkedOutByMe;
 
+  const getStatusBadge = (
+    status: MasterPlanElementStatus | null | undefined,
+  ) => {
+    const s: MasterPlanElementStatus = status ?? "NotStarted";
+
+    if (s === "Finished") {
+      return {
+        label: t("MasterPlan/Finished"),
+        className: "bg-(--finished) text-(--text-main-reverse)",
+      };
+    }
+
+    if (s === "InProgress") {
+      return {
+        label: t("MasterPlan/In progress"),
+        className: "bg-(--inProgress) text-(--text-main-reverse)",
+      };
+    }
+
+    return {
+      label: t("MasterPlan/Not started"),
+      className: "bg-(--notStarted) !text-(--text-main)",
+    };
+  };
+
   // --- Initialization ---
   useEffect(() => {
     const fetchMasterPlan = async () => {
       if (!masterPlanId) {
+        setIsInvalid(true);
+        if (firstFetch) {
+          setIsLoading(false);
+          setFirstFetch(false);
+        }
         return;
       }
 
       try {
-        if (firstFetch) setIsLoading(true);
+        if (firstFetch) {
+          setIsLoading(true);
+        }
+
         const response = await fetch(
           `${apiUrl}/master-plan/fetch/${masterPlanId}`,
           {
@@ -131,10 +173,32 @@ export const useMasterPlan = (
         );
 
         if (!response.ok) {
+          setIsInvalid(true);
           return;
         }
 
         const data = await response.json();
+
+        const apiGroupId = Number(data?.unitGroupId);
+
+        if (
+          parsedGroupId !== undefined &&
+          Number.isFinite(parsedGroupId) &&
+          Number.isFinite(apiGroupId) &&
+          apiGroupId !== parsedGroupId
+        ) {
+          setIsHidden(false);
+          setIsInvalid(true);
+          return;
+        }
+
+        setIsInvalid(false);
+        const hidden = Boolean(data?.isHidden);
+        setIsHidden(hidden);
+
+        if (hidden) {
+          return;
+        }
 
         if (!isViewingRevisionRef.current) {
           applyPlanToState(data);
@@ -203,7 +267,14 @@ export const useMasterPlan = (
     };
 
     fetchMasterPlan();
-  }, [refetchTick, masterPlanId, apiUrl, token]);
+  }, [
+    refetchTick,
+    masterPlanId,
+    apiUrl,
+    token,
+    isViewingRevision,
+    parsedGroupId,
+  ]);
 
   // --- Handle import file ---
   const handleImport = async (file: File) => {
@@ -887,6 +958,43 @@ export const useMasterPlan = (
     }
   };
 
+  // --- Update status ---
+  const updateStatus = async (
+    elementId: number | string,
+    status: MasterPlanElementStatus,
+  ) => {
+    if (!apiUrl || !token) {
+      return;
+    }
+
+    const response = await fetch(
+      `${apiUrl}/master-plan-elements/update-status/${elementId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      },
+    );
+    {
+      if (!response.ok) {
+        return;
+      }
+
+      setMasterPlans((prev) =>
+        prev.map((plan) => ({
+          ...plan,
+          elements: plan.elements.map((el) =>
+            String(el.id) === String(elementId) ? { ...el, status } : el,
+          ),
+        })),
+      );
+    }
+  };
+
   // --- Handle cancel ---
   const handleAbortChanges = async () => {
     setIsEditing(false);
@@ -899,7 +1007,14 @@ export const useMasterPlan = (
 
   // --- Check hub ---
   const handleCheck = async (force = false, cancelled = false) => {
-    if (!masterPlanId || !apiUrl) return;
+    if (!masterPlanId || !apiUrl) {
+      return;
+    }
+
+    if (isHidden) {
+      return;
+    }
+
     try {
       skipNextInfoRef.current = true;
 
@@ -947,7 +1062,9 @@ export const useMasterPlan = (
   };
 
   useEffect(() => {
-    if (!apiUrl || !masterPlanId) return;
+    if (!apiUrl || !masterPlanId || isHidden) {
+      return;
+    }
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${apiUrl}/hubs/master-plan`, {
@@ -1080,7 +1197,7 @@ export const useMasterPlan = (
         connection.stop().catch(() => {});
       }
     };
-  }, [apiUrl, masterPlanId]);
+  }, [apiUrl, masterPlanId, isHidden, username]);
 
   // --- Move element & group ---
   const moveElement = (
@@ -1399,7 +1516,17 @@ export const useMasterPlan = (
 
   const requestRefetch = () => setRefetchTick((x) => x + 1);
 
+  const isBootstrapping = firstFetch;
+
+  const canShowInvalid = !isBootstrapping && isInvalid;
+  const canShowLock = !isBootstrapping && !isInvalid && isHidden;
+  const isReady = !isBootstrapping && !isInvalid && !isHidden;
+
   return {
+    isBootstrapping,
+    canShowInvalid,
+    canShowLock,
+    isReady,
     setIsCheckingOut,
     setIsCheckingIn,
     isCheckingOut,
@@ -1469,5 +1596,7 @@ export const useMasterPlan = (
     selectedRevisionId,
     isViewingRevision,
     selectRevision,
+    getStatusBadge,
+    updateStatus,
   };
 };

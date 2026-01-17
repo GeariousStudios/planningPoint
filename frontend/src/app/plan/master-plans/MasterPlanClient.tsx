@@ -24,8 +24,15 @@ import SingleDropdown from "../../components/common/SingleDropdown";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import HoverIcon from "@/app/components/common/HoverIcon";
 import { useParams } from "next/navigation";
-import { useMasterPlan } from "@/app/hooks/useMasterPlan";
-import { tdClass, thClass } from "@/app/components/manage/ManageClasses";
+import {
+  MasterPlanElementStatus,
+  useMasterPlan,
+} from "@/app/hooks/useMasterPlan";
+import {
+  badgeClass,
+  tdClass,
+  thClass,
+} from "@/app/components/manage/ManageClasses";
 import { useHandbook } from "@/app/context/HandbookContext";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 
@@ -42,6 +49,31 @@ const MasterPlanClient = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const c = useMasterPlan(t, apiUrl, token, masterPlanId);
+
+  // --- Update handbook ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    if (!c.isReady) {
+      return;
+    }
+
+    setHandbook("Master plan");
+  }, [c.isReady, setHandbook]);
+
+  if (c.canShowLock) {
+    return <Message icon="lock" content="lock" fullscreen />;
+  }
+
+  if (c.canShowInvalid) {
+    return <Message content="invalid" fullscreen />;
+  }
+
+  if (!c.isReady) {
+    return null;
+  }
 
   const {
     setIsCheckingOut,
@@ -91,14 +123,9 @@ const MasterPlanClient = (props: Props) => {
     selectedRevisionId,
     isViewingRevision,
     selectRevision,
-  } = useMasterPlan(t, apiUrl, token, masterPlanId);
-
-  // --- Update handbook ---
-  const { setHandbook } = useHandbook();
-
-  useEffect(() => {
-    setHandbook("Master plan");
-  }, []);
+    getStatusBadge,
+    updateStatus,
+  } = c;
 
   return (
     <>
@@ -639,6 +666,12 @@ const MasterPlanClient = (props: Props) => {
                   />
                 )}
 
+                <ThCell
+                  label={t("Common/Status")}
+                  sortable={false}
+                  classNameAddition="min-w-fit px-4 whitespace-nowrap"
+                />
+
                 {fieldOptions
                   .filter((f) => !f.isHidden)
                   .map((f, i) => (
@@ -686,14 +719,35 @@ const MasterPlanClient = (props: Props) => {
 
                     const isEven = currentIsEven;
 
+                    const baseBg = isEven
+                      ? el.status === "InProgress"
+                        ? "bg-(--bg-grid-inProgress)"
+                        : el.status === "Finished"
+                          ? "bg-(--bg-grid-finished)"
+                          : "bg-(--bg-grid)"
+                      : el.status === "InProgress"
+                        ? "bg-(--bg-grid-inProgress-zebra)"
+                        : el.status === "Finished"
+                          ? "bg-(--bg-grid-finished-zebra)"
+                          : "bg-(--bg-grid-zebra)";
+
+                    const hoverBg =
+                      selectedId === el.id
+                        ? ""
+                        : el.status === "InProgress"
+                          ? "hover:bg-(--bg-grid-inProgress-header-hover)"
+                          : el.status === "Finished"
+                            ? "hover:bg-(--bg-grid-finished-header-hover)"
+                            : "hover:bg-(--bg-grid-header-hover)";
+
                     return (
                       <tr
                         key={`${planId}-${el.id}`}
-                        className={` ${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} ${
+                        className={`${baseBg} ${hoverBg} ${
                           removedElementIds.includes(el.id)
                             ? "!bg-(--button-delete) text-(--text-main-reverse)"
                             : ""
-                        } ${isStrikeMode ? "cursor-pointer" : ""} ${selectedId === el.id ? "" : "hover:bg-(--bg-grid-header-hover)"} transition-[background] duration-(--fast)`}
+                        } ${isStrikeMode ? "cursor-pointer" : ""} transition-[background] duration-(--fast)`}
                       >
                         {/* <TdCell classNameAddition="min-w-fit whitespace-nowrap px-4 text-(--text-secondary)">
                         {String(el.id)}
@@ -730,6 +784,32 @@ const MasterPlanClient = (props: Props) => {
                           </td>
                         )}
 
+                        <TdCell
+                          classNameAddition={`${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""} min-w-fit whitespace-nowrap`}
+                        >
+                          {(() => {
+                            const badge = getStatusBadge(el.status);
+
+                            const nextStatus: MasterPlanElementStatus =
+                              el.status === "InProgress"
+                                ? "Finished"
+                                : el.status === "Finished"
+                                  ? "NotStarted"
+                                  : "InProgress";
+
+                            return (
+                              <span
+                                className={`${badgeClass} ${badge.className}`}
+                                onClick={() => {
+                                  updateStatus(String(el.id), nextStatus);
+                                }}
+                              >
+                                {badge.label}
+                              </span>
+                            );
+                          })()}
+                        </TdCell>
+
                         {fieldOptions
                           .filter((f) => !f.isHidden)
                           .map((f, i) => {
@@ -744,7 +824,7 @@ const MasterPlanClient = (props: Props) => {
                                   i === fieldOptions.length - 1
                                     ? "w-full min-w-fit"
                                     : "min-w-fit whitespace-nowrap"
-                                } ${f.dataType?.toLowerCase() === "date" && isEditing ? "!min-w-[11rem]" : ""} ${isEditing ? "px-2!" : ""}`}
+                                } ${f.dataType?.toLowerCase() === "date" && isEditing ? "!min-w-[11rem]" : ""} ${isEditing ? "px-2!" : ""}  ${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""} `}
                               >
                                 <div
                                   className={`flex w-full ${
@@ -792,7 +872,7 @@ const MasterPlanClient = (props: Props) => {
                                           classNameAddition={`${
                                             el.struckElement
                                               ? "line-through opacity-60"
-                                              : ""
+                                              : "!border-(--border-main)"
                                           } `}
                                         />
                                       </div>

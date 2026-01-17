@@ -502,5 +502,50 @@ namespace backend.Controllers
 
             return Ok(new { message = await _t.GetAsync("MasterPlanElement/Updated", lang) });
         }
+
+        [HttpPut("update-status/{elementId}")]
+        [Authorize(Roles = "MasterPlanner")]
+        public async Task<IActionResult> UpdateElementStatus(
+            int elementId,
+            [FromBody] UpdateMasterPlanElementStatusDto dto
+        )
+        {
+            var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (updatedBy, userId) = userInfo.Value;
+
+            var element = await _context
+                .MasterPlanElements.Include(e => e.MasterPlanToMasterPlanElements)
+                .ThenInclude(link => link.MasterPlan)
+                .FirstOrDefaultAsync(e => e.Id == elementId);
+
+            if (element == null)
+                return NotFound(
+                    new { message = await _t.GetAsync("MasterPlanElement/NotFound", lang) }
+                );
+
+            if (element.Status == dto.Status)
+            {
+                return Ok(new { status = element.Status });
+            }
+
+            var now = DateTime.UtcNow;
+            var oldStatus = element.Status;
+
+            element.Status = dto.Status;
+            element.UpdateDate = now;
+            element.UpdatedBy = updatedBy;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { status = element.Status });
+        }
     }
 }

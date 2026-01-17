@@ -97,6 +97,7 @@ namespace backend.Services
                         return new MasterPlanElementDto
                         {
                             Id = e.Id,
+                            Status = e.Status,
                             GroupId = e.GroupId,
                             StruckElement = e.StruckElement,
                             CurrentElement = e.CurrentElement,

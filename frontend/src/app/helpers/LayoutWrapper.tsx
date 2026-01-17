@@ -252,7 +252,7 @@ const LayoutWrapper = (props: Props) => {
         {
           label: t("Message/Invalid"),
           href: "/",
-          clickable: true,
+          clickable: false,
           isActive: true,
         },
       ];
@@ -316,13 +316,30 @@ const LayoutWrapper = (props: Props) => {
         return;
       }
 
-      const names = {
-        unitName: entity?.name ?? null,
-        unitGroupId: groupId ?? null,
-        unitGroupName: group?.name ?? null,
-      };
+      const isMismatch =
+        (localIsUnitsPath || localIsMasterPlansPath) &&
+        entity &&
+        groupId &&
+        String(entity.unitGroupId) !== String(groupId);
 
-      const next = createBreadcrumbs(pathname, names);
+      const names = isMismatch
+        ? { unitName: null, unitGroupId: null, unitGroupName: null }
+        : {
+            unitName: entity?.name ?? null,
+            unitGroupId: groupId ?? null,
+            unitGroupName: group?.name ?? null,
+          };
+
+      const next = isMismatch
+        ? [
+            {
+              label: t("Message/Invalid"),
+              href: "/",
+              clickable: false,
+              isActive: true,
+            },
+          ]
+        : createBreadcrumbs(pathname, names);
 
       if (!sameCrumbs(breadcrumbs, next)) {
         setBreadcrumbs(next);
@@ -334,6 +351,43 @@ const LayoutWrapper = (props: Props) => {
       isMounted = false;
     };
   }, [pathname, apiUrl, t, unitName, unitGroupId, unitGroupName]);
+
+  // --- SET PAGE TITLE ---
+  useEffect(() => {
+    const shortAppName = "PP";
+    const fullAppName = "Planning Point";
+
+    const activeCrumb = breadcrumbs?.find((c) => c.isActive)?.label;
+
+    if (activeCrumb) {
+      document.title = `${shortAppName} | ${activeCrumb}`;
+      return;
+    }
+
+    if (pathname === "/") {
+      document.title = fullAppName;
+      return;
+    }
+
+    const parts = pathname.split("/").filter(Boolean);
+
+    const titleKeyMap: Record<string, string> = {
+      report: "Navbar/Report",
+      plan: "Navbar/Plan",
+      admin: "Common/Admin",
+      developer: "Common/Developer",
+      manage: "Common/Manage",
+    };
+
+    const key = titleKeyMap[parts[0]];
+
+    if (key) {
+      document.title = `${t(key)} | ${shortAppName}`;
+      return;
+    }
+
+    document.title = fullAppName;
+  }, [pathname, breadcrumbs, t]);
 
   return (
     <>

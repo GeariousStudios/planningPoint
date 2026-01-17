@@ -529,6 +529,9 @@
   "MasterPlan/Failed import": "Import failed. Make sure the file format is .xlsx and try again!",
   "MasterPlan/Latest revision": "Latest revision",
   "MasterPlan/Viewing revision tooltip": "You must be on the latest revision to make changes",
+  "MasterPlan/Not started": "Not started",
+  "MasterPlan/In progress": "In progress",
+  "MasterPlan/Finished": "Finished",
 
   "MasterPlanFields/Hidden master plan fields": "Hidden fields",
   "MasterPlanFields/hidden master plan fields": "hidden fields",
