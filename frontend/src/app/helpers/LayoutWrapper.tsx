@@ -127,10 +127,6 @@ const LayoutWrapper = (props: Props) => {
 
       // --- Plan ---
       plan: { label: t("Navbar/Plan"), clickable: true },
-      "plan/master-plans": {
-        label: t("Common/Master plans"),
-        clickable: false,
-      },
       "master-plans": { label: t("Common/Master plans"), clickable: true },
       "import-rules": { label: t("ImportRules/Import rules"), clickable: true },
       "master-plan-fields": {
@@ -145,7 +141,7 @@ const LayoutWrapper = (props: Props) => {
         label: t("Common/Groups"),
         clickable: true,
       },
-      units: { label: t("Common/Units"), clickable: false },
+      units: { label: t("Common/Units"), clickable: true },
       categories: { label: t("Common/Categories"), clickable: true },
       "unit-columns": {
         label: t("Common/Columns"),
@@ -354,40 +350,22 @@ const LayoutWrapper = (props: Props) => {
 
   // --- SET PAGE TITLE ---
   useEffect(() => {
-    const shortAppName = "PP";
-    const fullAppName = "Planning Point";
-
-    const activeCrumb = breadcrumbs?.find((c) => c.isActive)?.label;
-
-    if (activeCrumb) {
-      document.title = `${shortAppName} | ${activeCrumb}`;
-      return;
-    }
+    const appName = "Planning Point";
 
     if (pathname === "/") {
-      document.title = fullAppName;
+      document.title = appName;
       return;
     }
 
-    const parts = pathname.split("/").filter(Boolean);
+    const labels = (breadcrumbs ?? []).map((c) => c.label).filter(Boolean);
 
-    const titleKeyMap: Record<string, string> = {
-      report: "Navbar/Report",
-      plan: "Navbar/Plan",
-      admin: "Common/Admin",
-      developer: "Common/Developer",
-      manage: "Common/Manage",
-    };
-
-    const key = titleKeyMap[parts[0]];
-
-    if (key) {
-      document.title = `${t(key)} | ${shortAppName}`;
+    if (labels.length > 0) {
+      document.title = `${labels.join(" | ")}`;
       return;
     }
 
-    document.title = fullAppName;
-  }, [pathname, breadcrumbs, t]);
+    document.title = appName;
+  }, [pathname, breadcrumbs]);
 
   return (
     <>
