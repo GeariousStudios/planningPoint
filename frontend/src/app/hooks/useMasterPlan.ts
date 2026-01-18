@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../context/AuthContext";
 import { useDragControls } from "framer-motion";
 import { useParams } from "next/navigation";
+import * as XLSX from "xlsx-js-style";
 
 type MasterPlanElement = {
   id: number | string;
@@ -53,6 +54,7 @@ export const useMasterPlan = (
   const [isHidden, setIsHidden] = useState(false);
   const [isInvalid, setIsInvalid] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -99,11 +101,15 @@ export const useMasterPlan = (
   const minDelay = 100;
   const startDelay = 600;
   const acceleration = 100;
-
   const [revisions, setRevisions] = useState<MasterPlanRevision[]>([]);
   const [selectedRevisionId, setSelectedRevisionId] =
     useState<string>("latest");
   const [isViewingRevision, setIsViewingRevision] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilters, setStatusFilters] = useState<MasterPlanElementStatus[]>(
+    [],
+  );
+  const [filterAllOpen, setFilterAllOpen] = useState(false);
 
   // --- Other ---
   const { groupId } = useParams() as { groupId?: string };
@@ -413,6 +419,111 @@ export const useMasterPlan = (
     } finally {
       setImporting(false);
     }
+  };
+
+  // --- Handle export file ---
+  const handleExport = () => {
+    const plan = masterPlans[0];
+    if (!plan) return;
+
+    const planNameRaw = String(
+      plan.name ??
+        plan.title ??
+        plan.label ??
+        plan.id ??
+        t("Common/Master plan"),
+    );
+    const planName = planNameRaw.replace(/[\\/:*?"<>|]/g, "-").trim();
+
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const now = new Date();
+    const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}.${pad(now.getMinutes())}.${pad(now.getSeconds())}`;
+
+    const cols = fieldOptions.filter((f) => !f.isHidden);
+
+    const rows = elements
+      .filter((el) => !removedElementIds.includes(el.id))
+      .map((el) => {
+        const row: Record<string, any> = {};
+        for (const f of cols) {
+          row[f.label] =
+            el.values?.find((v) => v.masterPlanFieldId === f.id)?.value ?? "";
+        }
+        return row;
+      });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    const headerLabels = cols.map((c) => c.label);
+    const maxLenByCol = headerLabels.map((h) => String(h ?? "").length);
+
+    for (const r of rows) {
+      for (let i = 0; i < headerLabels.length; i++) {
+        const key = headerLabels[i];
+        const v = r[key];
+        const len = String(v ?? "").length;
+        if (len > maxLenByCol[i]) maxLenByCol[i] = len;
+      }
+    }
+
+    ws["!cols"] = maxLenByCol.map((len) => ({
+      wch: Math.min(60, Math.max(1, len + 1)),
+    }));
+
+    const range = XLSX.utils.decode_range(ws["!ref"] ?? "A1:A1");
+
+    const headerStyle = {
+      font: { bold: true, color: { rgb: "ffffff" } },
+      fill: { patternType: "solid", fgColor: { rgb: "0063be" } },
+      alignment: { vertical: "center", horizontal: "left" },
+      border: {
+        top: { style: "thin", color: { rgb: "6a6a6a" } },
+        bottom: { style: "thin", color: { rgb: "6a6a6a" } },
+        left: { style: "thin", color: { rgb: "6a6a6a" } },
+        right: { style: "thin", color: { rgb: "6a6a6a" } },
+      },
+    };
+
+    const cellStyle = {
+      fill: { patternType: "solid", fgColor: { rgb: "e1e1e1" } },
+      alignment: { vertical: "center", horizontal: "left", wrapText: false },
+      border: {
+        top: { style: "thin", color: { rgb: "6a6a6a" } },
+        bottom: { style: "thin", color: { rgb: "6a6a6a" } },
+        left: { style: "thin", color: { rgb: "6a6a6a" } },
+        right: { style: "thin", color: { rgb: "6a6a6a" } },
+      },
+    };
+
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (ws[addr]) ws[addr].s = headerStyle;
+    }
+
+    for (let R = 1; R <= range.e.r; R++) {
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if (ws[addr]) ws[addr].s = cellStyle;
+      }
+    }
+
+    ws["!rows"] = [{ hpt: 20 }];
+
+    const ref = XLSX.utils.encode_range({
+      s: { r: 0, c: 0 },
+      e: { r: rows.length, c: headerLabels.length - 1 },
+    });
+
+    ws["!autofilter"] = { ref };
+    ws["!freeze"] = { xSplit: 0, ySplit: 1 };
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, t("Common/Master plan"));
+
+    XLSX.writeFile(
+      wb,
+      `${t("Common/Master plan")} - ${planName} - ${stamp}.xlsx`,
+    );
   };
 
   // --- Revision management ---
@@ -1482,7 +1593,140 @@ export const useMasterPlan = (
   };
 
   // --- HELPERS ---
-  const elements = masterPlans[0]?.elements ?? [];
+  const normalizedSearch = useMemo(
+    () => searchTerm.trim().toLowerCase(),
+    [searchTerm],
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [normalizedSearch, statusFilters]);
+
+  const allElements = masterPlans[0]?.elements ?? [];
+
+  const elements = useMemo(() => {
+    let result = allElements;
+
+    if (statusFilters.length > 0) {
+      const set = new Set(statusFilters);
+      result = result.filter((el) =>
+        set.has((el.status ?? "NotStarted") as MasterPlanElementStatus),
+      );
+    }
+
+    if (normalizedSearch) {
+      result = result.filter((el) => {
+        const statusText = String(el.status ?? "").toLowerCase();
+        const valuesText = (el.values ?? [])
+          .map((v) => String(v.value ?? ""))
+          .join(" ")
+          .toLowerCase();
+
+        return `${statusText} ${valuesText}`.includes(normalizedSearch);
+      });
+    }
+
+    return result;
+  }, [allElements, normalizedSearch, statusFilters]);
+
+  const statusCounts = useMemo(() => {
+    let base = allElements;
+
+    if (normalizedSearch) {
+      base = base.filter((el) => {
+        const statusText = String(el.status ?? "").toLowerCase();
+        const valuesText = (el.values ?? [])
+          .map((v) => String(v.value ?? ""))
+          .join(" ")
+          .toLowerCase();
+
+        return `${statusText} ${valuesText}`.includes(normalizedSearch);
+      });
+    }
+
+    const counts = {
+      all: base.length,
+      notStarted: 0,
+      inProgress: 0,
+      finished: 0,
+    };
+
+    for (const el of base) {
+      const s = (el.status ?? "NotStarted") as MasterPlanElementStatus;
+      if (s === "NotStarted") counts.notStarted++;
+      if (s === "InProgress") counts.inProgress++;
+      if (s === "Finished") counts.finished++;
+    }
+
+    return counts;
+  }, [allElements, normalizedSearch]);
+
+  const filters = useMemo(() => {
+    return [
+      {
+        label: t("Common/Status"),
+        breakpoint: "2xs",
+        options: [
+          {
+            label: t("MasterPlan/Not started"),
+            isSelected: statusFilters.includes("NotStarted"),
+            setSelected: (val: boolean) => {
+              setStatusFilters((prev) => {
+                const has = prev.includes("NotStarted");
+                if (val) return has ? prev : [...prev, "NotStarted"];
+                return has ? prev.filter((x) => x !== "NotStarted") : prev;
+              });
+            },
+            count: statusCounts.notStarted,
+          },
+          {
+            label: t("MasterPlan/In progress"),
+            isSelected: statusFilters.includes("InProgress"),
+            setSelected: (val: boolean) => {
+              setStatusFilters((prev) => {
+                const has = prev.includes("InProgress");
+                if (val) return has ? prev : [...prev, "InProgress"];
+                return has ? prev.filter((x) => x !== "InProgress") : prev;
+              });
+            },
+            count: statusCounts.inProgress,
+          },
+          {
+            label: t("MasterPlan/Finished"),
+            isSelected: statusFilters.includes("Finished"),
+            setSelected: (val: boolean) => {
+              setStatusFilters((prev) => {
+                const has = prev.includes("Finished");
+                if (val) return has ? prev : [...prev, "Finished"];
+                return has ? prev.filter((x) => x !== "Finished") : prev;
+              });
+            },
+            count: statusCounts.finished,
+          },
+        ],
+      },
+    ];
+  }, [statusFilters, statusCounts, t]);
+
+  const filterChips = useMemo(() => {
+    return (
+      filters.flatMap((group) =>
+        group.options
+          .filter((opt) => opt.isSelected)
+          .map((opt) => ({
+            label: opt.label,
+            onClear: () => opt.setSelected(false),
+          })),
+      ) ?? []
+    );
+  }, [filters]);
+
+  const clearFilters = () => {
+    filters.forEach((group) =>
+      group.options.forEach((opt) => opt.setSelected(false)),
+    );
+  };
+
   const groups: MasterPlanElement[][] = [];
   const seenGroups = new Set<string>();
 
@@ -1496,7 +1740,6 @@ export const useMasterPlan = (
       seenGroups.add(key);
     }
   }
-
   const groupedElements = groups;
 
   const startGroupIndex = (currentPage - 1) * itemsPerPage;
@@ -1592,11 +1835,24 @@ export const useMasterPlan = (
     handleImport,
     importing,
     setImporting,
+    handleExport,
+    exporting,
+    setExporting,
     revisions,
     selectedRevisionId,
     isViewingRevision,
     selectRevision,
     getStatusBadge,
-    updateStatus,
+    updateStatus, // TEMP!
+    searchTerm,
+    setSearchTerm,
+    statusFilters,
+    setStatusFilters,
+    statusCounts,
+    filters,
+    filterChips,
+    clearFilters,
+    filterAllOpen,
+    setFilterAllOpen,
   };
 };

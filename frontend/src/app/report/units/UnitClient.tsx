@@ -727,7 +727,7 @@ const UnitClient = (props: any) => {
                                     } group/cell break-normal!`}
                                   >
                                     <div className="flex gap-4">
-                                      {c.editingCell?.hour === hour &&
+                                      {/* {c.editingCell?.hour === hour &&
                                       c.editingCell?.columnId === columnId ? (
                                         <div className="-mx-2">
                                           <Input
@@ -784,6 +784,101 @@ const UnitClient = (props: any) => {
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 // toggleUnitCellModal(hour);
+                                                c.setEditingCell({
+                                                  hour,
+                                                  columnId,
+                                                });
+                                                c.setEditingValue(
+                                                  cell?.value ??
+                                                    cell?.intValue ??
+                                                    "",
+                                                );
+                                              }}
+                                              disabled={
+                                                !props.isReporter ||
+                                                c.unitColumnNames.length === 0
+                                              }
+                                            >
+                                              <HoverIcon
+                                                outline={Outline.PencilIcon}
+                                                solid={Solid.PencilIcon}
+                                                className="h-6 min-h-6 w-6 min-w-6"
+                                              />
+                                            </button>
+                                          </CustomTooltip>
+                                        </>
+                                      )} */}
+
+                                      {c.editingCell?.hour === hour &&
+                                      c.editingCell?.columnId === columnId ? (
+                                        <div className="relative inline-flex w-full align-middle">
+                                          <span className="invisible whitespace-pre">
+                                            {String(
+                                              c.editingValue ??
+                                                displayValue ??
+                                                "",
+                                            ) || " "}
+                                          </span>
+
+                                          <div className="absolute inset-0 -mx-2 flex items-center">
+                                            <Input
+                                              compact
+                                              focusOnMount
+                                              type={
+                                                dataType === "Number"
+                                                  ? "number"
+                                                  : "text"
+                                              }
+                                              value={String(
+                                                c.editingValue ?? "",
+                                              )}
+                                              onChange={(val) =>
+                                                c.setEditingValue(
+                                                  dataType === "Number"
+                                                    ? val === ""
+                                                      ? ""
+                                                      : isNaN(Number(val))
+                                                        ? ""
+                                                        : Number(val)
+                                                    : val,
+                                                )
+                                              }
+                                              onBlur={() =>
+                                                c.setEditingCell(null)
+                                              }
+                                              onKeyDown={(e) => {
+                                                if (e.key === "Escape") {
+                                                  e.stopPropagation();
+                                                  c.setEditingCell(null);
+                                                } else if (e.key === "Enter") {
+                                                  e.preventDefault();
+                                                  c.saveInlineEdit();
+                                                }
+                                              }}
+                                              min={0}
+                                              max={999999}
+                                              compactWithBorder
+                                              classNameAddition="!border-(--border-main) bg-(--bg-main) w-full !px-2"
+                                            />
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          {displayValue}
+
+                                          <CustomTooltip
+                                            content={`${!props.isReporter ? c.t("Common/No access") : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report this data") + c.t("Unit/Tooltip this hour") : c.t("Unit/No columns")}`}
+                                            veryLongDelay={
+                                              props.isReporter == true &&
+                                              c.unitColumnNames.length > 0
+                                            }
+                                            showOnTouch
+                                          >
+                                            <button
+                                              type="button"
+                                              className={`${iconButtonPrimaryClass} group invisible ml-auto group-hover/cell:visible`}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
                                                 c.setEditingCell({
                                                   hour,
                                                   columnId,

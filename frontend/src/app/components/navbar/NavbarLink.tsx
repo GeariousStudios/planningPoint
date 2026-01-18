@@ -83,7 +83,7 @@ const NavbarLink = (props: Props) => {
             )}
 
             <span
-              className={`${isActive ? "font-bold" : ""} flex truncate overflow-hidden`}
+              className={`${isActive ? "font-bold" : ""} line-clamp-2 overflow-hidden text-ellipsis`}
             >
               {props.label}
             </span>

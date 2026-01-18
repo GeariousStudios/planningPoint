@@ -8,6 +8,7 @@ import {
   buttonPrimaryClass,
   buttonSecondaryClass,
   iconButtonPrimaryClass,
+  roundedButtonClass,
   switchClass,
   switchKnobClass,
   textPrimaryButtonClass,
@@ -17,8 +18,14 @@ import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
 import * as SmallerSolid from "@heroicons/react/20/solid";
 import { motion } from "framer-motion";
-import React, { useEffect } from "react";
-import { TdCell, ThCell } from "../../components/manage/ManageComponents";
+import React, { createRef, useEffect, useMemo, useRef, useState } from "react";
+import {
+  AllFilter,
+  Filter,
+  FilterChip,
+  TdCell,
+  ThCell,
+} from "../../components/manage/ManageComponents";
 import Message from "../../components/common/Message";
 import SingleDropdown from "../../components/common/SingleDropdown";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
@@ -30,11 +37,13 @@ import {
 } from "@/app/hooks/useMasterPlan";
 import {
   badgeClass,
+  filterClass,
+  filterIconClass,
   tdClass,
   thClass,
 } from "@/app/components/manage/ManageClasses";
 import { useHandbook } from "@/app/context/HandbookContext";
-import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
+import SideMenu from "@/app/components/sideMenu/SideMenu";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -62,6 +71,28 @@ const MasterPlanClient = (props: Props) => {
 
     setHandbook("Master plan");
   }, [c.isReady, setHandbook]);
+
+  // --- Filter logic ---
+  const smallFilterRefs = useRef<React.RefObject<HTMLButtonElement | null>[]>(
+    [],
+  );
+  const bigFilterRefs = useRef<React.RefObject<HTMLDivElement | null>[]>([]);
+
+  const ensureRefs = (count: number) => {
+    if (smallFilterRefs.current.length !== count) {
+      smallFilterRefs.current = Array.from(
+        { length: count },
+        (_, i) => smallFilterRefs.current[i] ?? createRef<HTMLButtonElement>(),
+      );
+    }
+
+    if (bigFilterRefs.current.length !== count) {
+      bigFilterRefs.current = Array.from(
+        { length: count },
+        (_, i) => bigFilterRefs.current[i] ?? createRef<HTMLDivElement>(),
+      );
+    }
+  };
 
   if (c.canShowLock) {
     return <Message icon="lock" content="lock" fullscreen />;
@@ -119,13 +150,27 @@ const MasterPlanClient = (props: Props) => {
     duplicateSelected,
     handleImport,
     importing,
+    handleExport,
+    exporting,
     revisions,
     selectedRevisionId,
     isViewingRevision,
     selectRevision,
     getStatusBadge,
-    updateStatus,
+    updateStatus, // TEMP!
+    searchTerm,
+    setSearchTerm,
+    statusFilters,
+    setStatusFilters,
+    statusCounts,
+    filters,
+    filterChips,
+    clearFilters,
+    filterAllOpen,
+    setFilterAllOpen,
   } = c;
+
+  ensureRefs(filters.length);
 
   return (
     <>
@@ -169,6 +214,8 @@ const MasterPlanClient = (props: Props) => {
                       isViewingRevision
                     }
                     onClick={() => {
+                      setStatusFilters([]);
+
                       if (!isEditing) {
                         if (checkedOutBy && !checkedOutByMe) {
                           setIsCheckingOut(true);
@@ -256,6 +303,53 @@ const MasterPlanClient = (props: Props) => {
                   </button>
                 )}
               </div>
+
+              {!isEditing && !isCheckingOut && !isCheckingIn && (
+                <div className="ml-auto flex flex-wrap gap-4">
+                  <button
+                    className={`${buttonSecondaryClass} lg:w-max lg:px-4`}
+                    onClick={() => {
+                      handleExport();
+                    }}
+                    disabled={exporting || isLoading}
+                  >
+                    {exporting ? (
+                      <div className="flex items-center justify-center gap-2 truncate">
+                        <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
+                        {t("MasterPlan/Exporting master plan")}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2 truncate">
+                        <HoverIcon
+                          outline={Outline.ArrowDownTrayIcon}
+                          solid={Solid.ArrowDownTrayIcon}
+                          className="h-6 w-6"
+                        />
+                        <span className="xs:block hidden">
+                          {t("MasterPlan/Export master plan")}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+
+                  <div className="min-w-[230px]">
+                    <SingleDropdown
+                      options={[
+                        {
+                          label: t("MasterPlan/Latest revision"),
+                          value: "latest",
+                        },
+                        ...revisions.map((r) => ({
+                          label: `${r.label} (${new Date(r.archivedAt).toLocaleString()})`,
+                          value: String(r.id),
+                        })),
+                      ]}
+                      value={selectedRevisionId}
+                      onChange={(val) => selectRevision(String(val))}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* --- Import --- */}
               {isEditing && !isCheckingIn && masterPlans[0]?.allowImport && (
@@ -604,11 +698,41 @@ const MasterPlanClient = (props: Props) => {
                 </motion.div>
               </div>
             )}
+          </>
+        )}
 
-            {/* --- Revisions --- */}
-            {!isEditing && !isCheckingOut && !isCheckingIn && (
-              <div className="flex flex-wrap gap-4">
-                <div className="min-w-[240px]">
+        {/* --- Revisions --- */}
+        {!isEditing && !isCheckingOut && !isCheckingIn && (
+          <div className="flex flex-col flex-wrap gap-4">
+            {!props.isMasterPlanner && (
+              <div className="ml-auto flex flex-wrap gap-4">
+                <button
+                  className={`${buttonSecondaryClass} lg:w-max lg:px-4`}
+                  onClick={() => {
+                    handleExport();
+                  }}
+                  disabled={exporting || isLoading}
+                >
+                  {exporting ? (
+                    <div className="flex items-center justify-center gap-2 truncate">
+                      <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
+                      {t("MasterPlan/Exporting master plan")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2 truncate">
+                      <HoverIcon
+                        outline={Outline.ArrowDownTrayIcon}
+                        solid={Solid.ArrowDownTrayIcon}
+                        className="h-6 w-6"
+                      />
+                      <span className="xs:block hidden">
+                        {t("MasterPlan/Export master plan")}
+                      </span>
+                    </div>
+                  )}
+                </button>
+
+                <div className="min-w-[230px]">
                   <SingleDropdown
                     options={[
                       {
@@ -624,30 +748,137 @@ const MasterPlanClient = (props: Props) => {
                     onChange={(val) => selectRevision(String(val))}
                   />
                 </div>
-
-                {/* --- Manual refresh --- */}
-                {/* <CustomTooltip
-                  content={`${isManualRefresh && isLoading ? t("Common/Updating") : t("Common/Update page")}`}
-                  veryLongDelay
-                  showOnTouch
-                >
-                  <button
-                    className={`${buttonSecondaryClass} ml-auto flex w-fit items-center justify-center`}
-                    onClick={() => {
-                      setIsManualRefresh(true);
-                      requestRefetch();
-                    }}
-                    aria-label={t("Common/Update page")}
-                    disabled={isManualRefresh && isLoading}
-                  >
-                    <Outline.ArrowPathIcon
-                      className={`${isManualRefresh && isLoading ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} h-6 w-6`}
-                    />
-                  </button>
-                </CustomTooltip> */}
               </div>
             )}
-          </>
+
+            <div className="3xs:flex-nowrap 3xs:justify-between flex flex-wrap gap-4">
+              <div className="flex w-full items-center gap-4">
+                <div className="flex w-full items-center justify-start">
+                  <Input
+                    icon={<SmallerSolid.MagnifyingGlassIcon />}
+                    placeholder={`${t("Common/Search")}...`}
+                    value={searchTerm}
+                    onChange={(val) => setSearchTerm(String(val))}
+                  />
+                </div>
+              </div>
+
+              <div className="2xs:flex hidden flex-wrap gap-4">
+                <div className="flex gap-4">
+                  {filters.map((group, i) => (
+                    <Filter
+                      key={i}
+                      filterRef={smallFilterRefs.current[i]}
+                      label={group.label}
+                      breakpoint={group.breakpoint ?? ""}
+                      filterData={group.options.map((opt) => ({
+                        label: opt.label,
+                        show: opt.isSelected,
+                        setShow: opt.setSelected,
+                        count: opt.count,
+                      }))}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {filters.length > 0 && (
+                <div className="relative">
+                  <CustomTooltip
+                    content={t("Manage/All filters")}
+                    lgHidden
+                    longDelay
+                    showOnTouch
+                  >
+                    <button
+                      className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
+                      onClick={() => setFilterAllOpen(true)}
+                    >
+                      <span className={`${filterClass} xs:flex hidden`}>
+                        {t("Manage/All filters")}
+                      </span>
+                      <Outline.AdjustmentsHorizontalIcon
+                        className={`${filterIconClass}`}
+                      />
+                    </button>
+                  </CustomTooltip>
+
+                  <SideMenu
+                    triggerRef={smallFilterRefs.current[0]}
+                    isOpen={filterAllOpen}
+                    onClose={() => setFilterAllOpen(false)}
+                    label={t("Manage/All filters")}
+                  >
+                    <div className="flex h-full flex-col justify-between">
+                      <div className="flex flex-col">
+                        {filters.map((group, i) => (
+                          <AllFilter
+                            key={i}
+                            filterRef={bigFilterRefs.current[i]}
+                            label={group.label}
+                            filterData={group.options.map((opt) => ({
+                              label: opt.label,
+                              show: opt.isSelected,
+                              setShow: opt.setSelected,
+                              count: opt.count,
+                            }))}
+                          />
+                        ))}
+                      </div>
+
+                      <div className="flex flex-col gap-4 py-4 sm:flex-row">
+                        <button
+                          onClick={() => setFilterAllOpen(false)}
+                          className={`${buttonPrimaryClass} w-full`}
+                        >
+                          {t("Manage/View")}{" "}
+                          <span className="font-normal">
+                            {totalGroups ?? 0}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => clearFilters()}
+                          className={`${buttonSecondaryClass} w-full`}
+                          disabled={
+                            !filters.some((g) =>
+                              g.options.some((o) => o.isSelected),
+                            )
+                          }
+                        >
+                          {t("Manage/Clear all")}
+                        </button>
+                      </div>
+                    </div>
+                  </SideMenu>
+                </div>
+              )}
+            </div>
+
+            {filterChips.length > 0 && (
+              <div className="flex flex-wrap gap-4">
+                <span className="flex items-center font-semibold text-(--text-secondary)">
+                  {t("Manage/Active filters")}:
+                </span>
+
+                {filterChips.map((chip, idx) => (
+                  <FilterChip
+                    key={idx}
+                    onClickEvent={chip.onClear}
+                    label={chip.label}
+                  />
+                ))}
+
+                <button
+                  className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-(--fast) hover:bg-(--bg-navbar-link)"
+                  onClick={() => clearFilters()}
+                >
+                  <span className="font-semibold text-(--accent-color)">
+                    {t("Manage/Clear all")}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {/* --- RESULT LIST --- */}
@@ -667,7 +898,25 @@ const MasterPlanClient = (props: Props) => {
                 )}
 
                 <ThCell
-                  label={t("Common/Status")}
+                  label={
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span>{t("Common/Status")}</span>
+
+                      <CustomTooltip
+                        content={t("MasterPlan/Tooltip status")}
+                        showOnTouch
+                        shortDelay
+                      >
+                        <span className="group flex min-h-4 min-w-4 cursor-help">
+                          <HoverIcon
+                            outline={Outline.InformationCircleIcon}
+                            solid={Solid.InformationCircleIcon}
+                            className="h-5 w-5"
+                          />
+                        </span>
+                      </CustomTooltip>
+                    </div>
+                  }
                   sortable={false}
                   classNameAddition="min-w-fit px-4 whitespace-nowrap"
                 />
@@ -798,14 +1047,25 @@ const MasterPlanClient = (props: Props) => {
                                   : "InProgress";
 
                             return (
-                              <span
-                                className={`${badgeClass} ${badge.className}`}
+                              // TEMP START!
+                              <button
+                                className={`${badgeClass} ${badge.className} cursor-pointer`}
                                 onClick={() => {
+                                  updateStatus(String(el.id), nextStatus);
+                                }}
+                                onTouchEnd={() => {
                                   updateStatus(String(el.id), nextStatus);
                                 }}
                               >
                                 {badge.label}
-                              </span>
+                              </button>
+                              // TEMP END!
+
+                              // <span
+                              //   className={`${badgeClass} ${badge.className}`}
+                              // >
+                              //   {badge.label}
+                              // </span>
                             );
                           })()}
                         </TdCell>
@@ -871,9 +1131,15 @@ const MasterPlanClient = (props: Props) => {
                                           compactWithBorder
                                           classNameAddition={`${
                                             el.struckElement
-                                              ? "line-through opacity-60"
-                                              : "!border-(--border-main)"
-                                          } `}
+                                              ? "line-through opacity-60 "
+                                              : ""
+                                          } ${
+                                            el.status === "InProgress"
+                                              ? "!border-(--border-main)"
+                                              : el.status === "Finished"
+                                                ? "!border-(--border-main)"
+                                                : "!border-(--border-main)"
+                                          } bg-(--bg-main)`}
                                         />
                                       </div>
                                     </div>

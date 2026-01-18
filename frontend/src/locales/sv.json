@@ -525,6 +525,8 @@
   "MasterPlan/Tooltip duplicate object": "Duplicera markerat objekt",
   "MasterPlan/Import master plan": "Importera huvudplan (.xlsx)",
   "MasterPlan/Importing master plan": "Importerar...",
+  "MasterPlan/Export master plan": "Exportera huvudplan (.xlsx)",
+  "MasterPlan/Exporting master plan": "Exporterar...",
   "MasterPlan/Successful import": "Import lyckades!",
   "MasterPlan/Failed import": "Import misslyckades. Säkerställ att filformatet är .xlsx och försök igen!",
   "MasterPlan/Latest revision": "Senaste revision",
@@ -532,6 +534,7 @@
   "MasterPlan/Not started": "Ej påbörjad",
   "MasterPlan/In progress": "Pågående",
   "MasterPlan/Finished": "Avslutad",
+  "MasterPlan/Tooltip status": "Status på element ändras i rapporteringsvyn",
 
   "MasterPlanFields/Hidden master plan fields": "Dolda fält",
   "MasterPlanFields/hidden master plan fields": "dolda fält",

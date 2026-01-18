@@ -312,73 +312,72 @@ const Navbar = (props: Props) => {
     const staticEntries: SubmenuItem[] = [
       { href: "/", label: t("Navbar/Home"), icon: "HomeIcon" },
       {
+        href: "/developer/manage/",
+        label: t("Common/Developer") + " / " + t("Common/Manage"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/developer/manage/users/",
         label: t("Common/Users"),
         icon: "UserGroupIcon",
       },
       {
+        href: "/admin/manage/",
+        label: t("Common/Admin") + " / " + t("Common/Manage"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/admin/manage/units/categories/",
-        // label: t("Common/Manage") + " / " + t("Common/Categories"),
         label: t("Common/Categories"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/",
-        // label: t("Common/Manage") + " / " + t("Common/Units"),
         label: t("Common/Units"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/unit-groups/",
-        // label: t("Common/Manage") + " / " + t("Common/Groups"),
         label: t("Common/Groups"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/unit-columns/",
-        // label: t("Common/Manage") + " / " + t("Common/Columns"),
         label: t("Common/Columns"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/master-plans/",
-        // label: t("Common/Manage") + " / " + t("Common/Columns"),
         label: t("Common/Master plans"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/master-plans/import-rules/",
-        // label: t("Common/Manage") + " / " + t("Common/Columns"),
         label: t("ImportRules/Import rules"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/master-plan-fields/",
-        // label: t("Common/Manage") + " / " + t("Common/Columns"),
         label: t("Common/Master plan fields"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/news/news-types/",
-        // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/News types"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/shifts/",
-        // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/Shifts"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/shifts/shift-teams/",
-        // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/Shift teams"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/planned-stops/stop-types/",
-        // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/Stop types"),
         icon: "WrenchIcon",
       },
@@ -386,6 +385,26 @@ const Navbar = (props: Props) => {
         href: "/audit-trail/",
         label: t("Navbar/Audit trail"),
         icon: "BookOpenIcon",
+      },
+      {
+        href: "/plan/",
+        label: t("Navbar/Plan"),
+        icon: "CalendarIcon",
+      },
+      {
+        href: "/plan/master-plans/",
+        label: t("Common/Master plans"),
+        icon: "CalendarIcon",
+      },
+      {
+        href: "/report/",
+        label: t("Navbar/Report"),
+        icon: "CalendarIcon",
+      },
+      {
+        href: "/report/units/",
+        label: t("Common/Units"),
+        icon: "ChatBubbleBottomCenterTextIcon",
       },
     ];
 
@@ -632,17 +651,54 @@ const Navbar = (props: Props) => {
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Common/Developer")}
                           </span>
-                          <NavbarLink
-                            href="/developer/manage/users/"
-                            label={t("Common/Users")}
-                            icon="UserGroupIcon"
-                            isFavourite={favourites.some(
-                              (f) => f.href === "/developer/manage/users/",
-                            )}
-                            onToggleFavourite={
-                              isLoggedIn ? onToggleFavourite : undefined
-                            }
-                          />
+
+                          <span className="2xs:block hidden">
+                            <NavbarSubmenu
+                              label={t("Common/Manage")}
+                              icon={Outline.WrenchIcon}
+                              iconHover={Solid.WrenchIcon}
+                              hasScrollbar={props.hasScrollbar}
+                              menus={[
+                                {
+                                  label: t("Common/Users"),
+                                  items: [
+                                    {
+                                      href: "/developer/manage/users/",
+                                      label: t("Common/Users"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href === "/developer/manage/users/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                              ]}
+                              href="/developer/manage/"
+                              // isFavourite={favourites.some(
+                              //   (f) => f.href === "/developer/manage/",
+                              // )}
+                              // onToggleFavourite={
+                              //   isLoggedIn ? onToggleFavourite : undefined
+                              // }
+                            />
+                          </span>
+
+                          <span className="2xs:hidden block">
+                            <NavbarLink
+                              href="/developer/manage/"
+                              label={t("Common/Manage")}
+                              icon="WrenchIcon"
+                              // isFavourite={favourites.some(
+                              //   (f) => f.href === "/developer/manage/",
+                              // )}
+                              // onToggleFavourite={
+                              //   isLoggedIn ? onToggleFavourite : undefined
+                              // }
+                            />
+                          </span>
                           <hr className="mt-4 mb-7 rounded-full text-(--border-main)" />
                         </div>
                       )}
@@ -661,46 +717,88 @@ const Navbar = (props: Props) => {
                         }
                       />
 
-                      <NavbarSubmenu
-                        label={t("Navbar/Report")}
-                        icon={Outline.ChatBubbleBottomCenterTextIcon}
-                        iconHover={Solid.ChatBubbleBottomCenterTextIcon}
-                        hasScrollbar={props.hasScrollbar}
-                        menus={[
-                          ...(unitItemsResolved.filter((u) => !u.isHidden)
-                            .length > 0
-                            ? [
-                                {
-                                  label: t("Common/Units"),
-                                  items: unitItemsResolved.filter(
-                                    (u) => !u.isHidden,
-                                  ),
-                                },
-                              ]
-                            : []),
-                        ]}
-                      />
+                      <span className="2xs:block hidden">
+                        <NavbarSubmenu
+                          label={t("Navbar/Report")}
+                          icon={Outline.ChatBubbleBottomCenterTextIcon}
+                          iconHover={Solid.ChatBubbleBottomCenterTextIcon}
+                          hasScrollbar={props.hasScrollbar}
+                          menus={[
+                            ...(unitItemsResolved.filter((u) => !u.isHidden)
+                              .length > 0
+                              ? [
+                                  {
+                                    label: t("Common/Units"),
+                                    items: unitItemsResolved.filter(
+                                      (u) => !u.isHidden,
+                                    ),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                          href="/repport/"
+                          // isFavourite={favourites.some(
+                          //   (f) => f.href === "/report/",
+                          // )}
+                          // onToggleFavourite={
+                          //   isLoggedIn ? onToggleFavourite : undefined
+                          // }
+                        />
+                      </span>
 
-                      <NavbarSubmenu
-                        label={t("Navbar/Plan")}
-                        icon={Outline.CalendarIcon}
-                        iconHover={Solid.CalendarIcon}
-                        hasScrollbar={props.hasScrollbar}
-                        menus={[
-                          ...(masterPlanItemsResolved.filter(
-                            (mp) => !mp.isHidden,
-                          ).length > 0
-                            ? [
-                                {
-                                  label: t("Common/Master plans"),
-                                  items: masterPlanItemsResolved.filter(
-                                    (mp) => !mp.isHidden,
-                                  ),
-                                },
-                              ]
-                            : []),
-                        ]}
-                      />
+                      <span className="2xs:hidden block">
+                        <NavbarLink
+                          href="/report/"
+                          label={t("Navbar/Report")}
+                          icon="ChatBubbleBottomCenterTextIcon"
+                          // isFavourite={favourites.some((f) => f.href === "/report/")}
+                          // onToggleFavourite={
+                          //   isLoggedIn ? onToggleFavourite : undefined
+                          // }
+                        />
+                      </span>
+
+                      <span className="2xs:block hidden">
+                        <NavbarSubmenu
+                          label={t("Navbar/Plan")}
+                          icon={Outline.CalendarIcon}
+                          iconHover={Solid.CalendarIcon}
+                          hasScrollbar={props.hasScrollbar}
+                          menus={[
+                            ...(masterPlanItemsResolved.filter(
+                              (mp) => !mp.isHidden,
+                            ).length > 0
+                              ? [
+                                  {
+                                    label: t("Common/Master plans"),
+                                    items: masterPlanItemsResolved.filter(
+                                      (mp) => !mp.isHidden,
+                                    ),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                          href="/plan/"
+                          // isFavourite={favourites.some(
+                          //   (f) => f.href === "/plan/",
+                          // )}
+                          // onToggleFavourite={
+                          //   isLoggedIn ? onToggleFavourite : undefined
+                          // }
+                        />
+                      </span>
+
+                      <span className="2xs:hidden block">
+                        <NavbarLink
+                          href="/plan/"
+                          label={t("Navbar/Plan")}
+                          icon="CalendarIcon"
+                          // isFavourite={favourites.some((f) => f.href === "/plan/")}
+                          // onToggleFavourite={
+                          //   isLoggedIn ? onToggleFavourite : undefined
+                          // }
+                        />
+                      </span>
 
                       <NavbarLink
                         tooltip={t("Common/Not implemented")}
@@ -733,181 +831,200 @@ const Navbar = (props: Props) => {
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Common/Admin")}
                           </span>
-                          <NavbarSubmenu
-                            label={t("Common/Manage")}
-                            icon={Outline.WrenchIcon}
-                            iconHover={Solid.WrenchIcon}
-                            // requiresAdmin
-                            menus={[
-                              {
-                                label: t("Common/Units"),
-                                items: [
-                                  {
-                                    href: "/admin/manage/units/unit-groups/",
-                                    label: t("Common/Groups"),
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/unit-groups/",
-                                    ),
-                                  },
-                                  {
-                                    href: "/admin/manage/units/",
-                                    label: t("Common/Units"),
+                          <span className="2xs:block hidden">
+                            <NavbarSubmenu
+                              label={t("Common/Manage")}
+                              icon={Outline.WrenchIcon}
+                              iconHover={Solid.WrenchIcon}
+                              // requiresAdmin
+                              menus={[
+                                {
+                                  label: t("Common/Units"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/units/unit-groups/",
+                                      label: t("Common/Groups"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/unit-groups/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/units/",
+                                      label: t("Common/Units"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) => f.href === "/admin/manage/units/",
-                                    ),
-                                  },
-                                  {
-                                    title: t("Navbar/Report"),
-                                    href: "/admin/manage/units/categories/",
-                                    label: t("Common/Categories"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href === "/admin/manage/units/",
+                                      ),
+                                    },
+                                    {
+                                      title: t("Navbar/Report"),
+                                      href: "/admin/manage/units/categories/",
+                                      label: t("Common/Categories"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/categories/",
-                                    ),
-                                  },
-                                  {
-                                    href: "/admin/manage/units/unit-columns/",
-                                    label: t("Common/Columns"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/categories/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/units/unit-columns/",
+                                      label: t("Common/Columns"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/unit-columns/",
-                                    ),
-                                  },
-                                  {
-                                    title: t("Navbar/Plan"),
-                                    href: "/admin/manage/units/master-plans/",
-                                    label: t("Common/Master plans"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/unit-columns/",
+                                      ),
+                                    },
+                                    {
+                                      title: t("Navbar/Plan"),
+                                      href: "/admin/manage/units/master-plans/",
+                                      label: t("Common/Master plans"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/master-plans/",
-                                    ),
-                                  },
-                                  {
-                                    href: "/admin/manage/units/master-plan-fields/",
-                                    label: t("Common/Master plan fields"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/master-plans/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/units/master-plan-fields/",
+                                      label: t("Common/Master plan fields"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/master-plan-fields/",
-                                    ),
-                                  },
-                                  {
-                                    href: "/admin/manage/units/master-plans/import-rules/",
-                                    label: t("ImportRules/Import rules"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/master-plan-fields/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/units/master-plans/import-rules/",
+                                      label: t("ImportRules/Import rules"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/master-plans/import-rules/",
-                                    ),
-                                  },
-                                ],
-                              },
-                              {
-                                label: t("Common/Shifts"),
-                                items: [
-                                  {
-                                    href: "/admin/manage/shifts/",
-                                    label: t("Common/Shifts"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/master-plans/import-rules/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                                {
+                                  label: t("Common/Shifts"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/shifts/",
+                                      label: t("Common/Shifts"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) => f.href === "/admin/manage/shifts/",
-                                    ),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href === "/admin/manage/shifts/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/shifts/shift-teams/",
+                                      label: t("Common/Shift teams"),
 
-                                    // disabled: true,
-                                    // tooltip: t("Common/Not implemented"),
-                                  },
-                                  {
-                                    href: "/admin/manage/shifts/shift-teams/",
-                                    label: t("Common/Shift teams"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/shifts/shift-teams/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                                {
+                                  label: t("Common/News"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/news/news-types/",
+                                      label: t("Common/News types"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/shifts/shift-teams/",
-                                    ),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/news/news-types/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                                {
+                                  label: t("Common/Planned stops"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/planned-stops/stop-types/",
+                                      label: t("Common/Stop types"),
 
-                                    // disabled: true,
-                                    // tooltip: t("Common/Not implemented"),
-                                  },
-                                ],
-                              },
-                              {
-                                label: t("Common/News"),
-                                items: [
-                                  {
-                                    href: "/admin/manage/news/news-types/",
-                                    label: t("Common/News types"),
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/planned-stops/stop-types/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                              ]}
+                              href="/admin/manage/"
+                              // isFavourite={favourites.some(
+                              //   (f) => f.href === "/admin/manage/",
+                              // )}
+                              // onToggleFavourite={
+                              //   isLoggedIn ? onToggleFavourite : undefined
+                              // }
+                              hasScrollbar={props.hasScrollbar}
+                            />
+                          </span>
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/news/news-types/",
-                                    ),
-                                  },
-                                ],
-                              },
-                              {
-                                label: t("Common/Planned stops"),
-                                items: [
-                                  {
-                                    href: "/admin/manage/planned-stops/stop-types/",
-                                    label: t("Common/Stop types"),
-
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/planned-stops/stop-types/",
-                                    ),
-                                  },
-                                ],
-                              },
-                            ]}
-                            hasScrollbar={props.hasScrollbar}
-                          />
+                          <span className="2xs:hidden block">
+                            <NavbarLink
+                              href="/admin/manage/"
+                              label={t("Common/Manage")}
+                              icon="WrenchIcon"
+                              // isFavourite={favourites.some(
+                              //   (f) => f.href === "/admin/manage/",
+                              // )}
+                              // onToggleFavourite={
+                              //   isLoggedIn ? onToggleFavourite : undefined
+                              // }
+                            />
+                          </span>
                         </div>
                       )}
                     </div>
