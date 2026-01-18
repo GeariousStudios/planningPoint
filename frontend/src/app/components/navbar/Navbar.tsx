@@ -57,6 +57,10 @@ const Navbar = (props: Props) => {
   const [unitItems, setUnitItems] = useState<SubmenuItem[]>([]);
   const [masterPlanItems, setMasterPlanItems] = useState<SubmenuItem[]>([]);
   const [unitsLoaded, setUnitsLoaded] = useState(false);
+  const [operationalPlanItems, setOperationalPlanItems] = useState<
+    SubmenuItem[]
+  >([]);
+  const [operationalPlansLoaded, setOperationalPlansLoaded] = useState(false);
   const [masterPlansLoaded, setMasterPlansLoaded] = useState(false);
   const [isAnyDragging, setIsAnyDragging] = useState(false);
 
@@ -227,6 +231,82 @@ const Navbar = (props: Props) => {
     }
   };
 
+  // --- Fetch operational plans ---
+  const fetchOperationalPlans = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/operational-plan?sortBy=name&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      // --- Fail ---
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+        return;
+      }
+
+      const visibleOperationalPlans = result.items;
+
+      // --- Success ---
+      const grouped: Record<string, SubmenuItem[]> =
+        visibleOperationalPlans.reduce(
+          (acc: Record<string, SubmenuItem[]>, operationalPlan: any) => {
+            const groupName = operationalPlan.unitGroupName;
+
+            if (!acc[groupName]) {
+              acc[groupName] = [];
+            }
+
+            acc[groupName].push({
+              label: operationalPlan.name,
+              href: `/plan/operational-plans/${operationalPlan.unitGroupId}/${operationalPlan.id}`,
+              isHidden: operationalPlan.isHidden,
+            });
+
+            return acc;
+          },
+          {},
+        );
+
+      const itemsWithTitles: SubmenuItem[] = Object.entries(grouped).flatMap(
+        ([groupName, items]) => [
+          ...items.map((item, index) => ({
+            ...item,
+            title: index === 0 ? groupName : undefined,
+            icon: "CalendarIcon",
+            onToggleFavourite,
+          })),
+        ],
+      );
+
+      setOperationalPlanItems(itemsWithTitles);
+      setOperationalPlansLoaded(true);
+
+      const isOperationalPlanHref = (href: string) =>
+        href.startsWith("/plan/operational-plans/");
+
+      const stale = favourites.filter((f) => {
+        const match = f.href.match(/\/plan\/operational-plans\/\d+\/(\d+)/);
+        const opId = match ? parseInt(match[1]) : null;
+        const exists = result.items.some((u: any) => u.id === opId);
+        return isOperationalPlanHref(f.href) && !exists;
+      });
+
+      if (stale.length > 0) {
+        stale.forEach((f) => removeUserFavourite(f.href));
+      }
+    } catch (err) {
+    } finally {
+    }
+  };
+
   // --- INITIALLY FETCH UNITS ---
   useEffect(() => {
     if (!isAuthReady) {
@@ -235,6 +315,7 @@ const Navbar = (props: Props) => {
 
     fetchUnits();
     fetchMasterPlans();
+    fetchOperationalPlans();
 
     const handleUnitUpdate = () => fetchUnits();
     window.addEventListener("unit-list-updated", handleUnitUpdate);
@@ -242,11 +323,21 @@ const Navbar = (props: Props) => {
     const handleMasterPlanUpdate = () => fetchMasterPlans();
     window.addEventListener("master-plan-list-updated", handleMasterPlanUpdate);
 
+    const handleOperationalPlanUpdate = () => fetchOperationalPlans();
+    window.addEventListener(
+      "operational-plan-list-updated",
+      handleOperationalPlanUpdate,
+    );
+
     return () => {
       window.removeEventListener("unit-list-updated", handleUnitUpdate);
       window.removeEventListener(
         "master-plan-list-updated",
         handleMasterPlanUpdate,
+      );
+      window.removeEventListener(
+        "operational-plan-list-updated",
+        handleOperationalPlanUpdate,
       );
     };
   }, [isAuthReady]);
@@ -357,8 +448,13 @@ const Navbar = (props: Props) => {
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/units/master-plan-fields/",
+        href: "/admin/manage/units/master-plans/master-plan-fields/",
         label: t("Common/Master plan fields"),
+        icon: "WrenchIcon",
+      },
+      {
+        href: "/admin/manage/units/operational-plans/",
+        label: t("Common/Operational plans"),
         icon: "WrenchIcon",
       },
       {
@@ -397,9 +493,14 @@ const Navbar = (props: Props) => {
         icon: "CalendarIcon",
       },
       {
+        href: "/plan/operational-plans/",
+        label: t("Common/Operational plans"),
+        icon: "CalendarIcon",
+      },
+      {
         href: "/report/",
         label: t("Navbar/Report"),
-        icon: "CalendarIcon",
+        icon: "ChatBubbleBottomCenterTextIcon",
       },
       {
         href: "/report/units/",
@@ -420,7 +521,18 @@ const Navbar = (props: Props) => {
       icon: u.icon ?? "CalendarIcon",
     }));
 
-    const all = [...staticEntries, ...dynamicUnits, ...dynamicMasterPlans];
+    const dynamicOperationalPlans = operationalPlanItems.map((u) => ({
+      href: u.href,
+      label: u.overrideLabel ?? u.label,
+      icon: u.icon ?? "CalendarIcon",
+    }));
+
+    const all = [
+      ...staticEntries,
+      ...dynamicUnits,
+      ...dynamicMasterPlans,
+      ...dynamicOperationalPlans,
+    ];
 
     const map = new Map<string, { label: string; icon?: string }>();
     all.forEach((item) =>
@@ -434,7 +546,7 @@ const Navbar = (props: Props) => {
 
   const menuLookup = useMemo(
     () => getMenuLookup(),
-    [unitItems, masterPlanItems, t],
+    [unitItems, masterPlanItems, operationalPlanItems, t],
   );
 
   const validFavourites = favourites.filter((f) => menuLookup.has(f.href));
@@ -462,6 +574,16 @@ const Navbar = (props: Props) => {
         onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
       })),
     [masterPlanItems, favourites],
+  );
+
+  const operationalPlanItemsResolved = useMemo(
+    () =>
+      operationalPlanItems.map((it) => ({
+        ...it,
+        isFavourite: favourites.some((f) => f.href === it.href),
+        onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
+      })),
+    [operationalPlanItems, favourites],
   );
 
   // useEffect(() => {
@@ -736,7 +858,7 @@ const Navbar = (props: Props) => {
                                 ]
                               : []),
                           ]}
-                          href="/repport/"
+                          href="/report/"
                           // isFavourite={favourites.some(
                           //   (f) => f.href === "/report/",
                           // )}
@@ -773,6 +895,18 @@ const Navbar = (props: Props) => {
                                     label: t("Common/Master plans"),
                                     items: masterPlanItemsResolved.filter(
                                       (mp) => !mp.isHidden,
+                                    ),
+                                  },
+                                ]
+                              : []),
+                            ...(operationalPlanItemsResolved.filter(
+                              (op) => !op.isHidden,
+                            ).length > 0
+                              ? [
+                                  {
+                                    label: t("Common/Operational plans"),
+                                    items: operationalPlanItemsResolved.filter(
+                                      (op) => !op.isHidden,
                                     ),
                                   },
                                 ]
@@ -907,7 +1041,7 @@ const Navbar = (props: Props) => {
                                       ),
                                     },
                                     {
-                                      href: "/admin/manage/units/master-plan-fields/",
+                                      href: "/admin/manage/units/master-plans/master-plan-fields/",
                                       label: t("Common/Master plan fields"),
 
                                       onToggleFavourite: isLoggedIn
@@ -916,7 +1050,7 @@ const Navbar = (props: Props) => {
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
-                                          "/admin/manage/units/master-plan-fields/",
+                                          "/admin/manage/units/master-plans/master-plan-fields/",
                                       ),
                                     },
                                     {
@@ -930,6 +1064,19 @@ const Navbar = (props: Props) => {
                                         (f) =>
                                           f.href ===
                                           "/admin/manage/units/master-plans/import-rules/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/units/operational-plans/",
+                                      label: t("Common/Operational plans"),
+
+                                      onToggleFavourite: isLoggedIn
+                                        ? onToggleFavourite
+                                        : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/operational-plans/",
                                       ),
                                     },
                                   ],

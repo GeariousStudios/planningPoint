@@ -83,6 +83,7 @@ namespace backend.Controllers
                     mappings,
                     groupFieldId,
                     replaceOnImport = masterPlan.ReplaceOnImport,
+                    skipRowOne = masterPlan.SkipRowOne,
                 }
             );
         }
@@ -156,6 +157,9 @@ namespace backend.Controllers
                 ["ReplaceOnImport"] = masterPlan.ReplaceOnImport
                     ? new[] { "Common/Yes" }
                     : new[] { "Common/No" },
+                ["SkipRowOne"] = masterPlan.SkipRowOne
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["GroupKey"] = oldGroupFieldId.HasValue
                     ? $"{oldGroupFieldName} (ID: {oldGroupFieldId.Value})"
                     : "—",
@@ -163,6 +167,7 @@ namespace backend.Controllers
             };
 
             masterPlan.ReplaceOnImport = dto.ReplaceOnImport;
+            masterPlan.SkipRowOne = dto.SkipRowOne;
 
             foreach (var link in masterPlan.MasterPlanToMasterPlanFields)
             {
@@ -229,6 +234,9 @@ namespace backend.Controllers
                         ["ReplaceOnImport"] = dto.ReplaceOnImport
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },
+                        ["SkipRowOne"] = dto.SkipRowOne
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                         ["GroupKey"] = dto.GroupFieldId.HasValue
                             ? $"{newGroupFieldName} (ID: {dto.GroupFieldId.Value})"
                             : "—",
@@ -290,7 +298,9 @@ namespace backend.Controllers
 
             var rows = new List<Dictionary<int, string>>();
 
-            for (int row = 1; row <= lastRow; row++)
+            int startRow = masterPlan.SkipRowOne ? 2 : 1;
+
+            for (int row = startRow; row <= lastRow; row++)
             {
                 var rowValues = new Dictionary<int, string>();
                 bool hasAnyValue = false;

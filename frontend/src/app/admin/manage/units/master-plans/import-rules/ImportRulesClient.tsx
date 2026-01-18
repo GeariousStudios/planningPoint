@@ -45,6 +45,7 @@ const ImportRulesClient = (props: Props) => {
     {},
   );
   const [replaceOnImport, setReplaceOnImport] = useState(false);
+  const [skipRowOne, setSkipRowOne] = useState(false);
   const [originalMapping, setOriginalMapping] = useState<
     Record<number, string>
   >({});
@@ -52,6 +53,7 @@ const ImportRulesClient = (props: Props) => {
     number | null
   >(null);
   const [originalReplaceOnImport, setOriginalReplaceOnImport] = useState(false);
+  const [originalSkipRowOne, setOriginalSkipRowOne] = useState(false);
   const [isFetchingFields, setIsFetchingFields] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isReverting, setIsReverting] = useState(false);
@@ -142,6 +144,8 @@ const ImportRulesClient = (props: Props) => {
       setOriginalGroupFieldId(null);
       setReplaceOnImport(false);
       setOriginalReplaceOnImport(false);
+      setSkipRowOne(false);
+      setOriginalSkipRowOne(false);
       return;
     }
 
@@ -160,6 +164,9 @@ const ImportRulesClient = (props: Props) => {
 
     setReplaceOnImport(!!result.replaceOnImport);
     setOriginalReplaceOnImport(!!result.replaceOnImport);
+
+    setSkipRowOne(!!result.skipRowOne);
+    setOriginalSkipRowOne(!!result.skipRowOne);
   };
 
   // --- Save import rules ---
@@ -182,6 +189,7 @@ const ImportRulesClient = (props: Props) => {
           mappings: columnMapping,
           groupFieldId,
           replaceOnImport,
+          skipRowOne,
         }),
       },
     );
@@ -198,6 +206,7 @@ const ImportRulesClient = (props: Props) => {
     setOriginalMapping(columnMapping);
     setOriginalGroupFieldId(groupFieldId);
     setOriginalReplaceOnImport(replaceOnImport);
+    setOriginalSkipRowOne(skipRowOne);
   };
 
   // --- Revert import rules ---
@@ -211,6 +220,7 @@ const ImportRulesClient = (props: Props) => {
     setColumnMapping(originalMapping);
     setGroupFieldId(originalGroupFieldId);
     setReplaceOnImport(originalReplaceOnImport);
+    setSkipRowOne(originalSkipRowOne);
 
     notify("info", t("ImportRules/Changes reverted"));
     setIsReverting(false);
@@ -219,7 +229,8 @@ const ImportRulesClient = (props: Props) => {
   const hasChanges =
     JSON.stringify(columnMapping) !== JSON.stringify(originalMapping) ||
     groupFieldId !== originalGroupFieldId ||
-    replaceOnImport !== originalReplaceOnImport;
+    replaceOnImport !== originalReplaceOnImport ||
+    skipRowOne !== originalSkipRowOne;
 
   // --- Excel columns generation ---
   const excelColumns = Array.from({ length: 16384 }, (_, i) => {
@@ -391,17 +402,32 @@ const ImportRulesClient = (props: Props) => {
                   <hr className="w-full text-(--border-tertiary)" />
                 </div>
 
-                <div className="flex items-center gap-2 truncate">
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={replaceOnImport}
-                    className={switchClass(replaceOnImport)}
-                    onClick={() => setReplaceOnImport((prev) => !prev)}
-                  >
-                    <div className={switchKnobClass(replaceOnImport)} />
-                  </button>
-                  {t("ImportRules/Replace master plan")}
+                <div className="flex gap-x-12 gap-y-6 flex-wrap">
+                  <div className="flex items-center gap-2 truncate">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={replaceOnImport}
+                      className={switchClass(replaceOnImport)}
+                      onClick={() => setReplaceOnImport((prev) => !prev)}
+                    >
+                      <div className={switchKnobClass(replaceOnImport)} />
+                    </button>
+                    {t("ImportRules/Replace master plan")}
+                  </div>
+
+                  <div className="flex items-center gap-2 truncate">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={skipRowOne}
+                      className={switchClass(skipRowOne)}
+                      onClick={() => setSkipRowOne((prev) => !prev)}
+                    >
+                      <div className={switchKnobClass(skipRowOne)} />
+                    </button>
+                    {t("ImportRules/Skip row one")}
+                  </div>
                 </div>
               </>
             )}

@@ -136,6 +136,12 @@
   "MasterPlanElement/OrderUpdated": "Order updated!",
   "MasterPlanElement/AllowRemovingElementsFirst": "Allow removing elements on the master plan first",
 
+  "OperationalPlan/NotFound": "Operational plan could not be found in the database",
+  "OperationalPlan/InUse": "Cannot delete an operational plan that is in use",
+  "OperationalPlan/Deleted": "Operational plan deleted!",
+  "OperationalPlan/NameTaken": "An operational plan with this name already exists!",
+  "OperationalPlan/CheckedOutByAnotherUser": "Operational plan is checked out by another user",
+
   "AuditTrail/All": "All",
   "AuditTrail/Category": "Category",
   "AuditTrail/Categories": "Categories",
@@ -265,6 +271,7 @@
   "AuditTrail/MasterPlanImportRules": "Master plan import rules",
   "AuditTrail/GroupKey": "Group key",
   "AuditTrail/ReplaceOnImport": "Replace master plan on import",
+  "AuditTrail/SkipRowOne": "Skip row 1 on import",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

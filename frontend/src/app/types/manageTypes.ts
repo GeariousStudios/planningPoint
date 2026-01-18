@@ -361,3 +361,21 @@ export const getMasterPlanFieldAlignmentOptions = (
     value: "Right" as MasterPlanFieldAlignment,
   },
 ];
+
+// --- admin/manage/units/operational-plans/OperationalPlansClient.tsx ---
+export type OperationalPlanItem = {
+  id: number;
+  name: string;
+  masterPlanName: string;
+  isHidden?: boolean;
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type OperationalPlanFilters = {
+  masterPlanIds?: number[];
+  isHidden?: boolean;
+};

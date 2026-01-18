@@ -333,7 +333,12 @@ export const useMasterPlan = (
           .map((e) => e.id)
           .filter((id) => !isNaN(Number(id)));
 
-        setRemovedElementIds(idsToDelete);
+        setRemovedElementIds((prev) => {
+          const set = new Set(prev.map(String));
+          for (const id of idsToDelete) set.add(String(id));
+          return Array.from(set);
+        });
+
         setSelectedId(null);
 
         setMasterPlans((prev) =>

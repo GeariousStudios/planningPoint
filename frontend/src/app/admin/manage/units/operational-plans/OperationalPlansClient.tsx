@@ -3,35 +3,30 @@
 import { useToast } from "../../../../components/toast/ToastProvider";
 import useManage from "@/app/hooks/useManage";
 import {
-  getMasterPlanFieldAlignmentOptions,
-  getMasterPlanFieldDataTypeOptions,
-  MasterPlanFieldAlignment,
-  MasterPlanFieldDataType,
-  MasterPlanFieldFilters,
-  MasterPlanFieldItem,
+  OperationalPlanFilters,
+  OperationalPlanItem,
 } from "@/app/types/manageTypes"; // <-- Unique.
 import {
   deleteContent,
   fetchContent,
   fetchMasterPlans,
   MasterPlanOption,
-} from "@/app/apis/manage/masterPlanFieldsApi"; // <-- Unique.
+} from "@/app/apis/manage/operationalPlansApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import MasterPlanFieldModal from "@/app/components/modals/admin/units/MasterPlanFieldModal"; // <-- Unique.
+import OperationalPlanModal from "@/app/components/modals/admin/units/OperationalPlanModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
-import { count } from "console";
 import { useHandbook } from "@/app/context/HandbookContext";
 
 type Props = {
   isConnected: boolean | null;
 };
 
-const MasterPlanFieldsClient = (props: Props) => {
+const OperationalPlansClient = (props: Props) => {
   const t = useTranslations();
 
   // <-- Unique.
@@ -82,13 +77,13 @@ const MasterPlanFieldsClient = (props: Props) => {
 
     // --- Other ---
     fetchItems,
-  } = useManage<MasterPlanFieldItem, MasterPlanFieldFilters>(
+  } = useManage<OperationalPlanItem, OperationalPlanFilters>(
     async (params) => {
       // <-- Unique.
       try {
         const result = await fetchContent(params);
         return {
-          items: Array.isArray(result.items) ? result.items : [],
+          items: result.items,
           total: result.total,
           counts: result.counts,
         };
@@ -96,7 +91,7 @@ const MasterPlanFieldsClient = (props: Props) => {
         notify(
           "error",
           err.message ||
-            t("Manage/Failed to fetch") + t("Common/master plan fields"),
+            t("Manage/Failed to fetch") + t("Common/operational plans"),
         ); // <-- Unique.
         return {
           items: [],
@@ -117,7 +112,7 @@ const MasterPlanFieldsClient = (props: Props) => {
   useEffect(() => {
     fetchMasterPlans()
       .then(setMasterPlans)
-      .catch(() => notify("error", t("Modal/Unknown error")));
+      .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
   // --- TOGGLE MODAL(S) ---
@@ -138,9 +133,10 @@ const MasterPlanFieldsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
+      window.dispatchEvent(new Event("operational-plan-list-updated"));
       notify(
         "success",
-        t("Common/Master plan field") + t("Manage/deleted2"),
+        t("Common/Operational plan") + t("Manage/deleted1"),
         4000,
       ); // <-- Unique.
     } catch (err: any) {
@@ -154,8 +150,8 @@ const MasterPlanFieldsClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name, dataType, alignment, isHidden, masterPlans",
-      getValue: (item: MasterPlanFieldItem) => (
+      key: "name, masterPlan, isHidden",
+      getValue: (item: OperationalPlanItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-4 text-2xl font-bold">
@@ -164,37 +160,9 @@ const MasterPlanFieldsClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("MasterPlanFieldModal/Data type")}:
+              {t("OperationalPlans/Belongs to master plan")}:
             </span>
-            <span className="-mt-2">{t("Common/" + item.dataType)}</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">
-              {t("MasterPlanFieldModal/Alignment")}:
-            </span>
-            <span className="-mt-2">{t("Common/" + item.alignment)}</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">
-              {t("Common/Master plans")}:
-            </span>
-            <>
-              {item.masterPlanIds.length === 0 ? (
-                <span className="-mt-2">-</span>
-              ) : (
-                item.masterPlanIds.map((id, i) => {
-                  const mp = masterPlans.find((x) => x.id === id);
-                  return (
-                    <span
-                      key={i}
-                      className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
-                    >
-                      {mp?.name}
-                    </span>
-                  );
-                })
-              )}
-            </>
+            <span className="-mt-2">{item.masterPlanName}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
@@ -209,7 +177,7 @@ const MasterPlanFieldsClient = (props: Props) => {
     },
     {
       key: "creationDate, createdBy",
-      getValue: (item: MasterPlanFieldItem) => (
+      getValue: (item: OperationalPlanItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">{t("Common/Created")}</span>
           {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
@@ -219,7 +187,7 @@ const MasterPlanFieldsClient = (props: Props) => {
     },
     {
       key: "updateDate, updatedBy",
-      getValue: (item: MasterPlanFieldItem) => (
+      getValue: (item: OperationalPlanItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">{t("Common/Updated")}</span>
           {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
@@ -237,65 +205,29 @@ const MasterPlanFieldsClient = (props: Props) => {
       sortingItem: "name",
       labelAsc: t("Common/name") + " Ö-A",
       labelDesc: t("Common/name") + " A-Ö",
-      getValue: (item: MasterPlanFieldItem) => (
+      getValue: (item: OperationalPlanItem) => (
         <div className="flex items-center gap-4">{item.name}</div>
       ),
       responsivePriority: 0,
     },
     {
-      key: "dataType",
-      label: t("MasterPlanFieldModal/Data type"),
-      sortingItem: "datatype",
-      labelAsc: t("MasterPlanFieldModal/data type") + " Ö-A",
-      labelDesc: t("MasterPlanFieldModal/data type") + " A-Ö",
-      getValue: (item: MasterPlanFieldItem) => (
-        <span>{t("Common/" + item.dataType)}</span>
-      ),
+      key: "masterPlanName",
+      label: t("OperationalPlans/Belongs to master plan"),
+      sortingItem: "masterplanname",
+      labelAsc: t("Common/master plan") + " Ö-A",
+      labelDesc: t("Common/master plan") + " A-Ö",
+      getValue: (item: OperationalPlanItem) => item.masterPlanName,
       responsivePriority: 2,
-    },
-    {
-      key: "alignment",
-      label: t("MasterPlanFieldModal/Alignment"),
-      sortingItem: "alignment",
-      labelAsc: t("MasterPlanFieldModal/alignment") + " Ö-A",
-      labelDesc: t("MasterPlanFieldModal/alignment") + " A-Ö",
-      getValue: (item: MasterPlanFieldItem) => (
-        <span>{t("Common/" + item.alignment)}</span>
-      ),
-      responsivePriority: 3,
-    },
-    {
-      key: "masterPlanCount",
-      label: t("Common/Master plans"),
-      sortingItem: "masterplancount",
-      labelAsc: t("Common/master plan") + t("Manage/ascending"),
-      labelDesc: t("Common/master plan") + t("Manage/descending"),
-      getValue: (item: MasterPlanFieldItem) => (
-        <div className="flex flex-wrap gap-2">
-          {item.masterPlanIds.map((id, i) => {
-            const mp = masterPlans.find((x) => x.id === id);
-            return (
-              <span
-                key={i}
-                className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
-              >
-                {mp?.name}
-              </span>
-            );
-          })}
-        </div>
-      ),
-      responsivePriority: 4,
     },
     {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
-      labelAsc: t("MasterPlanFields/visible master plan fields"),
-      labelDesc: t("MasterPlanFields/hidden master plan fields"),
+      labelAsc: t("OperationalPlans/visible operational plans"),
+      labelDesc: t("OperationalPlans/hidden operational plans"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
-      getValue: (item: MasterPlanFieldItem) => (
+      getValue: (item: OperationalPlanItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
@@ -324,39 +256,16 @@ const MasterPlanFieldsClient = (props: Props) => {
       }));
     },
 
-    selectedMasterPlans: filters.masterPlanIds ?? [],
-    setMasterPlanSelected: (masterPlanId: number, val: boolean) => {
-      setFilters((prev) => ({
-        ...prev,
-        masterPlanIds: val
-          ? [...(prev.masterPlanIds ?? []), masterPlanId]
-          : (prev.masterPlanIds ?? []).filter((id) => id !== masterPlanId),
-      }));
-    },
-
-    selectedDataTypes: filters.dataTypes ?? [],
-    toggleDataType: (type: MasterPlanFieldDataType) => {
+    selectedMasterPlan: filters.masterPlanIds ?? [],
+    toggleMasterPlan: (planId: number) => {
       setFilters((prev) => {
-        const types = new Set(prev.dataTypes ?? []);
-        if (types.has(type)) {
-          types.delete(type);
+        const plans = new Set(prev.masterPlanIds ?? []);
+        if (plans.has(planId)) {
+          plans.delete(planId);
         } else {
-          types.add(type);
+          plans.add(planId);
         }
-        return { ...prev, dataTypes: Array.from(types) };
-      });
-    },
-
-    selectedAlignments: filters.alignments ?? [],
-    toggleAlignment: (alignment: MasterPlanFieldAlignment) => {
-      setFilters((prev) => {
-        const alignments = new Set(prev.alignments ?? []);
-        if (alignments.has(alignment)) {
-          alignments.delete(alignment);
-        } else {
-          alignments.add(alignment);
-        }
-        return { ...prev, alignments: Array.from(alignments) };
+        return { ...prev, masterPlanIds: Array.from(plans) };
       });
     },
   };
@@ -368,13 +277,13 @@ const MasterPlanFieldsClient = (props: Props) => {
       breakpoint: "ml",
       options: [
         {
-          label: t("MasterPlanFields/Visible master plan fields"),
+          label: t("OperationalPlans/Visible operational plans"),
           isSelected: filterControls.showVisible,
           setSelected: filterControls.setShowVisible,
           count: counts?.visibilityCount?.["Visible"] ?? 0,
         },
         {
-          label: t("MasterPlanFields/Hidden master plan fields"),
+          label: t("OperationalPlans/Hidden operational plans"),
           isSelected: filterControls.showHidden,
           setSelected: filterControls.setShowHidden,
           count: counts?.visibilityCount?.["Hidden"] ?? 0,
@@ -382,47 +291,20 @@ const MasterPlanFieldsClient = (props: Props) => {
       ],
     },
     {
-      label: t("MasterPlanFieldModal/Data type"),
+      label: t("OperationalPlans/Belongs to master plan"),
       breakpoint: "lg",
-      options: getMasterPlanFieldDataTypeOptions(t).map(({ label, value }) => ({
-        label,
-        isSelected: filterControls.selectedDataTypes.includes(value),
+      options: masterPlans.map((group) => ({
+        label: group.name,
+        isSelected: filterControls.selectedMasterPlan.includes(group.id),
         setSelected: (val: boolean) => {
-          const selected = filterControls.selectedDataTypes.includes(value);
-
-          if (val !== selected) {
-            filterControls.toggleDataType(value);
-          }
+          setFilters((prev) => ({
+            ...prev,
+            masterPlanIds: val
+              ? [...(prev.masterPlanIds ?? []), group.id]
+              : (prev.masterPlanIds ?? []).filter((id) => id !== group.id),
+          }));
         },
-        count: counts?.dataTypeCount?.[value] ?? 0,
-      })),
-    },
-    {
-      label: t("MasterPlanFieldModal/Alignment"),
-      breakpoint: "xl",
-      options: getMasterPlanFieldAlignmentOptions(t).map(
-        ({ label, value }) => ({
-          label,
-          isSelected: filterControls.selectedAlignments.includes(value),
-          setSelected: (val: boolean) => {
-            const selected = filterControls.selectedAlignments.includes(value);
-            if (val !== selected) {
-              filterControls.toggleAlignment(value);
-            }
-          },
-          count: counts?.alignmentCount?.[value] ?? 0,
-        }),
-      ),
-    },
-    {
-      label: t("Common/Master plans"),
-      breakpoint: "2xl",
-      options: masterPlans.map((masterPlan) => ({
-        label: masterPlan.name,
-        isSelected: filterControls.selectedMasterPlans.includes(masterPlan.id),
-        setSelected: (val: boolean) =>
-          filterControls.setMasterPlanSelected(masterPlan.id, val),
-        count: counts?.masterPlanCount?.[masterPlan.id] ?? 0,
+        count: counts?.masterPlanCount?.[group.name],
       })),
     },
   ];
@@ -438,13 +320,13 @@ const MasterPlanFieldsClient = (props: Props) => {
   const { setHandbook } = useHandbook();
 
   useEffect(() => {
-    setHandbook("Master plan fields");
+    setHandbook("Operational plans");
   }, []);
 
   return (
     <>
-      <ManageBase<MasterPlanFieldItem> // <-- Unique.
-        itemName={t("Common/master plan field")} // <-- Unique.
+      <ManageBase<OperationalPlanItem> // <-- Unique.
+        itemName={t("Common/operational plan")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
@@ -452,8 +334,8 @@ const MasterPlanFieldsClient = (props: Props) => {
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
         isConnected={props.isConnected === true}
-        selectMessage="Manage/Select2" // <-- Unique.
-        editLimitMessage="Manage/Edit limit2" // <-- Unique.
+        selectMessage="Manage/Select4" // <-- Unique.
+        editLimitMessage="Manage/Edit limit1" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
@@ -477,12 +359,13 @@ const MasterPlanFieldsClient = (props: Props) => {
       />
 
       {/* --- MODALS --- */}
-      <MasterPlanFieldModal // <-- Unique.
+      <OperationalPlanModal // <-- Unique.
         isOpen={isEditModalOpen}
         onClose={toggleEditItemModal}
         itemId={editingItemId}
         onItemUpdated={() => {
           fetchItems();
+          fetchMasterPlans().then(setMasterPlans);
         }}
       />
 
@@ -497,6 +380,7 @@ const MasterPlanFieldsClient = (props: Props) => {
             await finishDeleteContent(id);
           }
 
+          fetchMasterPlans().then(setMasterPlans);
           setIsDeleteModalOpen(false);
           setDeletingItemIds([]);
           setSelectedItems([]);
@@ -504,13 +388,13 @@ const MasterPlanFieldsClient = (props: Props) => {
         confirmOnDelete // <-- Unique.
         confirmDeleteMessage={
           <>
-            {t("MasterPlanFields/Confirm1")}
+            {t("OperationalPlans/Confirm1")}
             <br />
             <br />
-            {t("MasterPlanFields/Confirm2")}
+            {t("OperationalPlans/Confirm2")}
             <br />
             <br />
-            {t("MasterPlanFields/Confirm3")}
+            {t("OperationalPlans/Confirm3")}
           </>
         }
       />
@@ -518,4 +402,4 @@ const MasterPlanFieldsClient = (props: Props) => {
   );
 };
 
-export default MasterPlanFieldsClient; // <-- Unique.
+export default OperationalPlansClient; // <-- Unique.

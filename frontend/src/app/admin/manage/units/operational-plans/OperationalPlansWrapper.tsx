@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Message from "../../../../components/common/Message";
 import { useAuth } from "@/app/context/AuthContext";
 
-const MasterPlanFieldsClient = dynamic(() => import("./MasterPlanFieldsClient"), {
+const OperationalPlansClient = dynamic(() => import("./OperationalPlansClient"), {
   ssr: false,
   loading: () => (
     <>
@@ -19,7 +19,7 @@ const MasterPlanFieldsClient = dynamic(() => import("./MasterPlanFieldsClient"),
   ),
 });
 
-const MasterPlanFieldsWrapper = () => {
+const OperationalPlansWrapper = () => {
   const { isAuthReady, isAdmin, isConnected } = useAuth();
 
   if (!isAuthReady) {
@@ -55,7 +55,7 @@ const MasterPlanFieldsWrapper = () => {
     );
   }
 
-  return <MasterPlanFieldsClient isConnected={isConnected} />;
+  return <OperationalPlansClient isConnected={isConnected} />;
 };
 
-export default MasterPlanFieldsWrapper;
+export default OperationalPlansWrapper;

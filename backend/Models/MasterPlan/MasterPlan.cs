@@ -15,6 +15,7 @@ namespace backend.Models
         public bool AllowRemovingElements { get; set; }
         public bool AllowImport { get; set; }
         public bool ReplaceOnImport { get; set; }
+        public bool SkipRowOne { get; set; } = true;
 
         // Meta data.
         public DateTime CreationDate { get; set; }
@@ -32,5 +33,7 @@ namespace backend.Models
         public List<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; } =
             new();
         public List<MasterPlanFieldMapping> FieldMappings { get; set; } = new();
+
+        public List<OperationalPlan> OperationalPlans { get; set; } = new();
     }
 }

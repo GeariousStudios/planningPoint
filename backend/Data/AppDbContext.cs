@@ -34,6 +34,7 @@ namespace backend.Data
         public DbSet<MasterPlanField> MasterPlanFields { get; set; }
         public DbSet<MasterPlanFieldMapping> MasterPlanFieldMappings { get; set; }
         public DbSet<MasterPlanRevision> MasterPlanRevisions { get; set; }
+        public DbSet<OperationalPlan> OperationalPlans { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
@@ -340,6 +341,14 @@ namespace backend.Data
                 .WithMany()
                 .HasForeignKey(x => x.MasterPlanId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // MasterPlan -> OperationalPlans 1-to-many relationship.
+            modelBuilder
+                .Entity<OperationalPlan>()
+                .HasOne(op => op.MasterPlan)
+                .WithMany(mp => mp.OperationalPlans)
+                .HasForeignKey(op => op.MasterPlanId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         public override int SaveChanges()

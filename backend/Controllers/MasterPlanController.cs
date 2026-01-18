@@ -329,6 +329,7 @@ namespace backend.Controllers
                 ReplaceOnImport = masterPlan.ReplaceOnImport,
                 UnitGroupId = masterPlan.UnitGroupId,
                 UnitGroupName = masterPlan.UnitGroup.Name ?? unknownGroup,
+                SkipRowOne = masterPlan.SkipRowOne,
                 Fields = masterPlan
                     .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                     .Select(mpf => new MasterPlanFieldDto

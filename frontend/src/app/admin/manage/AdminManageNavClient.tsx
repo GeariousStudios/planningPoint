@@ -44,12 +44,16 @@ const AdminManageNavClient = (props: Props) => {
           label: t("Common/Master plans"),
         },
         {
-          href: "/admin/manage/units/master-plan-fields/",
+          href: "/admin/manage/units/master-plans/master-plan-fields/",
           label: t("Common/Master plan fields"),
         },
         {
           href: "/admin/manage/units/master-plans/import-rules/",
           label: t("ImportRules/Import rules"),
+        },
+        {
+          href: "/admin/manage/units/operational-plans/",
+          label: t("Common/Operational plans"),
         },
       ],
     },

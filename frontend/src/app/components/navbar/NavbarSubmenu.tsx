@@ -373,7 +373,7 @@ const NavbarSubmenu = (props: Props) => {
                                                 }}
                                                 href={item.href}
                                                 tabIndex={isOpen ? 0 : -1}
-                                                className={`${itemIsActive ? "font-bold text-(--accent-color)" : "text-(--text-navbar)"} ${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full p-2 text-sm break-all`}
+                                                className={`${itemIsActive ? "font-bold text-(--accent-color)" : "text-(--text-navbar)"} ${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full p-2 text-sm break-words`}
                                               >
                                                 {item.label}
                                               </Link>
@@ -381,7 +381,7 @@ const NavbarSubmenu = (props: Props) => {
                                               <button
                                                 onClick={item.onClick}
                                                 tabIndex={isOpen ? 0 : -1}
-                                                className={`${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full cursor-pointer p-2 text-sm break-all text-(--text-navbar)`}
+                                                className={`${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full cursor-pointer p-2 text-sm break-words text-(--text-navbar)`}
                                               >
                                                 {item.label}
                                               </button>

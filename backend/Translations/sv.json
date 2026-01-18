@@ -136,6 +136,12 @@
   "MasterPlanElement/OrderUpdated": "Ordning uppdaterad!",
   "MasterPlanElement/AllowRemovingElementsFirst": "Tillåt borttagning av element på huvudplanen först",
 
+  "OperationalPlan/NotFound": "Operativa planen kunde inte hittas i databasen",
+  "OperationalPlan/InUse": "Kan inte ta bort en operativ plan som används",
+  "OperationalPlan/Deleted": "Operativ plan borttagen!",
+  "OperationalPlan/NameTaken": "En operativ plan med detta namn finns redan!",
+  "OperationalPlan/CheckedOutByAnotherUser": "Operativa planen är utcheckad av en annan användare",
+
   "AuditTrail/All": "Alla",
   "AuditTrail/Category": "Kategori",
   "AuditTrail/Categories": "Kategorier",
@@ -266,6 +272,7 @@
   "AuditTrail/MasterPlanImportRules": "Huvudplan importregler",
   "AuditTrail/GroupKey": "Gruppnyckel",
   "AuditTrail/ReplaceOnImport": "Ersätt huvudplan vid import",
+  "AuditTrail/SkipRowOne": "Hoppa över rad 1 vid import",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

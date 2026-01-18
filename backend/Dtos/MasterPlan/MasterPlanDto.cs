@@ -14,6 +14,7 @@ namespace backend.Dtos.MasterPlan
         public bool AllowRemovingElements { get; set; }
         public bool AllowImport { get; set; }
         public bool ReplaceOnImport { get; set; }
+        public bool SkipRowOne { get; set; }
         public bool IsHidden { get; set; }
         public int? GroupFieldId { get; set; }
 

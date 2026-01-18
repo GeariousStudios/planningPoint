@@ -579,7 +579,7 @@ const MasterPlanModal = (props: Props) => {
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Status")}
+                  {t("Common/Status and other")}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>

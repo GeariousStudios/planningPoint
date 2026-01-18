@@ -337,6 +337,9 @@ namespace planningPoint.Migrations
                     b.Property<DateTime?>("RevisionArchivedForCheckoutAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("SkipRowOne")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("UnitGroupId")
                         .HasColumnType("INTEGER");
 
@@ -604,6 +607,53 @@ namespace planningPoint.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NewsTypes");
+                });
+
+            modelBuilder.Entity("backend.Models.OperationalPlan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("CheckedOutAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CheckedOutBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsCheckedOut")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MasterPlanId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MasterPlanId");
+
+                    b.ToTable("OperationalPlans");
                 });
 
             modelBuilder.Entity("backend.Models.Report", b =>
@@ -1505,6 +1555,16 @@ namespace planningPoint.Migrations
                     b.Navigation("MasterPlan");
                 });
 
+            modelBuilder.Entity("backend.Models.OperationalPlan", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
+                        .WithMany("OperationalPlans")
+                        .HasForeignKey("MasterPlanId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("MasterPlan");
+                });
+
             modelBuilder.Entity("backend.Models.Report", b =>
                 {
                     b.HasOne("backend.Models.Unit", "Unit")
@@ -1605,6 +1665,8 @@ namespace planningPoint.Migrations
                     b.Navigation("MasterPlanToMasterPlanElements");
 
                     b.Navigation("MasterPlanToMasterPlanFields");
+
+                    b.Navigation("OperationalPlans");
                 });
 
             modelBuilder.Entity("backend.Models.MasterPlanElement", b =>

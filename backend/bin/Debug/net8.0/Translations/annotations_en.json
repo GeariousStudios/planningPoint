@@ -30,5 +30,7 @@
 
   "MasterPlan/a group": "a group",
 
-  "MasterPlanField/a data type": "a data type"
+  "MasterPlanField/a data type": "a data type",
+
+  "OperationalPlan/a master plan": "a master plan"
 }

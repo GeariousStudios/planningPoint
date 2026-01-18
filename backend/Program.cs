@@ -115,6 +115,7 @@ app.UseMiddleware<SessionValidationMiddleware>();
 app.MapControllers();
 
 app.MapHub<MasterPlanHub>("/hubs/master-plan");
+app.MapHub<OperationalPlanHub>("/hubs/operational-plan");
 
 /* --- Create user --- */
 using (var scope = app.Services.CreateScope())

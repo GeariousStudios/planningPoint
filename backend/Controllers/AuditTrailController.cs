@@ -281,6 +281,7 @@ namespace backend.Controllers
                     "MasterPlanField",
                     "MasterPlanElement",
                     "MasterPlanImportRules",
+                    "OperationalPlan",
                 };
 
                 actions = new[] { "All", "Create", "Update", "Delete", "Move" };

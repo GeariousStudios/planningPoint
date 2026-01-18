@@ -30,5 +30,7 @@
 
   "MasterPlan/a group": "en grupp",
 
-  "MasterPlanField/a data type": "en datatyp"
+  "MasterPlanField/a data type": "en datatyp",
+
+  "OperationalPlan/a master plan": "en huvudplan"
 }

@@ -211,7 +211,8 @@ const MasterPlanClient = (props: Props) => {
                       isCheckingOut ||
                       isCheckingIn ||
                       isLoading ||
-                      isViewingRevision
+                      isViewingRevision ||
+                      importing
                     }
                     onClick={() => {
                       setStatusFilters([]);
@@ -899,7 +900,7 @@ const MasterPlanClient = (props: Props) => {
 
                 <ThCell
                   label={
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-2">
                       <span>{t("Common/Status")}</span>
 
                       <CustomTooltip
