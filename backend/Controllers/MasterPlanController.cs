@@ -409,7 +409,9 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("MasterPlan/NotFound", lang) });
             }
 
-            var isInUse = await _context.Units.AnyAsync(u => u.MasterPlanId == id);
+            var isInUse =
+                await _context.Units.AnyAsync(u => u.MasterPlanId == id)
+                || await _context.OperationalPlans.AnyAsync(op => op.MasterPlanId == id);
 
             if (isInUse)
             {

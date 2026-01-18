@@ -54,6 +54,7 @@ namespace planningPoint.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -414,13 +415,15 @@ namespace planningPoint.Migrations
                     AllowRemovingElements = table.Column<bool>(type: "INTEGER", nullable: false),
                     AllowImport = table.Column<bool>(type: "INTEGER", nullable: false),
                     ReplaceOnImport = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SkipRowOne = table.Column<bool>(type: "INTEGER", nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
                     UpdatedBy = table.Column<string>(type: "TEXT", nullable: false),
                     IsCheckedOut = table.Column<bool>(type: "INTEGER", nullable: false),
                     CheckedOutBy = table.Column<string>(type: "TEXT", nullable: true),
-                    CheckedOutAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    CheckedOutAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    RevisionArchivedForCheckoutAt = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -615,6 +618,41 @@ namespace planningPoint.Migrations
                         name: "FK_MasterPlanToMasterPlanFields_MasterPlans_MasterPlanId",
                         column: x => x.MasterPlanId,
                         principalTable: "MasterPlans",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OperationalPlans",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    UnitGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    MasterPlanId = table.Column<int>(type: "INTEGER", nullable: true),
+                    IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    IsCheckedOut = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CheckedOutBy = table.Column<string>(type: "TEXT", nullable: true),
+                    CheckedOutAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OperationalPlans", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OperationalPlans_MasterPlans_MasterPlanId",
+                        column: x => x.MasterPlanId,
+                        principalTable: "MasterPlans",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_OperationalPlans_UnitGroups_UnitGroupId",
+                        column: x => x.UnitGroupId,
+                        principalTable: "UnitGroups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -906,6 +944,16 @@ namespace planningPoint.Migrations
                 filter: "[IsGroupKey] = 1");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OperationalPlans_MasterPlanId",
+                table: "OperationalPlans",
+                column: "MasterPlanId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OperationalPlans_UnitGroupId",
+                table: "OperationalPlans",
+                column: "UnitGroupId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reports_UnitId",
                 table: "Reports",
                 column: "UnitId");
@@ -1017,6 +1065,9 @@ namespace planningPoint.Migrations
 
             migrationBuilder.DropTable(
                 name: "NewsTypes");
+
+            migrationBuilder.DropTable(
+                name: "OperationalPlans");
 
             migrationBuilder.DropTable(
                 name: "Reports");

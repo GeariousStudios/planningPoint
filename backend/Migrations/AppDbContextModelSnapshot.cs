@@ -642,6 +642,9 @@ namespace planningPoint.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("UnitGroupId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdateDate")
                         .HasColumnType("TEXT");
 
@@ -652,6 +655,8 @@ namespace planningPoint.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MasterPlanId");
+
+                    b.HasIndex("UnitGroupId");
 
                     b.ToTable("OperationalPlans");
                 });
@@ -1562,7 +1567,15 @@ namespace planningPoint.Migrations
                         .HasForeignKey("MasterPlanId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("backend.Models.UnitGroup", "UnitGroup")
+                        .WithMany()
+                        .HasForeignKey("UnitGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("MasterPlan");
+
+                    b.Navigation("UnitGroup");
                 });
 
             modelBuilder.Entity("backend.Models.Report", b =>

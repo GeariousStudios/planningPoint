@@ -4,6 +4,8 @@ namespace backend.Dtos.OperationalPlan
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public int UnitGroupId { get; set; }
+        public string UnitGroupName { get; set; } = string.Empty;
         public int? MasterPlanId { get; set; }
         public string MasterPlanName { get; set; } = string.Empty;
         public bool IsHidden { get; set; }

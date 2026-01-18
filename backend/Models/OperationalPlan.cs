@@ -8,6 +8,8 @@ namespace backend.Models
 
         [MaxLength(32)]
         public string Name { get; set; } = string.Empty;
+        public int UnitGroupId { get; set; }
+        public required UnitGroup UnitGroup { get; set; }
         public int? MasterPlanId { get; set; }
         public MasterPlan? MasterPlan { get; set; }
         public bool IsHidden { get; set; }

@@ -61,6 +61,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
+            [FromQuery] int[]? unitGroupIds = null,
             [FromQuery] int[]? masterPlanIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] string? search = null,
@@ -70,13 +71,18 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
 
-            IQueryable<OperationalPlan> query = _context.OperationalPlans.Include(op =>
-                op.MasterPlan
-            );
+            IQueryable<OperationalPlan> query = _context
+                .OperationalPlans.Include(op => op.UnitGroup)
+                .Include(op => op.MasterPlan);
 
             if (isHidden.HasValue)
             {
                 query = query.Where(op => op.IsHidden == isHidden.Value);
+            }
+
+            if (unitGroupIds?.Any() == true)
+            {
+                query = query.Where(op => unitGroupIds.Contains(op.UnitGroupId));
             }
 
             if (masterPlanIds?.Any() == true)
@@ -97,6 +103,11 @@ namespace backend.Controllers
                 "name" => sortOrder == "desc"
                     ? query.OrderByDescending(op => op.Name.ToLower())
                     : query.OrderBy(op => op.Name.ToLower()),
+                "unitgroupname" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(op => op.UnitGroup.Name)
+                        .ThenBy(op => op.Name.ToLower())
+                    : query.OrderBy(op => op.UnitGroup.Name).ThenBy(op => op.Name.ToLower()),
                 "masterplanname" => sortOrder == "desc"
                     ? query
                         .OrderByDescending(op => op.MasterPlan == null ? "" : op.MasterPlan.Name)
@@ -121,6 +132,12 @@ namespace backend.Controllers
                 ["Hidden"] = await _context.OperationalPlans.CountAsync(op => op.IsHidden),
             };
 
+            var unitGroupCount = _context
+                .OperationalPlans.Include(op => op.UnitGroup)
+                .AsEnumerable()
+                .GroupBy(op => op.UnitGroup.Name)
+                .ToDictionary(g => g.Key, g => g.Count());
+
             var masterPlanCount = _context
                 .OperationalPlans.Include(op => op.MasterPlan)
                 .AsEnumerable()
@@ -135,6 +152,8 @@ namespace backend.Controllers
                 {
                     Id = t.Id,
                     Name = t.Name,
+                    UnitGroupId = t.UnitGroupId,
+                    UnitGroupName = t.UnitGroup.Name,
                     MasterPlanId = t.MasterPlanId,
                     MasterPlanName = t.MasterPlan == null ? "" : t.MasterPlan.Name,
                     IsHidden = t.IsHidden,
@@ -144,6 +163,11 @@ namespace backend.Controllers
                     CreatedBy = t.CreatedBy,
                     UpdateDate = t.UpdateDate,
                     UpdatedBy = t.UpdatedBy,
+
+                    // Check-out system.
+                    IsCheckedOut = t.IsCheckedOut,
+                    CheckedOutBy = t.CheckedOutBy,
+                    CheckedOutAt = t.CheckedOutAt,
                 })
                 .ToList();
 
@@ -151,7 +175,12 @@ namespace backend.Controllers
             {
                 totalCount,
                 items = operationalPlans,
-                counts = new { visibilityCount, masterPlanCount },
+                counts = new
+                {
+                    visibilityCount,
+                    unitGroupCount,
+                    masterPlanCount,
+                },
             };
 
             return Ok(result);
@@ -162,7 +191,8 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
             var operationalPlan = await _context
-                .OperationalPlans.Include(op => op.MasterPlan)
+                .OperationalPlans.Include(op => op.UnitGroup)
+                .Include(op => op.MasterPlan)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (operationalPlan == null)
@@ -173,14 +203,22 @@ namespace backend.Controllers
             }
 
             var unknownMasterPlan = await _t.GetAsync("MasterPlan/Unknown", lang);
+            var unknownGroup = await _t.GetAsync("UnitGroup/Unknown", lang);
 
             var result = new OperationalPlanDto
             {
                 Id = operationalPlan.Id,
                 Name = operationalPlan.Name,
+                UnitGroupId = operationalPlan.UnitGroupId,
+                UnitGroupName = operationalPlan.UnitGroup.Name ?? unknownGroup,
                 MasterPlanId = operationalPlan.MasterPlanId,
                 MasterPlanName = operationalPlan.MasterPlan?.Name ?? unknownMasterPlan,
                 IsHidden = operationalPlan.IsHidden,
+
+                // Check-out system.
+                IsCheckedOut = operationalPlan.IsCheckedOut,
+                CheckedOutBy = operationalPlan.CheckedOutBy,
+                CheckedOutAt = operationalPlan.CheckedOutAt,
             };
 
             return Ok(result);
@@ -202,7 +240,8 @@ namespace backend.Controllers
 
             var (deletedBy, userId) = userInfo.Value;
             var operationalPlan = await _context
-                .OperationalPlans.Include(op => op.MasterPlan)
+                .OperationalPlans.Include(op => op.UnitGroup)
+                .Include(op => op.MasterPlan)
                 .FirstOrDefaultAsync(op => op.Id == id);
 
             if (operationalPlan == null)
@@ -211,17 +250,6 @@ namespace backend.Controllers
                     new { message = await _t.GetAsync("OperationalPlan/NotFound", lang) }
                 );
             }
-
-            // var isInUse = await _context.MasterPlans.AnyAsync(mp =>
-            //     mp.OperationalPlans.Any(op => op.Id == id)
-            // );
-
-            // if (isInUse)
-            // {
-            //     return BadRequest(
-            //         new { message = await _t.GetAsync("OperationalPlan/InUse", lang) }
-            //     );
-            // }
 
             // Audit trail.
             await _audit.LogAsync(
@@ -234,6 +262,9 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = operationalPlan.Id,
                     ["Name"] = operationalPlan.Name,
+                    ["UnitGroup"] =
+                        $"{operationalPlan.UnitGroup.Name} (ID: {operationalPlan.UnitGroupId})"
+                        ?? "—",
                     ["MasterPlan"] =
                         operationalPlan.MasterPlan == null
                             ? "—"
@@ -270,6 +301,13 @@ namespace backend.Controllers
                 );
             }
 
+            var unitGroup = await _context.UnitGroups.FindAsync(dto.UnitGroupId);
+
+            if (unitGroup == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
+            }
+
             var masterPlan = await _context.MasterPlans.FindAsync(dto.MasterPlanId);
 
             if (masterPlan == null)
@@ -303,6 +341,7 @@ namespace backend.Controllers
             var operationalPlan = new OperationalPlan
             {
                 Name = dto.Name,
+                UnitGroup = unitGroup,
                 MasterPlan = masterPlan,
                 IsHidden = dto.IsHidden,
 
@@ -320,6 +359,7 @@ namespace backend.Controllers
             {
                 Id = operationalPlan.Id,
                 Name = operationalPlan.Name,
+                UnitGroupId = operationalPlan.UnitGroupId,
                 MasterPlanId = operationalPlan.MasterPlanId,
                 IsHidden = operationalPlan.IsHidden,
 
@@ -341,6 +381,9 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = operationalPlan.Id,
                     ["Name"] = operationalPlan.Name,
+                    ["UnitGroup"] =
+                        $"{operationalPlan.UnitGroup.Name} (ID: {operationalPlan.UnitGroupId})"
+                        ?? "—",
                     ["MasterPlan"] =
                         operationalPlan.MasterPlan == null
                             ? "—"
@@ -360,7 +403,8 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
             var operationalPlan = await _context
-                .OperationalPlans.Include(op => op.MasterPlan)
+                .OperationalPlans.Include(op => op.UnitGroup)
+                .Include(op => op.MasterPlan)
                 .FirstOrDefaultAsync(op => op.Id == id);
 
             if (operationalPlan == null)
@@ -382,6 +426,13 @@ namespace backend.Controllers
                 return BadRequest(
                     new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
                 );
+            }
+
+            var unitGroup = await _context.UnitGroups.FindAsync(dto.UnitGroupId);
+
+            if (unitGroup == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
             var masterPlan = await _context.MasterPlans.FindAsync(dto.MasterPlanId);
@@ -421,6 +472,8 @@ namespace backend.Controllers
             {
                 ["ObjectID"] = operationalPlan.Id,
                 ["Name"] = operationalPlan.Name,
+                ["UnitGroup"] =
+                    $"{operationalPlan.UnitGroup.Name} (ID: {operationalPlan.UnitGroupId})" ?? "—",
                 ["MasterPlan"] =
                     operationalPlan.MasterPlan == null
                         ? "—"
@@ -431,11 +484,11 @@ namespace backend.Controllers
             };
 
             operationalPlan.Name = dto.Name;
+            operationalPlan.UnitGroup = unitGroup;
             operationalPlan.IsHidden = dto.IsHidden;
             operationalPlan.MasterPlan = masterPlan;
-
-            masterPlan.UpdateDate = now;
-            masterPlan.UpdatedBy = updatedBy;
+            operationalPlan.UpdateDate = now;
+            operationalPlan.UpdatedBy = updatedBy;
 
             await _context.SaveChangesAsync();
 
@@ -465,6 +518,9 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = operationalPlan.Id,
                         ["Name"] = operationalPlan.Name,
+                        ["UnitGroup"] =
+                            $"{operationalPlan.UnitGroup.Name} (ID: {operationalPlan.UnitGroupId})"
+                            ?? "—",
                         ["MasterPlan"] =
                             operationalPlan.MasterPlan == null
                                 ? "—"
