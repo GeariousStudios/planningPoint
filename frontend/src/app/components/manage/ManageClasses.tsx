@@ -24,6 +24,7 @@ const priorityClasses = [
   "hidden xl:table-cell",
   "hidden 2xl:table-cell",
   "hidden 3xl:table-cell",
+  "hidden 4xl:table-cell",
 ];
 
 export const getResponsiveClass = (priority?: number) =>

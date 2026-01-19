@@ -43,7 +43,7 @@ const ReportNavClient = (props: Props) => {
       setIsLoading(true);
 
       const response = await fetch(
-        `${apiUrl}/unit?sortBy=unitGroupName&sortOrder=asc`,
+        `${apiUrl}/unit?sortBy=unitGroupName&sortOrder=desc`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",

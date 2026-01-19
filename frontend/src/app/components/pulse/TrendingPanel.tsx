@@ -1021,7 +1021,7 @@ const TrendingPanel: React.FC<Props> = ({
       </div>
 
       <div className="col-span-2">
-        <div className="flex flex-col overflow-y-auto rounded-b border border-t-0 border-(--border-main) px-2 pt-1">
+        <div className="flex flex-col overflow-y-auto rounded-b border border-t-0 border-(--border-main) px-2 pt-1 bg-(--bg-grid)">
           {panelViewMode === "LineChart" ? (
             // --- LINE CHART ---
             <div className="mt-2 overflow-hidden">

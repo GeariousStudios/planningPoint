@@ -64,19 +64,19 @@ const NavPage = ({ sections, variant, pageLabel }: Props) => {
     return (
       <div className="flex w-full flex-col gap-8">
         <div className="xs:grid-cols-2 grid grid-cols-1 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-          {sections.map((section, sectionIndex) => (
+          {sections.map((section) => (
             <SectionFrame
               key={section.sectionLabel}
               label={section.sectionLabel}
               showLabel={true}
             >
               <div className="flex flex-col gap-2">
-                {section.items.map((item) => (
+                {section.items.map((item, itemIndex) => (
                   <div key={item.href} className="flex flex-col">
                     {item.title && (
                       <ItemTitle
                         text={item.title}
-                        isFirstSection={sectionIndex === 0}
+                        isFirstSection={itemIndex === 0}
                       />
                     )}
                     <NavbarLink href={item.href} label={item.label} />

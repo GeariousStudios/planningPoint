@@ -39,7 +39,7 @@ const AdminManageNavClient = (props: Props) => {
           label: t("Common/Columns"),
         },
         {
-          title: t("Navbar/Plan"),
+          title: t("Navbar/Master planning"),
           href: "/admin/manage/units/master-plans/",
           label: t("Common/Master plans"),
         },
@@ -52,6 +52,7 @@ const AdminManageNavClient = (props: Props) => {
           label: t("ImportRules/Import rules"),
         },
         {
+          title: t("Navbar/Operational planning"),
           href: "/admin/manage/units/operational-plans/",
           label: t("Common/Operational plans"),
         },

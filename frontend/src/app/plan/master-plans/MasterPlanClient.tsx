@@ -883,15 +883,10 @@ const MasterPlanClient = (props: Props) => {
         )}
 
         {/* --- RESULT LIST --- */}
-        <div className="relative w-full overflow-x-auto rounded border border-(--border-main)">
+        <div className="relative w-full overflow-x-auto rounded border border-(--border-main) bg-(--bg-grid)">
           <table className="table w-full min-w-6xl table-auto border-collapse">
             <thead className="bg-(--bg-grid-header)">
               <tr>
-                {/* <ThCell
-                label="ID"
-                sortable={false}
-                classNameAddition="min-w-fit whitespace-nowrap px-4"
-              /> */}
                 {isEditing && (
                   <th
                     className={`${thClass} pointer-events-none !w-[40px] !min-w-[40px] !border-l-0`}
@@ -940,13 +935,33 @@ const MasterPlanClient = (props: Props) => {
             </thead>
 
             <tbody>
-              {isLoading ? (
+              {isLoading || importing ? (
+                isEditing ? (
+                  <tr>
+                    <td
+                      colSpan={fieldOptions.length + 2 || 1}
+                      className="h-57 text-center text-(--text-secondary)"
+                    >
+                      <Message icon="loading" content={t("Message/Content")} />
+                    </td>
+                  </tr>
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={fieldOptions.length + 1 || 1}
+                      className="h-57 text-center text-(--text-secondary)"
+                    >
+                      <Message icon="loading" content={t("Message/Content")} />
+                    </td>
+                  </tr>
+                )
+              ) : visibleElements.length === 0 && !isEditing ? (
                 <tr>
                   <td
-                    colSpan={fieldOptions.length || 1}
+                    colSpan={fieldOptions.length + 1 || 1}
                     className="h-57 text-center text-(--text-secondary)"
                   >
-                    <Message icon="loading" content={t("Message/Content")} />
+                    <Message icon="search" content={t("Manage/No content")} />
                   </td>
                 </tr>
               ) : (
@@ -1005,7 +1020,7 @@ const MasterPlanClient = (props: Props) => {
 
                         {isEditing && (
                           <td
-                            className={`${tdClass} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0`}
+                            className={`${tdClass} ${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0`}
                             onClick={() => {
                               const id = el.id ? String(el.id) : null;
                               setSelectedId((prev) =>

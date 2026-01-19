@@ -350,7 +350,7 @@ const NavbarSubmenu = (props: Props) => {
                                     (!item.requiresDev || isDev) && (
                                       <div>
                                         <li
-                                          className={`${item.title ? "pt-4 pb-1 text-xs font-semibold break-all uppercase" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
+                                          className={`${item.title ? "pt-4 pb-1 text-xs font-semibold break-words uppercase" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
                                         >
                                           {item.title ?? ""}
                                         </li>
@@ -407,7 +407,8 @@ const NavbarSubmenu = (props: Props) => {
                                                 showOnTouch
                                               >
                                                 <button
-                                                  className={`${item.disabled ? "cursor-not-allowed group-hover/link:opacity-50" : "group-hover/link:opacity-100"} group mr-2 ml-auto flex opacity-0`}
+                                                  // className={`${item.disabled ? "cursor-not-allowed group-hover/link:opacity-50" : "group-hover/link:opacity-100"} group mr-2 ml-auto flex opacity-0`}
+                                                  className={`${item.disabled ? "cursor-not-allowed opacity-50" : ""} group mr-2 ml-auto flex opacity-100`}
                                                   onClick={(e) => {
                                                     e.preventDefault();
 

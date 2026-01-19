@@ -54,5 +54,8 @@
   "Handbook/Master plan/Body": "<p>All users can view master planning, but the <i>Master Planner</i> permission is required to make changes to the master plan.</p> <br></br> <p>To make changes, the plan must first be checked out. Note that if you force a checkout, the person who had checked out the plan will lose their changes.</p> <br></br> <p>Once you have checked out the plan, you can:</p> <ul><li>Choose whether you want to affect a single element (Element mode) or all elements in the selected element's group (Group mode)</li> <li>Add new elements</li> <li>Duplicate the selected element</li> <li>Edit fields in elements</li> <li>Move elements up and down. Activate <i>Standalone element</i> if you want the selected element not to be able to connect to existing groups</li> <li>Strike through elements</li> <li>Delete elements (if this is allowed for the master plan)</li> <li>Import master plan to import from an Excel document. Note that you need to set up import rules first</li></ul> <p><danger><b>Changing the master plan is not recommended in mobile mode.</b></danger></p>",
 
   "Handbook/Operational plans/Title": "Manage operational plans",
-  "Handbook/Operational plans/Body": "<p>More soon...</p>"
+  "Handbook/Operational plans/Body": "<p>More soon...</p>",
+
+  "Handbook/Operational plan/Title": "Operational planning",
+  "Handbook/Operational plan/Body": "<p>More soon...</p>"
 }

@@ -1,33 +1,22 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import {
-  PencilIcon,
-  PencilSquareIcon,
-  PlusIcon,
-} from "@heroicons/react/24/outline";
+import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
-  buttonDeletePrimaryClass,
   buttonPrimaryClass,
   buttonSecondaryClass,
-  iconButtonPrimaryClass,
   roundedButtonClass,
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
-import {
-  getMasterPlanFieldDataTypeOptions,
-  MasterPlanFieldDataType,
-} from "@/app/types/manageTypes";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { masterPlanConstraints } from "@/app/helpers/inputConstraints";
-import { EllipsisVerticalIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "@/app/components/common/DragDrop";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
-import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
 import MultiDropdown from "@/app/components/common/MultiDropdown";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
@@ -75,8 +64,7 @@ const MasterPlanModal = (props: Props) => {
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalAllowRemovingElements, setOriginalAllowRemovingElements] =
     useState(false);
-  const [originalAllowImport, setOriginalAllowImport] =
-    useState(false);
+  const [originalAllowImport, setOriginalAllowImport] = useState(false);
   const [originalMasterPlanFieldIds, setOriginalMasterPlanFieldIds] = useState<
     number[]
   >([]);

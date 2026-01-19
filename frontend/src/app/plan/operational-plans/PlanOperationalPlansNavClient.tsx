@@ -10,7 +10,7 @@ type Props = {
   isConnected: boolean | null;
 };
 
-type MasterPlan = {
+type OperationalPlan = {
   id: number;
   name: string;
   unitGroupId: number;
@@ -29,7 +29,7 @@ type LinkSection = {
   items: Link[];
 };
 
-const PlanMasterPlansNavClient = (props: Props) => {
+const PlanOperationalPlansNavClient = (props: Props) => {
   const t = useTranslations();
 
   const [sections, setSections] = useState<LinkSection[]>([]);
@@ -37,16 +37,19 @@ const PlanMasterPlansNavClient = (props: Props) => {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  const fetchMasterPlans = async () => {
+  const fetchOperationalPlans = async () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch(`${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=desc`, {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${apiUrl}/operational-plan?sortBy=unitGroupName&sortOrder=desc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       const result = await response.json();
 
@@ -55,20 +58,20 @@ const PlanMasterPlansNavClient = (props: Props) => {
         return;
       }
 
-      const allItems: MasterPlan[] = result?.items ?? [];
+      const allItems: OperationalPlan[] = result?.items ?? [];
       const items = allItems.filter((u) => !u.isHidden);
 
       const grouped = items.reduce(
-        (acc: Record<string, Link[]>, masterPlan: MasterPlan) => {
-          const groupName = masterPlan.unitGroupName || t("Common/Groups");
+        (acc: Record<string, Link[]>, operationalPlan: OperationalPlan) => {
+          const groupName = operationalPlan.unitGroupName || t("Common/Groups");
 
           if (!acc[groupName]) {
             acc[groupName] = [];
           }
 
           acc[groupName].push({
-            href: `/plan/master-plans/${masterPlan.unitGroupId}/${masterPlan.id}`,
-            label: masterPlan.name,
+            href: `/plan/operational-plans/${operationalPlan.unitGroupId}/${operationalPlan.id}`,
+            label: operationalPlan.name,
           });
 
           return acc;
@@ -90,15 +93,18 @@ const PlanMasterPlansNavClient = (props: Props) => {
   };
 
   useEffect(() => {
-    fetchMasterPlans();
+    fetchOperationalPlans();
 
-    const handleMasterPlanUpdate = () => fetchMasterPlans();
-    window.addEventListener("master-plan-list-updated", handleMasterPlanUpdate);
+    const handleOperationalPlanUpdate = () => fetchOperationalPlans();
+    window.addEventListener(
+      "operational-plan-list-updated",
+      handleOperationalPlanUpdate,
+    );
 
     return () => {
       window.removeEventListener(
-        "master-plan-list-updated",
-        handleMasterPlanUpdate,
+        "operational-plan-list-updated",
+        handleOperationalPlanUpdate,
       );
     };
   }, []);
@@ -111,9 +117,9 @@ const PlanMasterPlansNavClient = (props: Props) => {
     <NavPage
       sections={sections}
       variant="single-grouped"
-      pageLabel={t("Common/Master plans")}
+      pageLabel={t("Common/Operational plans")}
     />
   );
 };
 
-export default PlanMasterPlansNavClient;
+export default PlanOperationalPlansNavClient;

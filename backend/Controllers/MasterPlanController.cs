@@ -1,6 +1,7 @@
 using System.Text.Json;
 using backend.Data;
 using backend.Dtos.MasterPlan;
+using backend.Dtos.OperationalPlan;
 using backend.Dtos.Unit;
 using backend.Hubs;
 using backend.Models;
@@ -66,6 +67,7 @@ namespace backend.Controllers
             [FromQuery] int[]? unitGroupIds = null,
             [FromQuery] int[]? unitIds = null,
             [FromQuery] int[]? fieldIds = null,
+            [FromQuery] int[]? operationalPlans = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] bool? allowRemovingElements = null,
             [FromQuery] bool? allowImport = null,
@@ -81,7 +83,8 @@ namespace backend.Controllers
                 .Include(mp => mp.MasterPlanToMasterPlanFields)
                 .ThenInclude(mpf => mpf.MasterPlanField)
                 .Include(mp => mp.MasterPlanToMasterPlanElements)
-                .ThenInclude(mpe => mpe.MasterPlanElement);
+                .ThenInclude(mpe => mpe.MasterPlanElement)
+                .Include(mp => mp.OperationalPlans);
 
             if (isHidden.HasValue)
             {
@@ -104,16 +107,27 @@ namespace backend.Controllers
             }
 
             if (unitIds?.Any() == true)
+            {
                 query = query.Where(mp =>
                     _context.Units.Any(u => u.MasterPlanId == mp.Id && unitIds.Contains(u.Id))
                 );
+            }
 
             if (fieldIds?.Any() == true)
+            {
                 query = query.Where(mp =>
                     mp.MasterPlanToMasterPlanFields.Any(mpf =>
                         fieldIds.Contains(mpf.MasterPlanFieldId)
                     )
                 );
+            }
+
+            if (operationalPlans?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    mp.OperationalPlans.Any(op => operationalPlans.Contains(op.Id))
+                );
+            }
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -136,6 +150,9 @@ namespace backend.Controllers
                         _context.Units.Count(u => u.MasterPlanId == mp.Id)
                     )
                     : query.OrderBy(mp => _context.Units.Count(u => u.MasterPlanId == mp.Id)),
+                "operationalplancount" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.OperationalPlans.Count())
+                    : query.OrderBy(mp => mp.OperationalPlans.Count()),
                 "fieldcount" => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.MasterPlanToMasterPlanFields.Count)
                     : query.OrderBy(mp => mp.MasterPlanToMasterPlanFields.Count),
@@ -188,6 +205,12 @@ namespace backend.Controllers
                 .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
 
+            var operationalPlanCount = await _context
+                .OperationalPlans.Where(op => op.MasterPlanId != null)
+                .GroupBy(op => op.MasterPlanId!.Value)
+                .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
+
             var fieldCount = await _context
                 .MasterPlanToMasterPlanFields.GroupBy(mpf => mpf.MasterPlanFieldId)
                 .Select(g => new
@@ -212,6 +235,13 @@ namespace backend.Controllers
                             Id = u.Id,
                             Name = u.Name,
                             UnitGroupName = u.UnitGroup != null ? u.UnitGroup.Name : "",
+                        })
+                        .ToList(),
+                    OperationalPlans = t
+                        .OperationalPlans.Select(op => new OperationalPlanDto
+                        {
+                            Id = op.Id,
+                            Name = op.Name,
                         })
                         .ToList(),
                     IsHidden = t.IsHidden,
@@ -282,6 +312,7 @@ namespace backend.Controllers
                     allowImportCount,
                     unitGroupCount,
                     unitCount,
+                    operationalPlanCount,
                     fieldCount,
                 },
             };
@@ -514,7 +545,7 @@ namespace backend.Controllers
                 t.Name.ToLower() == dto.Name.ToLower()
             );
 
-            if (existingMasterPlan != null)
+            if (existingMasterPlan != null && existingMasterPlan.UnitGroupId == unitGroup.Id)
             {
                 return BadRequest(
                     new { message = await _t.GetAsync("MasterPlan/NameTaken", lang) }

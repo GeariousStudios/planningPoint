@@ -60,6 +60,8 @@ export const Filter = ({
     divClassName += "2xl:flex";
   } else if (breakpoint === "3xl") {
     divClassName += "3xl:flex";
+  } else if (breakpoint === "4xl") {
+    divClassName += "4xl:flex";
   }
 
   return (

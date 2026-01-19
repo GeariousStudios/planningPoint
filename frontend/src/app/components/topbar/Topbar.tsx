@@ -2,28 +2,8 @@ import {
   iconButtonPrimaryClass,
   roundedButtonClass,
 } from "@/app/styles/buttonClasses";
-import {
-  BellIcon as SolidBellIcon,
-  UserIcon as SolidUserIcon,
-  QuestionMarkCircleIcon as SolidQuestionMarkCircleIcon,
-  ArrowLeftEndOnRectangleIcon as SolidArrowLeftEndOnRectangleIcon,
-  ArrowRightEndOnRectangleIcon as SolidArrowRightEndOnRectangleIcon,
-  Cog6ToothIcon as SolidCog6ToothIcon,
-  MoonIcon as SolidMoonIcon,
-  SunIcon as SolidSunIcon,
-} from "@heroicons/react/24/solid";
-import {
-  BellIcon as OutlineBellIcon,
-  UserIcon as OutlineUserIcon,
-  QuestionMarkCircleIcon as OutlineQuestionMarkCircleIcon,
-  ArrowLeftEndOnRectangleIcon as OutlineArrowLeftEndOnRectangleIcon,
-  ArrowRightEndOnRectangleIcon as OutlineArrowRightEndOnRectangleIcon,
-  Cog6ToothIcon as OutlineCog6ToothIcon,
-  MoonIcon as OutlineMoonIcon,
-  SunIcon as OutlineSunIcon,
-  Bars2Icon,
-  ArrowRightIcon,
-} from "@heroicons/react/24/outline";
+import * as Solid from "@heroicons/react/24/solid";
+import * as Outline from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
 import { useAuth } from "@/app/context/AuthContext";
@@ -43,6 +23,8 @@ type Props = {
   hasScrollbar: boolean;
   navbarHidden: boolean;
   setNavbarHidden: (value: boolean) => void;
+  setIsEditingFavourites: (value: boolean) => void;
+  isEditingFavourites: boolean;
   breadcrumbs?: {
     label: string;
     href: string;
@@ -183,7 +165,7 @@ const Topbar = (props: Props) => {
                 className={`${iconButtonPrimaryClass} ${props.navbarHidden ? "block" : "md:hidden"} h-6 min-h-6 w-6 min-w-6`}
                 inert={!props.navbarHidden}
               >
-                <Bars2Icon />
+                <Outline.Bars2Icon />
               </button>
 
               {props.breadcrumbsLoading ? (
@@ -230,7 +212,7 @@ const Topbar = (props: Props) => {
                                         className="flex items-center gap-2 whitespace-nowrap"
                                       >
                                         {item.label}
-                                        <ArrowRightIcon className="h-3 min-h-3 w-3 min-w-3" />
+                                        <Outline.ArrowRightIcon className="h-3 min-h-3 w-3 min-w-3" />
                                       </Link>
                                     </span>
                                   ) : (
@@ -339,10 +321,10 @@ const Topbar = (props: Props) => {
                     }}
                   >
                     <span className="group relative flex h-6 w-6 items-center justify-center">
-                      <OutlineBellIcon
+                      <Outline.BellIcon
                         className={`${bellIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                       />
-                      <SolidBellIcon
+                      <Solid.BellIcon
                         className={`${bellIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                       />
                     </span>
@@ -371,19 +353,19 @@ const Topbar = (props: Props) => {
                   <span className="group relative flex h-6 w-6 items-center justify-center">
                     {isLoggedIn ? (
                       <>
-                        <OutlineUserIcon
+                        <Outline.UserIcon
                           className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                         />
-                        <SolidUserIcon
+                        <Solid.UserIcon
                           className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                         />
                       </>
                     ) : (
                       <>
-                        <OutlineCog6ToothIcon
+                        <Outline.Cog6ToothIcon
                           className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                         />
-                        <SolidCog6ToothIcon
+                        <Solid.Cog6ToothIcon
                           className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                         />
                       </>
@@ -499,23 +481,40 @@ const Topbar = (props: Props) => {
                       }
                       icon={
                         currentTheme === "dark"
-                          ? OutlineSunIcon
-                          : OutlineMoonIcon
+                          ? Outline.SunIcon
+                          : Outline.MoonIcon
                       }
                       iconHover={
-                        currentTheme === "dark" ? SolidSunIcon : SolidMoonIcon
+                        currentTheme === "dark" ? Solid.SunIcon : Solid.MoonIcon
                       }
                     />
                     {isLoggedIn && (
-                      <TopbarLink
-                        onClick={() => {
-                          closeAllMenus();
-                          setIsSettingsModalOpen(true);
-                        }}
-                        label={t("Common/Settings")}
-                        icon={OutlineCog6ToothIcon}
-                        iconHover={SolidCog6ToothIcon}
-                      />
+                      <>
+                        <TopbarLink
+                          onClick={() => {
+                            closeAllMenus();
+                            setIsSettingsModalOpen(true);
+                          }}
+                          label={t("Common/Settings")}
+                          icon={Outline.Cog6ToothIcon}
+                          iconHover={Solid.Cog6ToothIcon}
+                        />
+
+                        <TopbarLink
+                          onClick={() => {
+                            props.setIsEditingFavourites(
+                              !props.isEditingFavourites,
+                            );
+                          }}
+                          label={
+                            props.isEditingFavourites
+                              ? t("Navbar/Stop editing favourites")
+                              : t("Navbar/Edit favourites")
+                          }
+                          icon={Outline.StarIcon}
+                          iconHover={Solid.StarIcon}
+                        />
+                      </>
                     )}
                   </div>
 
@@ -528,15 +527,15 @@ const Topbar = (props: Props) => {
                       <TopbarLink
                         onClick={handleLogout}
                         label={t("Common/Logout")}
-                        icon={OutlineArrowLeftEndOnRectangleIcon}
-                        iconHover={SolidArrowLeftEndOnRectangleIcon}
+                        icon={Outline.ArrowLeftEndOnRectangleIcon}
+                        iconHover={Solid.ArrowLeftEndOnRectangleIcon}
                       />
                     ) : (
                       <TopbarLink
                         href="/"
                         label={t("Common/Login")}
-                        icon={OutlineArrowRightEndOnRectangleIcon}
-                        iconHover={SolidArrowRightEndOnRectangleIcon}
+                        icon={Outline.ArrowRightEndOnRectangleIcon}
+                        iconHover={Solid.ArrowRightEndOnRectangleIcon}
                       />
                     )}
                   </div>

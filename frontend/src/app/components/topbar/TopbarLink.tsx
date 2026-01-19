@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ElementType } from "react";
+import { ElementType, ReactNode } from "react";
 
 type Props = {
   href?: string;
   onClick?: () => void;
-  label: string;
+  label: string | ReactNode;
   icon: ElementType;
   iconHover: ElementType;
 };

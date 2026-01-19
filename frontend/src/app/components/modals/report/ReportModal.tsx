@@ -47,6 +47,7 @@ type Props = {
   onItemUpdated: () => void;
   reportId?: number;
   categoryIds: number[];
+  unitCreationDate?: string;
 };
 
 type Report = {
@@ -117,6 +118,7 @@ const ReportModal = (props: Props) => {
 
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedHour, setSelectedHour] = useState<string>("");
+  const [tempDate, setTempDate] = useState<string>("");
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | undefined>();
@@ -598,15 +600,63 @@ const ReportModal = (props: Props) => {
 
   // --- DATE SELECTOR ---
   const goToPreviousDay = () => {
+    if (props.unitCreationDate && selectedDate <= props.unitCreationDate) {
+      setSelectedDate(props.unitCreationDate);
+      return;
+    }
+
     const date = new Date(selectedDate);
     date.setDate(date.getDate() - 1);
-    setSelectedDate(date.toISOString().split("T")[0]);
+
+    const next = date.toISOString().split("T")[0];
+
+    if (props.unitCreationDate && next < props.unitCreationDate) {
+      setSelectedDate(props.unitCreationDate);
+      return;
+    }
+
+    setSelectedDate(next);
   };
 
   const goToNextDay = () => {
     const date = new Date(selectedDate);
     date.setDate(date.getDate() + 1);
     setSelectedDate(date.toISOString().split("T")[0]);
+  };
+
+  // --- TEMP DATE HANDLER ---
+  useEffect(() => {
+    if (!props.isOpen) {
+      return;
+    }
+
+    setSelectedDate(props.selectedDate);
+    setTempDate(props.selectedDate);
+  }, [props.isOpen, props.selectedDate]);
+
+  useEffect(() => {
+    setTempDate(selectedDate);
+  }, [selectedDate]);
+
+  const handleDateChange = (val: string) => {
+    if (!val || val === selectedDate) {
+      setTempDate(selectedDate);
+      return;
+    }
+
+    const year = Number(val.split("-")[0]);
+    if (year > 2999 || year < 1000) {
+      setTempDate(selectedDate);
+      return;
+    }
+
+    if (props.unitCreationDate && val < props.unitCreationDate) {
+      setTempDate(props.unitCreationDate);
+      setSelectedDate(props.unitCreationDate);
+    } else {
+      setTempDate(val);
+      setSelectedDate(val);
+    }
   };
 
   // --- TOGGLE MODAL(S) ---
@@ -662,6 +712,10 @@ const ReportModal = (props: Props) => {
                       className={`${buttonSecondaryClass} rounded-r-none`}
                       onClick={goToPreviousDay}
                       aria-label={t("Unit/Previous day")}
+                      disabled={
+                        !!props.unitCreationDate &&
+                        selectedDate <= props.unitCreationDate
+                      }
                     >
                       <ChevronLeftIcon className="min-h-full min-w-full" />
                     </button>
@@ -669,11 +723,21 @@ const ReportModal = (props: Props) => {
                       type="date"
                       id="selectedDate"
                       label={t("Common/Date")}
-                      value={selectedDate}
-                      onChange={(val) => setSelectedDate(String(val))}
+                      value={tempDate}
+                      onChange={(val) => setTempDate(String(val))}
+                      onBlur={(e) => handleDateChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleDateChange(
+                            (e.target as HTMLInputElement).value,
+                          );
+                        }
+                      }}
                       onModal
                       required
                       notRounded
+                      min={props.unitCreationDate}
                     />
                     <button
                       type="button"

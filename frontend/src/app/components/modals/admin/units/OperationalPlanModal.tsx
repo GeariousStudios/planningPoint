@@ -1,34 +1,21 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import {
-  PencilIcon,
-  PencilSquareIcon,
-  PlusIcon,
-} from "@heroicons/react/24/outline";
+import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
-  buttonDeletePrimaryClass,
   buttonPrimaryClass,
   buttonSecondaryClass,
-  iconButtonPrimaryClass,
   roundedButtonClass,
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
-import {
-  getMasterPlanFieldDataTypeOptions,
-  MasterPlanFieldDataType,
-} from "@/app/types/manageTypes";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { masterPlanConstraints } from "@/app/helpers/inputConstraints";
-import { EllipsisVerticalIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import DragDrop from "@/app/components/common/DragDrop";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
-import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
-import MultiDropdown from "@/app/components/common/MultiDropdown";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
@@ -36,6 +23,11 @@ type Props = {
   onClose: () => void;
   itemId?: number | null;
   onItemUpdated: () => void;
+};
+
+type UnitGroupOptions = {
+  id: number;
+  name: string;
 };
 
 type MasterPlanOptions = {
@@ -55,11 +47,14 @@ const OperationalPlanModal = (props: Props) => {
   // --- States ---
   const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
+  const [unitGroup, setUnitGroup] = useState("");
+  const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
   const [masterPlan, setMasterPlan] = useState("");
   const [masterPlans, setMasterPlans] = useState<MasterPlanOptions[]>([]);
   const [isHidden, setIsHidden] = useState(false);
 
   const [originalName, setOriginalName] = useState("");
+  const [originalUnitGroup, setOriginalUnitGroup] = useState("");
   const [originalMasterPlan, setOriginalMasterPlan] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
 
@@ -79,6 +74,7 @@ const OperationalPlanModal = (props: Props) => {
       return;
     }
 
+    fetchUnitGroups();
     fetchMasterPlans();
 
     if (props.isOpen && props.itemId !== null && props.itemId !== undefined) {
@@ -86,6 +82,9 @@ const OperationalPlanModal = (props: Props) => {
     } else {
       setName("");
       setOriginalName("");
+
+      setUnitGroup("");
+      setOriginalUnitGroup("");
 
       setMasterPlan("");
       setOriginalMasterPlan("");
@@ -111,6 +110,7 @@ const OperationalPlanModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
+          unitGroupId: parseInt(unitGroup),
           masterPlanId: parseInt(masterPlan),
           isHidden,
         }),
@@ -171,6 +171,29 @@ const OperationalPlanModal = (props: Props) => {
     }
   };
 
+  // --- Fetch unit groups ---
+  const fetchUnitGroups = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/unit-group`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        setUnitGroups(result.items);
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
   // --- Fetch master plans ---
   const fetchMasterPlans = async () => {
     try {
@@ -224,6 +247,9 @@ const OperationalPlanModal = (props: Props) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
 
+    setUnitGroup(String(result.unitGroupId ?? ""));
+    setOriginalUnitGroup(String(result.unitGroupId ?? ""));
+
     setMasterPlan(String(result.masterPlanId ?? ""));
     setOriginalMasterPlan(String(result.masterPlanId ?? ""));
 
@@ -248,6 +274,7 @@ const OperationalPlanModal = (props: Props) => {
           },
           body: JSON.stringify({
             name,
+            unitGroupId: parseInt(unitGroup),
             masterPlanId: parseInt(masterPlan),
             isHidden,
           }),
@@ -361,7 +388,11 @@ const OperationalPlanModal = (props: Props) => {
 
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "" || masterPlan !== "" || isHidden !== false;
+      const dirty =
+        name !== "" ||
+        masterPlan !== "" ||
+        unitGroup !== "" ||
+        isHidden !== false;
 
       setIsDirty(dirty);
       return;
@@ -370,15 +401,18 @@ const OperationalPlanModal = (props: Props) => {
     const dirty =
       name !== originalName ||
       masterPlan !== originalMasterPlan ||
+      unitGroup !== originalUnitGroup ||
       isHidden !== originalIsHidden;
 
     setIsDirty(dirty);
   }, [
     props.itemId,
     name,
+    unitGroup,
     masterPlan,
     isHidden,
     originalName,
+    originalUnitGroup,
     originalMasterPlan,
     originalIsHidden,
   ]);
@@ -427,18 +461,35 @@ const OperationalPlanModal = (props: Props) => {
                 />
 
                 <SingleDropdown
-                  id="masterPlan"
-                  label={t("Common/Master plan")}
-                  value={masterPlan}
+                  id="unitGroup"
+                  label={t("Common/Group")}
+                  value={unitGroup}
                   onChange={(val) => {
-                    setMasterPlan(String(val));
+                    setUnitGroup(String(val));
                   }}
                   onModal
-                  options={masterPlans.map((mp) => ({
-                    label: mp.name,
-                    value: String(mp.id),
+                  required
+                  options={unitGroups.map((ug) => ({
+                    label: ug.name,
+                    value: String(ug.id),
                   }))}
                 />
+
+                <div className="col-span-full">
+                  <SingleDropdown
+                    id="masterPlan"
+                    label={t("Common/Master plan")}
+                    value={masterPlan}
+                    onChange={(val) => {
+                      setMasterPlan(String(val));
+                    }}
+                    onModal
+                    options={masterPlans.map((mp) => ({
+                      label: mp.name,
+                      value: String(mp.id),
+                    }))}
+                  />
+                </div>
               </div>
 
               <div className="flex items-center gap-2">

@@ -1,3 +1,4 @@
+using backend.Dtos.OperationalPlan;
 using backend.Dtos.Unit;
 
 namespace backend.Dtos.MasterPlan
@@ -9,6 +10,7 @@ namespace backend.Dtos.MasterPlan
         public int UnitGroupId { get; set; }
         public string UnitGroupName { get; set; } = string.Empty;
         public List<UnitDto> Units { get; set; } = new();
+        public List<OperationalPlanDto> OperationalPlans { get; set; } = new();
         public List<MasterPlanFieldDto> Fields { get; set; } = new();
         public List<MasterPlanElementDto> Elements { get; set; } = new();
         public bool AllowRemovingElements { get; set; }

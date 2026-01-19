@@ -107,7 +107,7 @@ const MasterPlansClient = (props: Props) => {
 
   const { notify } = useToast();
 
-  // --- FETCH UNITS & FIELDS INITIALIZATION (Unique) ---
+  // --- FETCH UNITS, UNIT GROUPS & FIELDS INITIALIZATION (Unique) ---
   const [unitGroups, setUnitGroups] = useState<UnitGroupOption[]>([]);
   const [units, setUnits] = useState<UnitOption[]>([]);
   const [masterPlanFields, setMasterPlanFields] = useState<
@@ -237,6 +237,27 @@ const MasterPlansClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
+              {t("Manage/Used by operational plans")}:
+            </span>
+            {item.operationalPlans.length === 0 ? (
+              <span className="-mt-2">-</span>
+            ) : (
+              (item.operationalPlans ?? []).map((plan, i) => {
+                const label = plan.name;
+
+                return (
+                  <span
+                    key={i}
+                    className={`${badgeClass} bg-(--badge-main-reverse) !text-(--text-main)`}
+                  >
+                    {label}
+                  </span>
+                );
+              })
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
               {t("MasterPlans/Allow removing elements")}:
             </span>
             <span
@@ -254,9 +275,7 @@ const MasterPlansClient = (props: Props) => {
             <span
               className={`${badgeClass} ${!item.allowImport ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
-              {item.allowImport
-                ? t("Manage/Allowed")
-                : t("Manage/Disallowed")}
+              {item.allowImport ? t("Manage/Allowed") : t("Manage/Disallowed")}
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -381,7 +400,32 @@ const MasterPlansClient = (props: Props) => {
           })}
         </div>
       ),
-      responsivePriority: 4,
+      responsivePriority: 6,
+    },
+    {
+      key: "operationalPlans",
+      label: t("Manage/Used by operational plans"),
+      sortingItem: "operationalplancount",
+      labelAsc: t("Manage/operational plan amount") + t("Manage/ascending"),
+      labelDesc: t("Manage/operational plan amount") + t("Manage/descending"),
+      classNameAddition: "w-[248px] min-w-[248px]",
+      getValue: (item: MasterPlanItem) => (
+        <div className="flex flex-wrap gap-2">
+          {(item.operationalPlans ?? []).map((plan, i) => {
+            const label = plan.name;
+
+            return (
+              <span
+                key={i}
+                className={`${badgeClass} bg-(--badge-main-reverse) !text-(--text-main)`}
+              >
+                {label}
+              </span>
+            );
+          })}
+        </div>
+      ),
+      responsivePriority: 7,
     },
     {
       key: "allowRemovingElements",
@@ -400,7 +444,7 @@ const MasterPlansClient = (props: Props) => {
             : t("Manage/Disallowed")}
         </span>
       ),
-      responsivePriority: 5,
+      responsivePriority: 4,
     },
     {
       key: "allowImport",
@@ -414,12 +458,10 @@ const MasterPlansClient = (props: Props) => {
         <span
           className={`${badgeClass} ${item.allowImport ? "bg-(--unlocked)" : "bg-(--locked)"} w-full text-(--text-main-reverse)`}
         >
-          {item.allowImport
-            ? t("Manage/Allowed")
-            : t("Manage/Disallowed")}
+          {item.allowImport ? t("Manage/Allowed") : t("Manage/Disallowed")}
         </span>
       ),
-      responsivePriority: 6,
+      responsivePriority: 5,
     },
     {
       key: "isHidden",
@@ -589,8 +631,24 @@ const MasterPlansClient = (props: Props) => {
       }),
     },
     {
-      label: t("MasterPlans/Allow removing elements"),
+      label: t("Manage/Used by operational plans"),
       breakpoint: "2xl",
+      options: units.map((unit) => {
+        const label = unit.name;
+
+        return {
+          label,
+          isSelected: filterControls.selectedUnits.includes(unit.id),
+          setSelected: (val: boolean) =>
+            filterControls.setUnitSelected(unit.id, val),
+          // count: counts?.unitCount?.[unit.id],
+          count: counts?.unitCount?.[(unit.masterPlanId ?? unit.id) as number],
+        };
+      }),
+    },
+    {
+      label: t("MasterPlans/Allow removing elements"),
+      breakpoint: "3xl",
       options: [
         {
           label: t("MasterPlans/Allowed master plans"),
@@ -608,7 +666,7 @@ const MasterPlansClient = (props: Props) => {
     },
     {
       label: t("MasterPlans/Allow import"),
-      breakpoint: "3xl",
+      breakpoint: "4xl",
       options: [
         {
           label: t("MasterPlans/Allowed master plans"),

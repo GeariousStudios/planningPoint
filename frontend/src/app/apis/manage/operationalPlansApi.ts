@@ -1,5 +1,8 @@
 import { useTranslations } from "next-intl";
-import { OperationalPlanFilters, OperationalPlanItem } from "../../types/manageTypes";
+import {
+  OperationalPlanFilters,
+  OperationalPlanItem,
+} from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -33,6 +36,12 @@ export const fetchContent = async ({
   // --- FILTERS START ---
   if (filters?.isHidden !== undefined) {
     params.append("isHidden", String(filters.isHidden));
+  }
+
+  if (filters?.unitGroupIds) {
+    for (const id of filters.unitGroupIds) {
+      params.append("unitGroupIds", id.toString());
+    }
   }
 
   if (filters?.masterPlanIds) {
@@ -88,6 +97,29 @@ export const deleteContent = async (id: number): Promise<void> => {
     }
     throw new Error(message);
   }
+};
+
+export type UnitGroupOption = {
+  id: number;
+  name: string;
+};
+
+export const fetchUnitGroups = async (): Promise<UnitGroupOption[]> => {
+  const response = await fetch(`${apiUrl}/unit-group`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
 };
 
 export type MasterPlanOption = {

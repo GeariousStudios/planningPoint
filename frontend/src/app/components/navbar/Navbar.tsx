@@ -24,6 +24,7 @@ type Props = {
   setHasScrollbar: (value: boolean) => void;
   navbarHidden: boolean;
   setNavbarHidden: (value: boolean) => void;
+  isEditingFavourites: boolean;
 };
 
 // --- UNITS IN SUBMENU ---
@@ -85,7 +86,7 @@ const Navbar = (props: Props) => {
   const fetchUnits = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/unit?sortBy=unitGroupName&sortOrder=asc`,
+        `${apiUrl}/unit?sortBy=unitGroupName&sortOrder=desc`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -160,7 +161,7 @@ const Navbar = (props: Props) => {
   const fetchMasterPlans = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/master-plan?sortBy=name&sortOrder=asc`,
+        `${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=desc`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -235,7 +236,7 @@ const Navbar = (props: Props) => {
   const fetchOperationalPlans = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/operational-plan?sortBy=name&sortOrder=asc`,
+        `${apiUrl}/operational-plan?sortBy=unitGroupName&sortOrder=desc`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -561,7 +562,10 @@ const Navbar = (props: Props) => {
       unitItems.map((it) => ({
         ...it,
         isFavourite: favourites.some((f) => f.href === it.href),
-        onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
+        onToggleFavourite:
+          isLoggedIn && props.isEditingFavourites
+            ? onToggleFavourite
+            : undefined,
       })),
     [unitItems, favourites],
   );
@@ -571,7 +575,10 @@ const Navbar = (props: Props) => {
       masterPlanItems.map((it) => ({
         ...it,
         isFavourite: favourites.some((f) => f.href === it.href),
-        onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
+        onToggleFavourite:
+          isLoggedIn && props.isEditingFavourites
+            ? onToggleFavourite
+            : undefined,
       })),
     [masterPlanItems, favourites],
   );
@@ -581,7 +588,10 @@ const Navbar = (props: Props) => {
       operationalPlanItems.map((it) => ({
         ...it,
         isFavourite: favourites.some((f) => f.href === it.href),
-        onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
+        onToggleFavourite:
+          isLoggedIn && props.isEditingFavourites
+            ? onToggleFavourite
+            : undefined,
       })),
     [operationalPlanItems, favourites],
   );
@@ -733,36 +743,48 @@ const Navbar = (props: Props) => {
                             {t("Navbar/Favourites")}
                           </span>
 
-                          <DragDrop
-                            disableClass
-                            items={resolvedFavourites.map((f) => f.href)}
-                            getId={(id) => id}
-                            onReorder={(newOrderHrefs) => {
-                              reorderFavourites(newOrderHrefs);
-                            }}
-                            onDraggingChange={setIsAnyDragging}
-                            renderItem={(href, isDragging) => {
-                              const fav = resolvedFavourites.find(
-                                (f) => f.href === href,
-                              )!;
-                              return (
-                                <NavbarLink
-                                  key={fav.href}
-                                  href={fav.href}
-                                  label={fav.label}
-                                  icon={fav.icon}
-                                  isFavourite
-                                  isDragging={isAnyDragging}
-                                  onToggleFavourite={
-                                    isLoggedIn
-                                      ? (isFav, href) =>
-                                          onToggleFavourite(isFav, href)
-                                      : undefined
-                                  }
-                                />
-                              );
-                            }}
-                          />
+                          {props.isEditingFavourites ? (
+                            <DragDrop
+                              disableClass
+                              items={resolvedFavourites.map((f) => f.href)}
+                              getId={(id) => id}
+                              onReorder={(newOrderHrefs) => {
+                                reorderFavourites(newOrderHrefs);
+                              }}
+                              onDraggingChange={setIsAnyDragging}
+                              renderItem={(href, isDragging) => {
+                                const fav = resolvedFavourites.find(
+                                  (f) => f.href === href,
+                                )!;
+                                return (
+                                  <NavbarLink
+                                    key={fav.href}
+                                    href={fav.href}
+                                    label={fav.label}
+                                    icon={fav.icon}
+                                    isFavourite
+                                    isDragging={isAnyDragging}
+                                    onToggleFavourite={
+                                      isLoggedIn && props.isEditingFavourites
+                                        ? (isFav, href) =>
+                                            onToggleFavourite(isFav, href)
+                                        : undefined
+                                    }
+                                  />
+                                );
+                              }}
+                            />
+                          ) : (
+                            resolvedFavourites.map((fav) => (
+                              <NavbarLink
+                                key={fav.href}
+                                href={fav.href}
+                                label={fav.label}
+                                icon={fav.icon}
+                                isFavourite
+                              />
+                            ))
+                          )}
 
                           <hr className="mt-4 mb-7 rounded-full text-(--border-main)" />
                         </div>
@@ -787,9 +809,10 @@ const Navbar = (props: Props) => {
                                     {
                                       href: "/developer/manage/users/",
                                       label: t("Common/Users"),
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href === "/developer/manage/users/",
@@ -803,7 +826,7 @@ const Navbar = (props: Props) => {
                               //   (f) => f.href === "/developer/manage/",
                               // )}
                               // onToggleFavourite={
-                              //   isLoggedIn ? onToggleFavourite : undefined
+                              //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
                               // }
                             />
                           </span>
@@ -817,7 +840,7 @@ const Navbar = (props: Props) => {
                               //   (f) => f.href === "/developer/manage/",
                               // )}
                               // onToggleFavourite={
-                              //   isLoggedIn ? onToggleFavourite : undefined
+                              //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
                               // }
                             />
                           </span>
@@ -835,7 +858,9 @@ const Navbar = (props: Props) => {
                         icon="HomeIcon"
                         isFavourite={favourites.some((f) => f.href === "/")}
                         onToggleFavourite={
-                          isLoggedIn ? onToggleFavourite : undefined
+                          isLoggedIn && props.isEditingFavourites
+                            ? onToggleFavourite
+                            : undefined
                         }
                       />
 
@@ -863,7 +888,7 @@ const Navbar = (props: Props) => {
                           //   (f) => f.href === "/report/",
                           // )}
                           // onToggleFavourite={
-                          //   isLoggedIn ? onToggleFavourite : undefined
+                          //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
                           // }
                         />
                       </span>
@@ -875,7 +900,7 @@ const Navbar = (props: Props) => {
                           icon="ChatBubbleBottomCenterTextIcon"
                           // isFavourite={favourites.some((f) => f.href === "/report/")}
                           // onToggleFavourite={
-                          //   isLoggedIn ? onToggleFavourite : undefined
+                          //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
                           // }
                         />
                       </span>
@@ -917,7 +942,7 @@ const Navbar = (props: Props) => {
                           //   (f) => f.href === "/plan/",
                           // )}
                           // onToggleFavourite={
-                          //   isLoggedIn ? onToggleFavourite : undefined
+                          //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
                           // }
                         />
                       </span>
@@ -929,7 +954,7 @@ const Navbar = (props: Props) => {
                           icon="CalendarIcon"
                           // isFavourite={favourites.some((f) => f.href === "/plan/")}
                           // onToggleFavourite={
-                          //   isLoggedIn ? onToggleFavourite : undefined
+                          //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
                           // }
                         />
                       </span>
@@ -953,7 +978,9 @@ const Navbar = (props: Props) => {
                             (f) => f.href === "/audit-trail/",
                           )}
                           onToggleFavourite={
-                            isLoggedIn ? onToggleFavourite : undefined
+                            isLoggedIn && props.isEditingFavourites
+                              ? onToggleFavourite
+                              : undefined
                           }
                         />
                       )}
@@ -978,9 +1005,10 @@ const Navbar = (props: Props) => {
                                     {
                                       href: "/admin/manage/units/unit-groups/",
                                       label: t("Common/Groups"),
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -991,9 +1019,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/units/",
                                       label: t("Common/Units"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href === "/admin/manage/units/",
@@ -1004,9 +1033,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/units/categories/",
                                       label: t("Common/Categories"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1017,9 +1047,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/units/unit-columns/",
                                       label: t("Common/Columns"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1027,13 +1058,14 @@ const Navbar = (props: Props) => {
                                       ),
                                     },
                                     {
-                                      title: t("Navbar/Plan"),
+                                      title: t("Navbar/Master planning"),
                                       href: "/admin/manage/units/master-plans/",
                                       label: t("Common/Master plans"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1044,9 +1076,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/units/master-plans/master-plan-fields/",
                                       label: t("Common/Master plan fields"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1057,9 +1090,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/units/master-plans/import-rules/",
                                       label: t("ImportRules/Import rules"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1067,12 +1101,14 @@ const Navbar = (props: Props) => {
                                       ),
                                     },
                                     {
+                                      title: t("Navbar/Operational planning"),
                                       href: "/admin/manage/units/operational-plans/",
                                       label: t("Common/Operational plans"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1088,9 +1124,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/shifts/",
                                       label: t("Common/Shifts"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href === "/admin/manage/shifts/",
@@ -1100,9 +1137,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/shifts/shift-teams/",
                                       label: t("Common/Shift teams"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1118,9 +1156,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/news/news-types/",
                                       label: t("Common/News types"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1136,9 +1175,10 @@ const Navbar = (props: Props) => {
                                       href: "/admin/manage/planned-stops/stop-types/",
                                       label: t("Common/Stop types"),
 
-                                      onToggleFavourite: isLoggedIn
-                                        ? onToggleFavourite
-                                        : undefined,
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
@@ -1153,7 +1193,7 @@ const Navbar = (props: Props) => {
                               //   (f) => f.href === "/admin/manage/",
                               // )}
                               // onToggleFavourite={
-                              //   isLoggedIn ? onToggleFavourite : undefined
+                              //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
                               // }
                               hasScrollbar={props.hasScrollbar}
                             />
@@ -1168,7 +1208,7 @@ const Navbar = (props: Props) => {
                               //   (f) => f.href === "/admin/manage/",
                               // )}
                               // onToggleFavourite={
-                              //   isLoggedIn ? onToggleFavourite : undefined
+                              //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
                               // }
                             />
                           </span>

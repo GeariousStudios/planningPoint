@@ -459,7 +459,7 @@ const ImportRulesClient = (props: Props) => {
                 <div
                   className={`${f.dataType !== "Text" ? "border-(--locked) opacity-50" : "border-(--border-main)"} overflow-x-auto rounded border`}
                 >
-                  <table className="table w-full table-auto border-collapse">
+                  <table className="table w-full table-auto border-collapse bg-(--bg-grid)">
                     <thead
                       className={`${f.dataType !== "Text" ? "bg-(--locked)/75" : "bg-(--bg-grid-header)"}`}
                     >

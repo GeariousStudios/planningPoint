@@ -11,7 +11,15 @@ type Props = {
   isConnected: boolean | null;
 };
 
-type Unit = {
+type MasterPlan = {
+  id: number;
+  name: string;
+  unitGroupId: number;
+  unitGroupName: string;
+  isHidden?: boolean;
+};
+
+type OperationalPlan = {
   id: number;
   name: string;
   unitGroupId: number;
@@ -33,16 +41,23 @@ type LinkSection = {
 const PlanNavClient = (props: Props) => {
   const t = useTranslations();
 
-  const [sections, setSections] = useState<LinkSection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [masterPlanSections, setMasterPlanSections] = useState<LinkSection[]>(
+    [],
+  );
+  const [operationalPlanSections, setOperationalPlanSections] = useState<
+    LinkSection[]
+  >([]);
+  const [isLoadingMasterPlans, setIsLoadingMasterPlans] = useState(true);
+  const [isLoadingOperationalPlans, setIsLoadingOperationalPlans] =
+    useState(true);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const fetchMasterPlans = async () => {
     try {
-      setIsLoading(true);
+      setIsLoadingMasterPlans(true);
 
-      const response = await fetch(`${apiUrl}/master-plan`, {
+      const response = await fetch(`${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=desc`, {
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
@@ -52,24 +67,24 @@ const PlanNavClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        setSections([]);
+        setMasterPlanSections([]);
         return;
       }
 
-      const allItems: Unit[] = result?.items ?? [];
-      const items = allItems.filter((u) => !u.isHidden);
+      const allItems: MasterPlan[] = result?.items ?? [];
+      const items = allItems.filter((mp) => !mp.isHidden);
 
       const grouped = items.reduce(
-        (acc: Record<string, Link[]>, unit: Unit) => {
-          const groupName = unit.unitGroupName || t("Common/Groups");
+        (acc: Record<string, Link[]>, masterPlan: MasterPlan) => {
+          const groupName = masterPlan.unitGroupName || t("Common/Groups");
 
           if (!acc[groupName]) {
             acc[groupName] = [];
           }
 
           acc[groupName].push({
-            href: `/plan/master-plans/${unit.unitGroupId}/${unit.id}`,
-            label: unit.name,
+            href: `/plan/master-plans/${masterPlan.unitGroupId}/${masterPlan.id}`,
+            label: masterPlan.name,
           });
 
           return acc;
@@ -77,44 +92,113 @@ const PlanNavClient = (props: Props) => {
         {},
       );
 
-      const nextSections: LinkSection[] = Object.entries(grouped).map(
-        ([groupName, links]) => ({
-          sectionLabel: groupName,
-          items: links,
-        }),
+      const nextSections: LinkSection[] = [
+        {
+          sectionLabel: t("Common/Master plans"),
+          items: Object.entries(grouped).flatMap(([groupName, links]) =>
+            links.map((l, index) => ({
+              ...l,
+              title: index === 0 ? groupName : undefined,
+            })),
+          ),
+        },
+      ];
+
+      setMasterPlanSections(nextSections);
+    } finally {
+      setIsLoadingMasterPlans(false);
+    }
+  };
+
+  const fetchOperationalPlans = async () => {
+    try {
+      setIsLoadingOperationalPlans(true);
+
+      const response = await fetch(`${apiUrl}/operational-plan?sortBy=unitGroupName&sortOrder=desc`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setOperationalPlanSections([]);
+        return;
+      }
+
+      const allItems: OperationalPlan[] = result?.items ?? [];
+      const items = allItems.filter((op) => !op.isHidden);
+
+      const grouped = items.reduce(
+        (acc: Record<string, Link[]>, operationalPlan: OperationalPlan) => {
+          const groupName = operationalPlan.unitGroupName || t("Common/Groups");
+
+          if (!acc[groupName]) {
+            acc[groupName] = [];
+          }
+
+          acc[groupName].push({
+            href: `/plan/operational-plans/${operationalPlan.unitGroupId}/${operationalPlan.id}`,
+            label: operationalPlan.name,
+          });
+
+          return acc;
+        },
+        {},
       );
 
-      setSections(nextSections);
+      const nextSections: LinkSection[] = [
+        {
+          sectionLabel: t("Common/Operational plans"),
+          items: Object.entries(grouped).flatMap(([groupName, links]) =>
+            links.map((l, index) => ({
+              ...l,
+              title: index === 0 ? groupName : undefined,
+            })),
+          ),
+        },
+      ];
+
+      setOperationalPlanSections(nextSections);
     } finally {
-      setIsLoading(false);
+      setIsLoadingOperationalPlans(false);
     }
   };
 
   useEffect(() => {
     fetchMasterPlans();
+    fetchOperationalPlans();
 
     const handleMasterPlanUpdate = () => fetchMasterPlans();
     window.addEventListener("master-plan-list-updated", handleMasterPlanUpdate);
+
+    const handleOperationalPlanUpdate = () => fetchOperationalPlans();
+    window.addEventListener(
+      "operational-plan-list-updated",
+      handleOperationalPlanUpdate,
+    );
 
     return () => {
       window.removeEventListener(
         "master-plan-list-updated",
         handleMasterPlanUpdate,
       );
+      window.removeEventListener(
+        "operational-plan-list-updated",
+        handleOperationalPlanUpdate,
+      );
     };
   }, []);
 
-  if (isLoading) {
+  const sections = [...masterPlanSections, ...operationalPlanSections];
+
+  if (isLoadingMasterPlans || isLoadingOperationalPlans) {
     return <Message icon="loading" content="loading" fullscreen />;
   }
 
-  return (
-    <NavPage
-      sections={sections}
-      variant="single-grouped"
-      pageLabel={t("Common/Master plans")}
-    />
-  );
+  return <NavPage sections={sections} variant="grid-sections" />;
 };
 
 export default PlanNavClient;

@@ -308,18 +308,28 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
-            var masterPlan = await _context.MasterPlans.FindAsync(dto.MasterPlanId);
+            var masterPlan = null as MasterPlan;
 
-            if (masterPlan == null)
+            if (dto.MasterPlanId.HasValue)
             {
-                return NotFound(new { message = await _t.GetAsync("MasterPlan/NotFound", lang) });
+                masterPlan = await _context.MasterPlans.FindAsync(dto.MasterPlanId);
+
+                if (masterPlan == null)
+                {
+                    return NotFound(
+                        new { message = await _t.GetAsync("MasterPlan/NotFound", lang) }
+                    );
+                }
             }
 
             var existingOperationalPlan = await _context.OperationalPlans.FirstOrDefaultAsync(t =>
                 t.Name.ToLower() == dto.Name.ToLower()
             );
 
-            if (existingOperationalPlan != null)
+            if (
+                existingOperationalPlan != null
+                && existingOperationalPlan.UnitGroupId == unitGroup.Id
+            )
             {
                 return BadRequest(
                     new { message = await _t.GetAsync("OperationalPlan/NameTaken", lang) }
@@ -435,11 +445,18 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
-            var masterPlan = await _context.MasterPlans.FindAsync(dto.MasterPlanId);
+            var masterPlan = null as MasterPlan;
 
-            if (masterPlan == null)
+            if (dto.MasterPlanId.HasValue)
             {
-                return NotFound(new { message = await _t.GetAsync("MasterPlan/NotFound", lang) });
+                masterPlan = await _context.MasterPlans.FindAsync(dto.MasterPlanId);
+
+                if (masterPlan == null)
+                {
+                    return NotFound(
+                        new { message = await _t.GetAsync("MasterPlan/NotFound", lang) }
+                    );
+                }
             }
 
             var existingOperationalPlan = await _context.OperationalPlans.FirstOrDefaultAsync(t =>
@@ -448,7 +465,7 @@ namespace backend.Controllers
 
             if (
                 existingOperationalPlan != null
-                && existingOperationalPlan.MasterPlanId == masterPlan.Id
+                && existingOperationalPlan.UnitGroupId == unitGroup.Id
             )
             {
                 return BadRequest(

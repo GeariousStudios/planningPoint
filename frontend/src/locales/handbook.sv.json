@@ -54,5 +54,8 @@
   "Handbook/Master plan/Body": "<p>Samtliga användare kan se huvudplanering men det krävs behörigheten <i>Huvudplanerare</i> för att kunna göra ändringar i huvudplanen.</p> <br></br> <p>För att göra ändringar så behöver planen först checkas ut. Notera att om du forcerar en utcheckning så kommer personen som hade checkat ut planen att förlora sina ändringar.</p> <br></br> <p>När du har checkat ut planen så kan du:</p> <ul><li>Välja om du vill påverka enskilt element (Elementläge) eller alla element i det markerade elementets grupp (Gruppläge)</li> <li>Lägga till nya element</li> <li>Duplicera markerat element</li> <li>Redigera fält i element</li> <li>Flytta på element upp och ner. Aktivera <i>Fristående element</i> om du vill att det markerade elementet inte ska kunna anslutas till befintliga grupper</li> <li>Stryka element</li> <li>Ta bort element (om detta är tillåtet för huvudplanen)</li> <li>Importera huvudplan för att importera från ett Excel-dokument. Notera att du behöver sätta upp importregler först</li></ul> <p><danger><b>Ändring av huvudplan rekommenderas ej i mobilt läge.</b></danger></p>",
 
   "Handbook/Operational plans/Title": "Hantera operativa planer",
-  "Handbook/Operational plans/Body": "<p>Mer snart...</p>"
+  "Handbook/Operational plans/Body": "<p>Mer snart...</p>",
+
+  "Handbook/Operational plan/Title": "Operativ planering",
+  "Handbook/Operational plan/Body": "<p>Mer snart...</p>"
 }

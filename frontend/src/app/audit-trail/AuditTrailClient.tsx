@@ -486,7 +486,7 @@ const AuditTrailClient = (props: Props) => {
       </div>
 
       {/* --- RESULT LIST --- */}
-      <div className="relative w-full overflow-x-auto rounded border border-(--border-main)">
+      <div className="relative w-full overflow-x-auto rounded border border-(--border-main) bg-(--bg-grid)">
         <table className="w-full min-w-6xl table-fixed border-collapse">
           <thead className="bg-(--bg-grid-header)">
             <tr>

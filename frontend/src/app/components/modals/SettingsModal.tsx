@@ -277,7 +277,7 @@ const SettingsModal = (props: Props) => {
                 <div className="w-full">
                   <div id="portal-root" />
                   <div className={`${itemRowClass}`}>
-                    <span>Tema</span>
+                    <span>{t("SettingsModal/Theme")}</span>
                     <span className="w-24">
                       <SingleDropdown
                         options={[

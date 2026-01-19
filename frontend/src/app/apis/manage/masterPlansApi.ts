@@ -43,10 +43,7 @@ export const fetchContent = async ({
   }
 
   if (filters?.allowImport !== undefined) {
-    params.append(
-      "allowImport",
-      String(filters.allowImport),
-    );
+    params.append("allowImport", String(filters.allowImport));
   }
 
   if (filters?.unitGroupIds) {
@@ -61,6 +58,10 @@ export const fetchContent = async ({
 
   filters?.masterPlanFieldIds?.forEach((id) => {
     params.append("fieldIds", id.toString());
+  });
+
+  filters?.operationalPlanIds?.forEach((id) => {
+    params.append("operationalPlanIds", id.toString());
   });
   // --- FILTERS STOP ---
 

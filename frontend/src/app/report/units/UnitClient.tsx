@@ -73,6 +73,7 @@ const UnitClient = (props: any) => {
           unitId={c.parsedUnitId}
           selectedDate={c.selectedDate}
           selectedHour={c.reportHour}
+          unitCreationDate={c.unitCreationDate}
         />
 
         <ReportModal
@@ -86,6 +87,7 @@ const UnitClient = (props: any) => {
           reportId={Number(c.reportId)}
           selectedDate={c.reportDate}
           selectedHour={c.reportHour}
+          unitCreationDate={c.unitCreationDate}
         />
 
         <DeleteModal

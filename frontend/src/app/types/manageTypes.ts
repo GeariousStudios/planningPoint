@@ -281,6 +281,10 @@ export type MasterPlanItem = {
     id: number;
     name: string;
   }[];
+  operationalPlans: {
+    id: number;
+    name: string;
+  }[];
   isHidden?: boolean;
   allowRemovingElements?: boolean;
   allowImport?: boolean;
@@ -293,6 +297,7 @@ export type MasterPlanItem = {
 
 export type MasterPlanFilters = {
   unitIds?: number[];
+  operationalPlanIds?: number[];
   unitGroupIds?: number[];
   masterPlanFieldIds?: number[];
   isHidden?: boolean;
@@ -366,6 +371,7 @@ export const getMasterPlanFieldAlignmentOptions = (
 export type OperationalPlanItem = {
   id: number;
   name: string;
+  unitGroupName: string;
   masterPlanName: string;
   isHidden?: boolean;
 
@@ -376,6 +382,7 @@ export type OperationalPlanItem = {
 };
 
 export type OperationalPlanFilters = {
+  unitGroupIds?: number[];
   masterPlanIds?: number[];
   isHidden?: boolean;
 };

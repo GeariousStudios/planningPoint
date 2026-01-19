@@ -220,13 +220,12 @@ const UnitsClient = (props: Props) => {
             <span className="w-full font-semibold">
               {t("Units/Belongs to master plan")}:
             </span>
-            <>
-              {item.masterPlanName === null ? (
-                <span className="-mt-2">-</span>
-              ) : (
-                <span className="-mt-2">{item.masterPlanName}</span>
-              )}
-            </>
+
+            {item.masterPlanName === null ? (
+              <span className="-mt-2">-</span>
+            ) : (
+              <span className="-mt-2">{item.masterPlanName}</span>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Columns")}:</span>
