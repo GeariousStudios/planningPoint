@@ -41,25 +41,6 @@ const AdminManageNavClient = (props: Props) => {
       ],
     },
     {
-      sectionLabel: t("Common/Shifts"),
-      items: [
-        { href: "/admin/manage/shifts/", label: t("Common/Shifts") },
-        {
-          href: "/admin/manage/shifts/shift-teams/",
-          label: t("Common/Shift teams"),
-        },
-      ],
-    },
-    {
-      sectionLabel: t("Common/News"),
-      items: [
-        {
-          href: "/admin/manage/news/news-types/",
-          label: t("Common/News types"),
-        },
-      ],
-    },
-    {
       sectionLabel: t("Navbar/Plan"),
       items: [
         {
@@ -85,8 +66,27 @@ const AdminManageNavClient = (props: Props) => {
         },
         {
           title: t("Navbar/Operational planning"),
-          href: "/admin/manage/units/operational-plans/",
+          href: "/admin/manage/plan/operational-plans/",
           label: t("Common/Operational plans"),
+        },
+      ],
+    },
+    {
+      sectionLabel: t("Common/Shifts"),
+      items: [
+        { href: "/admin/manage/shifts/", label: t("Common/Shifts") },
+        {
+          href: "/admin/manage/shifts/shift-teams/",
+          label: t("Common/Shift teams"),
+        },
+      ],
+    },
+    {
+      sectionLabel: t("Common/News"),
+      items: [
+        {
+          href: "/admin/manage/news/news-types/",
+          label: t("Common/News types"),
         },
       ],
     },

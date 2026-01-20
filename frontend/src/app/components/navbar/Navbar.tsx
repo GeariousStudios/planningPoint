@@ -464,7 +464,7 @@ const Navbar = (props: Props) => {
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/units/operational-plans/",
+        href: "/admin/manage/plan/operational-plans/",
         label: t("Common/Operational plans"),
         icon: "WrenchIcon",
       },
@@ -1065,57 +1065,6 @@ const Navbar = (props: Props) => {
                                   ],
                                 },
                                 {
-                                  label: t("Common/Shifts"),
-                                  items: [
-                                    {
-                                      href: "/admin/manage/shifts/",
-                                      label: t("Common/Shifts"),
-
-                                      onToggleFavourite:
-                                        isLoggedIn && props.isEditingFavourites
-                                          ? onToggleFavourite
-                                          : undefined,
-                                      isFavourite: favourites.some(
-                                        (f) =>
-                                          f.href === "/admin/manage/shifts/",
-                                      ),
-                                    },
-                                    {
-                                      href: "/admin/manage/shifts/shift-teams/",
-                                      label: t("Common/Shift teams"),
-
-                                      onToggleFavourite:
-                                        isLoggedIn && props.isEditingFavourites
-                                          ? onToggleFavourite
-                                          : undefined,
-                                      isFavourite: favourites.some(
-                                        (f) =>
-                                          f.href ===
-                                          "/admin/manage/shifts/shift-teams/",
-                                      ),
-                                    },
-                                  ],
-                                },
-                                {
-                                  label: t("Common/News"),
-                                  items: [
-                                    {
-                                      href: "/admin/manage/news/news-types/",
-                                      label: t("Common/News types"),
-
-                                      onToggleFavourite:
-                                        isLoggedIn && props.isEditingFavourites
-                                          ? onToggleFavourite
-                                          : undefined,
-                                      isFavourite: favourites.some(
-                                        (f) =>
-                                          f.href ===
-                                          "/admin/manage/news/news-types/",
-                                      ),
-                                    },
-                                  ],
-                                },
-                                {
                                   label: t("Navbar/Plan"),
                                   items: [
                                     {
@@ -1191,7 +1140,7 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       title: t("Navbar/Operational planning"),
-                                      href: "/admin/manage/units/operational-plans/",
+                                      href: "/admin/manage/plan/operational-plans/",
                                       label: t("Common/Operational plans"),
 
                                       onToggleFavourite:
@@ -1201,7 +1150,58 @@ const Navbar = (props: Props) => {
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
-                                          "/admin/manage/units/operational-plans/",
+                                          "/admin/manage/plan/operational-plans/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                                {
+                                  label: t("Common/Shifts"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/shifts/",
+                                      label: t("Common/Shifts"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href === "/admin/manage/shifts/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/shifts/shift-teams/",
+                                      label: t("Common/Shift teams"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/shifts/shift-teams/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                                {
+                                  label: t("Common/News"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/news/news-types/",
+                                      label: t("Common/News types"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/news/news-types/",
                                       ),
                                     },
                                   ],
