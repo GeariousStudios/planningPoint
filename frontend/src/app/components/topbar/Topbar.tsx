@@ -382,13 +382,13 @@ const Topbar = (props: Props) => {
                     <div className="flex flex-col gap-4">
                       <div className="flex justify-between gap-4">
                         {isLoggedIn ? (
-                          <span className="font-semibold break-words text-(--accent-color)">
+                          <span className="font-semibold [overflow-wrap:anywhere] text-(--accent-color)">
                             {firstName && lastName
                               ? firstName + " " + lastName
                               : firstName || username}
                           </span>
                         ) : (
-                          <span className="font-semibold break-words text-(--accent-color)">
+                          <span className="font-semibold [overflow-wrap:anywhere] text-(--accent-color)">
                             {t("SettingsModal/No one logged in")}
                           </span>
                         )}

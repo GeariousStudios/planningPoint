@@ -234,6 +234,7 @@
   "Manage/Used by operational plans": "Used by operational plans",
   "Manage/Allowed": "Allowed",
   "Manage/Disallowed": "Disallowed",
+  "Manage/Empty": "There is no content to display.",
 
   "Users/Locked user": "This user is locked!",
   "Users/Permissions": "Permissions",
@@ -397,8 +398,8 @@
   "ShiftTeamModal/Info1": "Details about the team",
   "ShiftTeamModal/Hide shift team": "Hide team",
 
-  "PlannedStopModal/Info1": "Details about the type",
-  "PlannedStopModal/Info2": "",
+  "PlannedStopModal/Info1": "Details about the planned stop",
+  "PlannedStopModal/Info2": "Master plans with access",
   "PlannedStopModal/Hide planned stop": "Hide planned stop",
 
   "MasterPlanModal/Info1": "Details about the master plan",
@@ -418,8 +419,12 @@
   "OperationalPlanModal/Info1": "Details about the operational plan",
   "OperationalPlanModal/Info2": "Status",
   "OperationalPlanModal/Hide operational plan": "Hide operational plan",
-  "OperationalPlanModal/Product light color": "Product colour (",
-  "OperationalPlanModal/Product dark color": "Product dark colour",
+  "OperationalPlanModal/Product light color": "Product colour (light theme)",
+  "OperationalPlanModal/Product dark color": "Product colour (dark theme)",
+
+  "ProductModal/Info1": "Details about the product",
+  "ProductModal/Info2": "",
+  "ProductModal/Hide product": "Hide product",
 
   "Shifts/None": "None",
   "Shifts/Unmanned": "Unmanned",
@@ -498,6 +503,7 @@
   "PlannedStops/Confirm1": "Deleting a planned stop will also remove the ability to trend related data.",
   "PlannedStops/Confirm2": "If the planned stop has a lot of related data, it's better to hide it instead.",
   "PlannedStops/Confirm3": "Do you still want to delete?",
+  "PlannedStops/Master plans": "Master plans with access",
 
   "MasterPlans/Hidden master plans": "Hidden master plans",
   "MasterPlans/hidden master plans": "hidden master plans",
@@ -513,6 +519,8 @@
   "MasterPlans/allowed master plans": "allowed master plans",
   "MasterPlans/Allow removing elements": "Allow removing elements",
   "MasterPlans/Allow import": "Allow import from Excel",
+  "MasterPlans/Click to view products": "Click to view products that this master plan is allowed to use",
+  "MasterPlans/Click to view planned stops": "Click to view planned stops that this master plan is allowed to use",
 
   "MasterPlan/Edit master plan": "Checkout master plan",
   "MasterPlan/Add element": "Add element",

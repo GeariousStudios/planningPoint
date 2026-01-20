@@ -8,6 +8,7 @@ import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
+  roundedButtonClass,
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
@@ -17,12 +18,19 @@ import { plannedStopConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import HoverIcon from "@/app/components/common/HoverIcon";
+import XMarkIcon from "@heroicons/react/20/solid/XMarkIcon";
+import MultiDropdown from "@/app/components/common/MultiDropdown";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   itemId?: number | null;
   onItemUpdated: () => void;
+};
+
+type MasterPlanOption = {
+  id: number;
+  name: string;
 };
 
 const PlannedStopModal = (props: Props) => {
@@ -40,12 +48,19 @@ const PlannedStopModal = (props: Props) => {
   const [lightColorHex, setLightColorHex] = useState("#212121");
   const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
   const [reverseColor, setReverseColor] = useState(false);
+  const [masterPlanOptions, setMasterPlanOptions] = useState<
+    MasterPlanOption[]
+  >([]);
+  const [masterPlanIds, setMasterPlanIds] = useState<number[]>([]);
   const [isHidden, setIsHidden] = useState(false);
 
   const [originalName, setOriginalName] = useState("");
   const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
   const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
   const [originalReverseColor, setOriginalReverseColor] = useState(false);
+  const [originalMasterPlanIds, setOriginalMasterPlanIds] = useState<number[]>(
+    [],
+  );
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -58,6 +73,8 @@ const PlannedStopModal = (props: Props) => {
     if (!props.isOpen) {
       return;
     }
+
+    fetchMasterPlans();
 
     if (props.itemId !== null && props.itemId !== undefined) {
       fetchPlannedStop();
@@ -73,6 +90,9 @@ const PlannedStopModal = (props: Props) => {
 
       setReverseColor(false);
       setOriginalReverseColor(false);
+
+      setMasterPlanIds([]);
+      setOriginalMasterPlanIds([]);
 
       setIsHidden(false);
       setOriginalIsHidden(false);
@@ -98,6 +118,7 @@ const PlannedStopModal = (props: Props) => {
           lightColorHex,
           darkColorHex,
           reverseColor,
+          masterPlanIds,
           isHidden,
         }),
       });
@@ -144,11 +165,38 @@ const PlannedStopModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Type") + t("Modal/created1"), 4000);
+      notify("success", t("Common/Planned stop") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // --- Fetch master plans ---
+  const fetchMasterPlans = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/master-plan`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        notify("error", t("Modal/Unknown error"));
+        return;
+      }
+
+      const result = await response.json();
+
+      const items =
+        result?.items ?? result?.data?.items ?? result?.data ?? result ?? [];
+      setMasterPlanOptions(Array.isArray(items) ? items : []);
+    } catch {
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -191,6 +239,13 @@ const PlannedStopModal = (props: Props) => {
     setReverseColor(result.reverseColor ?? false);
     setOriginalReverseColor(result.reverseColor ?? false);
 
+    const ids = Array.isArray(result.masterPlans)
+      ? result.masterPlans.map((mp: { id: number }) => mp.id)
+      : [];
+
+    setMasterPlanIds(ids);
+    setOriginalMasterPlanIds(ids);
+
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
   };
@@ -215,6 +270,7 @@ const PlannedStopModal = (props: Props) => {
             lightColorHex,
             darkColorHex,
             reverseColor,
+            masterPlanIds,
             isHidden,
           }),
         },
@@ -262,7 +318,7 @@ const PlannedStopModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Type") + t("Modal/updated1"), 4000);
+      notify("success", t("Common/Planned stop") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -274,6 +330,42 @@ const PlannedStopModal = (props: Props) => {
     formRef.current?.requestSubmit();
   };
 
+  const deleteMasterPlan = (id: number) => {
+    setMasterPlanIds((prev) => prev.filter((x) => x !== id));
+  };
+
+  // --- COMPONENTS ---
+  // --- MasterPlanChip ---
+  const MasterPlanChip = ({
+    id,
+    label,
+    onDelete,
+  }: {
+    id: number;
+    label: string;
+    onDelete: () => void;
+  }) => {
+    return (
+      <div
+        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-(--bg-modal-link) px-4 transition-transform duration-(--fast) !cursor-default`}
+      >
+        <span className="truncate font-semibold select-none">{label}</span>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
+          style={{ cursor: "pointer" }}
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+      </div>
+    );
+  };
+
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
@@ -282,6 +374,8 @@ const PlannedStopModal = (props: Props) => {
         lightColorHex !== "#212121" ||
         darkColorHex !== "#e0e0e0" ||
         reverseColor !== false ||
+        JSON.stringify(masterPlanIds) !==
+          JSON.stringify(originalMasterPlanIds) ||
         isHidden !== false;
 
       setIsDirty(dirty);
@@ -293,6 +387,7 @@ const PlannedStopModal = (props: Props) => {
       lightColorHex !== originalLightColorHex ||
       darkColorHex !== originalDarkColorHex ||
       reverseColor !== originalReverseColor ||
+      JSON.stringify(masterPlanIds) !== JSON.stringify(originalMasterPlanIds) ||
       isHidden !== originalIsHidden;
 
     setIsDirty(dirty);
@@ -302,11 +397,13 @@ const PlannedStopModal = (props: Props) => {
     lightColorHex,
     darkColorHex,
     reverseColor,
+    masterPlanIds,
     isHidden,
     originalName,
     originalLightColorHex,
     originalDarkColorHex,
     originalReverseColor,
+    originalMasterPlanIds,
     originalIsHidden,
   ]);
 
@@ -326,8 +423,8 @@ const PlannedStopModal = (props: Props) => {
             icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/type")
-                : t("Common/Add") + " " + t("Common/type")
+                ? t("Common/Edit") + " " + t("Common/planned stop")
+                : t("Common/Add") + " " + t("Common/planned stop")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -398,6 +495,45 @@ const PlannedStopModal = (props: Props) => {
                   </CustomTooltip>
                 </div>
               </div>
+
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
+                  {t("PlannedStopModal/Info2")}
+                </h3>
+                <hr className="w-full text-(--border-tertiary)" />
+              </div>
+
+              <MultiDropdown
+                scrollContainer={getScrollEl}
+                label={t("Common/Master plans")}
+                options={masterPlanOptions.map((mp) => ({
+                  value: String(mp.id),
+                  label: mp.name,
+                }))}
+                value={masterPlanIds.map(String)}
+                onChange={(val: string[]) => setMasterPlanIds(val.map(Number))}
+                onModal
+              />
+
+              {masterPlanIds.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {masterPlanIds.sort((a, b) => a - b).map((id) => {
+                    const label =
+                      masterPlanOptions.find((mp) => mp.id === id)?.name ??
+                      `#${id}`;
+
+                    return (
+                      <MasterPlanChip
+                        key={id}
+                        id={id}
+                        label={label}
+                        onDelete={() => deleteMasterPlan(id)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
 
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />

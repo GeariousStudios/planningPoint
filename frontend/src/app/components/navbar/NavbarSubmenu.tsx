@@ -350,7 +350,7 @@ const NavbarSubmenu = (props: Props) => {
                                     (!item.requiresDev || isDev) && (
                                       <div>
                                         <li
-                                          className={`${item.title ? "pt-4 pb-1 text-xs font-semibold break-words uppercase" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
+                                          className={`${item.title ? "pt-4 pb-1 text-xs font-semibold [overflow-wrap:anywhere] uppercase" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
                                         >
                                           {item.title ?? ""}
                                         </li>
@@ -373,7 +373,7 @@ const NavbarSubmenu = (props: Props) => {
                                                 }}
                                                 href={item.href}
                                                 tabIndex={isOpen ? 0 : -1}
-                                                className={`${itemIsActive ? "font-bold text-(--accent-color)" : "text-(--text-navbar)"} ${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full p-2 text-sm break-words`}
+                                                className={`${itemIsActive ? "font-bold text-(--accent-color)" : "text-(--text-navbar)"} ${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full p-2 text-sm [overflow-wrap:anywhere]`}
                                               >
                                                 {item.label}
                                               </Link>
@@ -381,7 +381,7 @@ const NavbarSubmenu = (props: Props) => {
                                               <button
                                                 onClick={item.onClick}
                                                 tabIndex={isOpen ? 0 : -1}
-                                                className={`${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full cursor-pointer p-2 text-sm break-words text-(--text-navbar)`}
+                                                className={`${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full cursor-pointer p-2 text-sm [overflow-wrap:anywhere] text-(--text-navbar)`}
                                               >
                                                 {item.label}
                                               </button>

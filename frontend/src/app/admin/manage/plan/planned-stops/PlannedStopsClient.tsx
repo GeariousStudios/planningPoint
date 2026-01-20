@@ -177,7 +177,7 @@ const PlannedStopsClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Common/Master plans")}:
+              {t("PlannedStops/Master plans")}:
             </span>
             {item.masterPlans.length === 0 ? (
               <span className="-mt-2">-</span>
@@ -185,7 +185,7 @@ const PlannedStopsClient = (props: Props) => {
               (item.masterPlans ?? []).map((masterPlan, i) => (
                 <span
                   key={i}
-                  className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-main)`}
+                  className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                 >
                   {masterPlan.name}
                 </span>
@@ -267,7 +267,7 @@ const PlannedStopsClient = (props: Props) => {
     },
     {
       key: "masterPlans",
-      label: t("Common/Master plans"),
+      label: t("PlannedStops/Master plans"),
       sortingItem: "masterplancount",
       labelAsc: t("Manage/master plan amount") + t("Manage/ascending"),
       labelDesc: t("Manage/master plan amount") + t("Manage/descending"),
@@ -276,14 +276,14 @@ const PlannedStopsClient = (props: Props) => {
           {(item.masterPlans ?? []).map((masterPlan, i) => (
             <span
               key={i}
-              className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-main)`}
+              className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
             >
               {masterPlan.name}
             </span>
           ))}
         </div>
       ),
-      responsivePriority: 2,
+      responsivePriority: 3,
     },
     {
       key: "isHidden",
@@ -292,7 +292,7 @@ const PlannedStopsClient = (props: Props) => {
       labelAsc: t("PlannedStops/visible planned stops"),
       labelDesc: t("PlannedStops/hidden planned stops"),
       classNameAddition: "w-[100px] min-w-[100px]",
-      childClassNameAddition: "w-[72px] min-w-[72px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: PlannedStopItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
@@ -354,7 +354,7 @@ const PlannedStopsClient = (props: Props) => {
       ],
     },
     {
-      label: t("Common/Master plans"),
+      label: t("PlannedStops/Master plans"),
       breakpoint: "lg",
       options: masterPlans.map((masterPlan) => {
         return {

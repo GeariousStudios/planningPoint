@@ -285,7 +285,7 @@ const ProductsClient = (props: Props) => {
       labelAsc: t("Products/visible products"),
       labelDesc: t("Products/hidden products"),
       classNameAddition: "w-[100px] min-w-[100px]",
-      childClassNameAddition: "w-[72px] min-w-[72px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: ProductItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}

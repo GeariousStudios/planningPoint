@@ -9,19 +9,29 @@ import {
   fetchUnits,
   fetchUnitGroups,
   fetchMasterPlanFields,
+  fetchProducts,
+  fetchPlannedStops,
+  fetchMasterPlanProducts,
+  fetchMasterPlanPlannedStops,
   UnitOption,
   UnitGroupOption,
   MasterPlanFieldOption,
+  MasterPlanProductOption,
+  MasterPlanPlannedStopOption,
+  ProductOption,
+  PlannedStopOption,
 } from "@/app/apis/manage/masterPlansApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
 import MasterPlanModal from "@/app/components/modals/admin/plan/MasterPlanModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
+import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
+import CustomTooltip from "@/app/components/common/CustomTooltip";
 
 type Props = {
   isConnected: boolean | null;
@@ -107,12 +117,21 @@ const MasterPlansClient = (props: Props) => {
 
   const { notify } = useToast();
 
-  // --- FETCH UNITS, UNIT GROUPS & FIELDS INITIALIZATION (Unique) ---
+  // --- FETCH UNITS, UNIT GROUPS, MASTER PLAN FIELDS, PRODUCTS & PLANNED STOPS INITIALIZATION (Unique) ---
   const [unitGroups, setUnitGroups] = useState<UnitGroupOption[]>([]);
   const [units, setUnits] = useState<UnitOption[]>([]);
   const [masterPlanFields, setMasterPlanFields] = useState<
     MasterPlanFieldOption[]
   >([]);
+  const [products, setProducts] = useState<ProductOption[]>([]);
+  const [plannedStops, setPlannedStops] = useState<PlannedStopOption[]>([]);
+  const listTriggerRef = useRef<HTMLElement | null>(null);
+  const [isListOpen, setIsListOpen] = useState(false);
+  const [listTitle, setListTitle] = useState("");
+  const [listItems, setListItems] = useState<{ id: number; name: string }[]>(
+    [],
+  );
+
   useEffect(() => {
     fetchUnitGroups()
       .then(setUnitGroups)
@@ -125,7 +144,49 @@ const MasterPlansClient = (props: Props) => {
     fetchMasterPlanFields()
       .then(setMasterPlanFields)
       .catch(() => notify("error", t("Modal/Unknown error")));
+
+    fetchProducts()
+      .then(setProducts)
+      .catch(() => notify("error", t("Modal/Unknown error")));
+
+    fetchPlannedStops()
+      .then(setPlannedStops)
+      .catch(() => notify("error", t("Modal/Unknown error")));
   }, []);
+
+  // --- HELPER --- (Unique)
+  const closeList = () => {
+    setIsListOpen(false);
+  };
+
+  const openProducts = async (
+    e: React.MouseEvent<HTMLElement>,
+    item: MasterPlanItem,
+  ) => {
+    listTriggerRef.current = e.currentTarget as HTMLElement;
+    setListTitle(`${t("Common/Products")} - ${item.name}`);
+    setListItems([]);
+    setIsListOpen(true);
+
+    const rows: MasterPlanProductOption[] = await fetchMasterPlanProducts(
+      item.id,
+    );
+    setListItems(rows);
+  };
+
+  const openPlannedStops = async (
+    e: React.MouseEvent<HTMLElement>,
+    item: MasterPlanItem,
+  ) => {
+    listTriggerRef.current = e.currentTarget as HTMLElement;
+    setListTitle(`${t("Common/Planned stops")} - ${item.name}`);
+    setListItems([]);
+    setIsListOpen(true);
+
+    const rows: MasterPlanPlannedStopOption[] =
+      await fetchMasterPlanPlannedStops(item.id);
+    setListItems(rows);
+  };
 
   // --- TOGGLE MODAL(S) ---
   // --- Delete ---
@@ -168,9 +229,42 @@ const MasterPlansClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Units/Belongs to group")}:
+              {t("Common/Products")}:
             </span>
-            <span className="-mt-2">{item.unitGroupName}</span>
+            <CustomTooltip content={t("MasterPlans/Click to view products")}>
+              <button
+                type="button"
+                className="-mt-2 underline transition-colors duration-(--fast) hover:text-(--accent-color)"
+                onMouseEnter={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openProducts(e, item);
+                }}
+              >
+                {item.productCount ?? 0}
+              </button>
+            </CustomTooltip>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Common/Planned stops")}:
+            </span>
+            <CustomTooltip
+              content={t("MasterPlans/Click to view planned stops")}
+            >
+              <button
+                type="button"
+                className="-mt-2 underline transition-colors duration-(--fast) hover:text-(--accent-color)"
+                onMouseEnter={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openPlannedStops(e, item);
+                }}
+              >
+                {item.plannedStopCount ?? 0}
+              </button>
+            </CustomTooltip>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
@@ -248,7 +342,7 @@ const MasterPlansClient = (props: Props) => {
                 return (
                   <span
                     key={i}
-                    className={`${badgeClass} bg-(--badge-main-reverse) !text-(--text-main)`}
+                    className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                   >
                     {label}
                   </span>
@@ -277,6 +371,12 @@ const MasterPlansClient = (props: Props) => {
             >
               {item.allowImport ? t("Manage/Allowed") : t("Manage/Disallowed")}
             </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Units/Belongs to group")}:
+            </span>
+            <span className="-mt-2">{item.unitGroupName}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
@@ -325,13 +425,60 @@ const MasterPlansClient = (props: Props) => {
       responsivePriority: 0,
     },
     {
-      key: "unitGroupName",
-      label: t("Units/Belongs to group"),
-      sortingItem: "unitgroupname",
-      labelAsc: t("Common/group") + " Ö-A",
-      labelDesc: t("Common/group") + " A-Ö",
-      getValue: (item: MasterPlanItem) => item.unitGroupName,
+      key: "productCount",
+      label: t("Common/Products"),
+      sortingItem: "productcount",
+      labelAsc: t("Common/products") + " " + t("Manage/ascending"),
+      labelDesc: t("Common/products") + " " + t("Manage/descending"),
+      classNameAddition: "w-[140px] min-w-[140px]",
+      childClassNameAddition: "w-fit",
+      getValue: (item: MasterPlanItem) => (
+        <CustomTooltip content={t("MasterPlans/Click to view products")}>
+          <button
+            type="button"
+            className="underline transition-colors duration-(--fast) hover:text-(--accent-color)"
+            onMouseEnter={(e) => {
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+
+              openProducts(e, item);
+            }}
+          >
+            {item.productCount ?? 0}
+          </button>
+        </CustomTooltip>
+      ),
       responsivePriority: 2,
+    },
+    {
+      key: "plannedStopCount",
+      label: t("Common/Planned stops"),
+      sortingItem: "plannedstopcount",
+      labelAsc: t("Common/planned stops") + " " + t("Manage/ascending"),
+      labelDesc: t("Common/planned stops") + " " + t("Manage/descending"),
+      classNameAddition: "w-[160px] min-w-[160px]",
+      childClassNameAddition: "w-fit",
+      getValue: (item: MasterPlanItem) => (
+        <CustomTooltip content={t("MasterPlans/Click to view planned stops")}>
+          <button
+            type="button"
+            className="underline transition-colors duration-(--fast) hover:text-(--accent-color)"
+            onMouseEnter={(e) => {
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+
+              openPlannedStops(e, item);
+            }}
+          >
+            {item.plannedStopCount ?? 0}
+          </button>
+        </CustomTooltip>
+      ),
+      responsivePriority: 3,
     },
     {
       key: "fields",
@@ -353,7 +500,7 @@ const MasterPlansClient = (props: Props) => {
           ))}
         </div>
       ),
-      responsivePriority: 3,
+      responsivePriority: 4,
     },
     {
       key: "units",
@@ -417,7 +564,7 @@ const MasterPlansClient = (props: Props) => {
             return (
               <span
                 key={i}
-                className={`${badgeClass} bg-(--badge-main-reverse) !text-(--text-main)`}
+                className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
               >
                 {label}
               </span>
@@ -425,7 +572,7 @@ const MasterPlansClient = (props: Props) => {
           })}
         </div>
       ),
-      responsivePriority: 7,
+      responsivePriority: 6,
     },
     {
       key: "allowRemovingElements",
@@ -434,7 +581,7 @@ const MasterPlansClient = (props: Props) => {
       labelAsc: t("MasterPlans/allowed master plans"),
       labelDesc: t("MasterPlans/disallowed master plans"),
       classNameAddition: "w-[248px] min-w-[248px]",
-      childClassNameAddition: "w-[88px] min-w-[88px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: MasterPlanItem) => (
         <span
           className={`${badgeClass} ${item.allowRemovingElements ? "bg-(--unlocked)" : "bg-(--locked)"} w-full text-(--text-main-reverse)`}
@@ -444,7 +591,7 @@ const MasterPlansClient = (props: Props) => {
             : t("Manage/Disallowed")}
         </span>
       ),
-      responsivePriority: 4,
+      responsivePriority: 5,
     },
     {
       key: "allowImport",
@@ -453,7 +600,7 @@ const MasterPlansClient = (props: Props) => {
       labelAsc: t("MasterPlans/allowed master plans"),
       labelDesc: t("MasterPlans/disallowed master plans"),
       classNameAddition: "w-[216px] min-w-[216px]",
-      childClassNameAddition: "w-[88px] min-w-[88px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: MasterPlanItem) => (
         <span
           className={`${badgeClass} ${item.allowImport ? "bg-(--unlocked)" : "bg-(--locked)"} w-full text-(--text-main-reverse)`}
@@ -461,7 +608,16 @@ const MasterPlansClient = (props: Props) => {
           {item.allowImport ? t("Manage/Allowed") : t("Manage/Disallowed")}
         </span>
       ),
-      responsivePriority: 5,
+      responsivePriority: 7,
+    },
+    {
+      key: "unitGroupName",
+      label: t("Units/Belongs to group"),
+      sortingItem: "unitgroupname",
+      labelAsc: t("Common/group") + " Ö-A",
+      labelDesc: t("Common/group") + " A-Ö",
+      getValue: (item: MasterPlanItem) => item.unitGroupName,
+      responsivePriority: 7,
     },
     {
       key: "isHidden",
@@ -470,7 +626,7 @@ const MasterPlansClient = (props: Props) => {
       labelAsc: t("MasterPlans/visible master plans"),
       labelDesc: t("MasterPlans/hidden master plans"),
       classNameAddition: "w-[100px] min-w-[100px]",
-      childClassNameAddition: "w-[72px] min-w-[72px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: MasterPlanItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
@@ -564,6 +720,26 @@ const MasterPlansClient = (props: Props) => {
           : (prev.masterPlanFieldIds ?? []).filter((id) => id !== fieldId),
       }));
     },
+
+    selectedProducts: filters.productIds ?? [],
+    setProductSelected: (productId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        productIds: val
+          ? [...(prev.productIds ?? []), productId]
+          : (prev.productIds ?? []).filter((id) => id !== productId),
+      }));
+    },
+
+    selectedPlannedStops: filters.plannedStopIds ?? [],
+    setPlannedStopSelected: (plannedStopId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        plannedStopIds: val
+          ? [...(prev.plannedStopIds ?? []), plannedStopId]
+          : (prev.plannedStopIds ?? []).filter((id) => id !== plannedStopId),
+      }));
+    },
   };
 
   // --- Filter List (Unique)
@@ -587,25 +763,30 @@ const MasterPlansClient = (props: Props) => {
       ],
     },
     {
-      label: t("Units/Belongs to group"),
+      label: t("Common/Products"),
       breakpoint: "lg",
-      options: unitGroups.map((group) => ({
-        label: group.name,
-        isSelected: filterControls.selectedUnitGroups.includes(group.id),
-        setSelected: (val: boolean) => {
-          setFilters((prev) => ({
-            ...prev,
-            unitGroupIds: val
-              ? [...(prev.unitGroupIds ?? []), group.id]
-              : (prev.unitGroupIds ?? []).filter((id) => id !== group.id),
-          }));
-        },
-        count: counts?.unitGroupCount?.[group.name],
+      options: products.map((p) => ({
+        label: p.name,
+        isSelected: filterControls.selectedProducts.includes(p.id),
+        setSelected: (val: boolean) =>
+          filterControls.setProductSelected(p.id, val),
+        count: counts?.productIdsCount?.[p.id] ?? 0,
+      })),
+    },
+    {
+      label: t("Common/Planned stops"),
+      breakpoint: "lg",
+      options: plannedStops.map((ps) => ({
+        label: ps.name,
+        isSelected: filterControls.selectedPlannedStops.includes(ps.id),
+        setSelected: (val: boolean) =>
+          filterControls.setPlannedStopSelected(ps.id, val),
+        count: counts?.plannedStopIdsCount?.[ps.id] ?? 0,
       })),
     },
     {
       label: t("Common/Master plan fields"),
-      breakpoint: "lg",
+      breakpoint: "xl",
       options: masterPlanFields.map((field) => ({
         label: field.name,
         isSelected: filterControls.selectedFields.includes(field.id),
@@ -616,7 +797,7 @@ const MasterPlansClient = (props: Props) => {
     },
     {
       label: t("Manage/Used by units"),
-      breakpoint: "xl",
+      breakpoint: "3xl",
       options: units.map((unit) => {
         const label = unit.name;
 
@@ -632,7 +813,7 @@ const MasterPlansClient = (props: Props) => {
     },
     {
       label: t("Manage/Used by operational plans"),
-      breakpoint: "2xl",
+      breakpoint: "3xl",
       options: units.map((unit) => {
         const label = unit.name;
 
@@ -648,7 +829,7 @@ const MasterPlansClient = (props: Props) => {
     },
     {
       label: t("MasterPlans/Allow removing elements"),
-      breakpoint: "3xl",
+      breakpoint: "2xl",
       options: [
         {
           label: t("MasterPlans/Allowed master plans"),
@@ -681,6 +862,23 @@ const MasterPlansClient = (props: Props) => {
           count: counts?.allowImportCount?.["Disallowed"] ?? 0,
         },
       ],
+    },
+    {
+      label: t("Units/Belongs to group"),
+      breakpoint: "4xl",
+      options: unitGroups.map((group) => ({
+        label: group.name,
+        isSelected: filterControls.selectedUnitGroups.includes(group.id),
+        setSelected: (val: boolean) => {
+          setFilters((prev) => ({
+            ...prev,
+            unitGroupIds: val
+              ? [...(prev.unitGroupIds ?? []), group.id]
+              : (prev.unitGroupIds ?? []).filter((id) => id !== group.id),
+          }));
+        },
+        count: counts?.unitGroupCount?.[group.name],
+      })),
     },
   ];
 
@@ -773,6 +971,27 @@ const MasterPlansClient = (props: Props) => {
           </>
         }
       />
+
+      {/* --- LIST MODAL --- (Unique) */}
+      <MenuDropdown
+        isOpen={isListOpen}
+        onClose={closeList}
+        triggerRef={listTriggerRef}
+        closeOnScroll
+        alignLeft
+      >
+        <div className="flex flex-col gap-3">
+          {listItems.length === 0 ? (
+            <span>{t("Manage/Empty")}</span>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {listItems.map((x) => (
+                <div key={x.id}>- &nbsp; {x.name}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      </MenuDropdown>
     </>
   );
 };

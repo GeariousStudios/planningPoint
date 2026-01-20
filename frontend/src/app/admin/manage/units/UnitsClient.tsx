@@ -262,7 +262,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-reverse)`}
+                      className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                     >
                       {cat.name}
                     </span>
@@ -453,7 +453,7 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-reverse)`}
+                className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
               >
                 {cat.name}
               </span>
@@ -519,7 +519,7 @@ const UnitsClient = (props: Props) => {
       labelAsc: t("Units/visible units"),
       labelDesc: t("Units/hidden units"),
       classNameAddition: "w-[100px] min-w-[100px]",
-      childClassNameAddition: "w-[72px] min-w-[72px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: UnitItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}

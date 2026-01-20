@@ -13,7 +13,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
-import { plannedStopConstraints } from "@/app/helpers/inputConstraints";
+import { productConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import HoverIcon from "@/app/components/common/HoverIcon";
@@ -37,15 +37,9 @@ const ProductModal = (props: Props) => {
   // --- States ---
   const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
-  const [lightColorHex, setLightColorHex] = useState("#212121");
-  const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
-  const [reverseColor, setReverseColor] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
 
   const [originalName, setOriginalName] = useState("");
-  const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
-  const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
-  const [originalReverseColor, setOriginalReverseColor] = useState(false);
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -60,19 +54,10 @@ const ProductModal = (props: Props) => {
     }
 
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchPlannedStop();
+      fetchProduct();
     } else {
       setName("");
       setOriginalName("");
-
-      setLightColorHex("#212121");
-      setOriginalLightColorHex("#212121");
-
-      setDarkColorHex("#e0e0e0");
-      setOriginalDarkColorHex("#e0e0e0");
-
-      setReverseColor(false);
-      setOriginalReverseColor(false);
 
       setIsHidden(false);
       setOriginalIsHidden(false);
@@ -80,13 +65,13 @@ const ProductModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Create planned stop ---
-  const createPlannedStop = async (event: FormEvent) => {
+  // --- Create product ---
+  const createProduct = async (event: FormEvent) => {
     event.preventDefault();
     setIsSaving(true);
 
     try {
-      const response = await fetch(`${apiUrl}/planned-stop/create`, {
+      const response = await fetch(`${apiUrl}/product/create`, {
         method: "POST",
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
@@ -95,9 +80,6 @@ const ProductModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
-          lightColorHex,
-          darkColorHex,
-          reverseColor,
           isHidden,
         }),
       });
@@ -144,7 +126,7 @@ const ProductModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Type") + t("Modal/created1"), 4000);
+      notify("success", t("Common/Product") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -152,11 +134,11 @@ const ProductModal = (props: Props) => {
     }
   };
 
-  // --- Fetch planned stop ---
-  const fetchPlannedStop = async () => {
+  // --- Fetch product ---
+  const fetchProduct = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/planned-stop/fetch/${props.itemId}`,
+        `${apiUrl}/product/fetch/${props.itemId}`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -171,38 +153,29 @@ const ProductModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        fillPlannedStopData(result);
+        fillProductData(result);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  const fillPlannedStopData = (result: any) => {
+  const fillProductData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
-
-    setLightColorHex(result.lightColorHex ?? "#212121");
-    setOriginalLightColorHex(result.lightColorHex ?? "#212121");
-
-    setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
-    setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
-
-    setReverseColor(result.reverseColor ?? false);
-    setOriginalReverseColor(result.reverseColor ?? false);
 
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
   };
 
-  // --- Update planned stop ---
-  const updatePlannedStop = async (event: FormEvent) => {
+  // --- Update product ---
+  const updateProduct = async (event: FormEvent) => {
     event.preventDefault();
     setIsSaving(true);
 
     try {
       const response = await fetch(
-        `${apiUrl}/planned-stop/update/${props.itemId}`,
+        `${apiUrl}/product/update/${props.itemId}`,
         {
           method: "PUT",
           headers: {
@@ -212,9 +185,6 @@ const ProductModal = (props: Props) => {
           },
           body: JSON.stringify({
             name,
-            lightColorHex,
-            darkColorHex,
-            reverseColor,
             isHidden,
           }),
         },
@@ -262,7 +232,7 @@ const ProductModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Type") + t("Modal/updated1"), 4000);
+      notify("success", t("Common/Product") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -279,9 +249,6 @@ const ProductModal = (props: Props) => {
     if (props.itemId === null || props.itemId === undefined) {
       const dirty =
         name !== "" ||
-        lightColorHex !== "#212121" ||
-        darkColorHex !== "#e0e0e0" ||
-        reverseColor !== false ||
         isHidden !== false;
 
       setIsDirty(dirty);
@@ -290,23 +257,14 @@ const ProductModal = (props: Props) => {
 
     const dirty =
       name !== originalName ||
-      lightColorHex !== originalLightColorHex ||
-      darkColorHex !== originalDarkColorHex ||
-      reverseColor !== originalReverseColor ||
       isHidden !== originalIsHidden;
 
     setIsDirty(dirty);
   }, [
     props.itemId,
     name,
-    lightColorHex,
-    darkColorHex,
-    reverseColor,
     isHidden,
     originalName,
-    originalLightColorHex,
-    originalDarkColorHex,
-    originalReverseColor,
     originalIsHidden,
   ]);
 
@@ -316,7 +274,7 @@ const ProductModal = (props: Props) => {
         <form
           ref={formRef}
           onSubmit={(e) =>
-            props.itemId ? updatePlannedStop(e) : createPlannedStop(e)
+            props.itemId ? updateProduct(e) : createProduct(e)
           }
         >
           <ModalBase
@@ -326,8 +284,8 @@ const ProductModal = (props: Props) => {
             icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/type")
-                : t("Common/Add") + " " + t("Common/type")
+                ? t("Common/Edit") + " " + t("Common/product")
+                : t("Common/Add") + " " + t("Common/product")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -336,7 +294,7 @@ const ProductModal = (props: Props) => {
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("PlannedStopModal/Info1")}
+                  {t("ProductModal/Info1")}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -351,55 +309,12 @@ const ProductModal = (props: Props) => {
                     }}
                     onModal
                     required
-                    {...plannedStopConstraints.name}
+                    {...productConstraints.name}
                   />
-                </div>
-
-                <Input
-                  label={t("Common/Light color")}
-                  type="color"
-                  value={lightColorHex}
-                  onChange={(val) => setLightColorHex(String(val))}
-                  pattern="^#([0-9A-Fa-f]{6})$"
-                  onModal
-                />
-
-                <Input
-                  label={t("Common/Dark color")}
-                  type="color"
-                  value={darkColorHex}
-                  onChange={(val) => setDarkColorHex(String(val))}
-                  pattern="^#([0-9A-Fa-f]{6})$"
-                  onModal
-                />
-
-                <div className="flex items-center gap-2 truncate">
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={reverseColor}
-                    className={switchClass(reverseColor)}
-                    onClick={() => setReverseColor((prev) => !prev)}
-                  >
-                    <div className={switchKnobClass(reverseColor)} />
-                  </button>
-                  {t("Modal/Reverse color")}
-                  <CustomTooltip
-                    content={t("Modal/Tooltip reverse color")}
-                    showOnTouch
-                  >
-                    <span className="group min-h-4 min-w-4 cursor-help">
-                      <HoverIcon
-                        outline={Outline.InformationCircleIcon}
-                        solid={Solid.InformationCircleIcon}
-                        className="flex"
-                      />
-                    </span>
-                  </CustomTooltip>
                 </div>
               </div>
 
-              <div className="mt-8 flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("Common/Status")}
@@ -419,7 +334,7 @@ const ProductModal = (props: Props) => {
                     <div className={switchKnobClass(isHidden)} />
                   </button>
                   <span className="mb-0.5">
-                    {t("PlannedStopModal/Hide planned stop")}
+                    {t("ProductModal/Hide product")}
                   </span>
                 </div>
               </div>

@@ -234,6 +234,7 @@
   "Manage/Used by operational plans": "Används av operativa planer",
   "Manage/Allowed": "Tillåten",
   "Manage/Disallowed": "Ej tillåten",
+  "Manage/Empty": "Det finns inget innehåll att visa.",
 
   "Users/Locked user": "Detta konto är låst!",
   "Users/Permissions": "Behörigheter",
@@ -396,9 +397,9 @@
   "ShiftTeamModal/Info1": "Uppgifter om laget",
   "ShiftTeamModal/Hide shift team": "Dölj lag",
 
-  "PlannedStopModal/Info1": "Uppgifter om typen",
-  "PlannedStopModal/Info2": "",
-  "PlannedStopModal/Hide planned stop": "Dölj stoptyp",
+  "PlannedStopModal/Info1": "Uppgifter om det planerade stoppet",
+  "PlannedStopModal/Info2": "Huvudplaner med tillgång",
+  "PlannedStopModal/Hide planned stop": "Dölj planerat stopp",
 
   "MasterPlanModal/Info1": "Uppgifter om huvudplanen",
   "MasterPlanModal/Info2": "Fält",
@@ -414,11 +415,15 @@
   "MasterPlanFieldModal/alignment": "justering",
   "MasterPlanFieldModal/Hide master plan field": "Dölj fält",
 
-  "OperationalPlanModal/Info1": "Uppgifter om operativa planen",
+  "OperationalPlanModal/Info1": "Uppgifter om den operativa planen",
   "OperationalPlanModal/Info2": "Status",
   "OperationalPlanModal/Hide operational plan": "Dölj operativ plan",
   "OperationalPlanModal/Product light color": "Produktfärg (ljust tema)",
   "OperationalPlanModal/Product dark color": "Produktfärg (mörkt tema)",
+
+  "ProductModal/Info1": "Uppgifter om produkten",
+  "ProductModal/Info2": "",
+  "ProductModal/Hide product": "Dölj produkt",
 
   "Shifts/None": "Inget",
   "Shifts/Unmanned": "Obemannad",
@@ -497,6 +502,7 @@
   "PlannedStops/Confirm1": "Tar du bort en planerat stopp så tar du bort möjligheten att kunna trenda kopplad data.",
   "PlannedStops/Confirm2": "Om planerat stoppen har mycket kopplad data så är det bättre att dölja det.",
   "PlannedStops/Confirm3": "Vill du ta bort ändå?",
+  "PlannedStops/Master plans": "Huvudplaner med tillgång",
 
   "MasterPlans/Hidden master plans": "Dolda huvudplaner",
   "MasterPlans/hidden master plans": "dolda huvudplaner",
@@ -512,6 +518,8 @@
   "MasterPlans/allowed master plans": "tillåtna huvudplaner",
   "MasterPlans/Allow removing elements": "Tillåt borttagning av element",
   "MasterPlans/Allow import": "Tillåt import från Excel",
+  "MasterPlans/Click to view products": "Klicka för att visa produkter som denna huvudplan får använda",
+  "MasterPlans/Click to view planned stops": "Klicka för att visa planerade stopp som denna huvudplan får använda",
 
   "MasterPlan/Edit master plan": "Checka ut huvudplan",
   "MasterPlan/Add element": "Lägg till element",

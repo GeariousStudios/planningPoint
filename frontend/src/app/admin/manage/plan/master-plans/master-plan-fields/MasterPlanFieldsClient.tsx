@@ -294,7 +294,7 @@ const MasterPlanFieldsClient = (props: Props) => {
       labelAsc: t("MasterPlanFields/visible master plan fields"),
       labelDesc: t("MasterPlanFields/hidden master plan fields"),
       classNameAddition: "w-[100px] min-w-[100px]",
-      childClassNameAddition: "w-[72px] min-w-[72px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: MasterPlanFieldItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}

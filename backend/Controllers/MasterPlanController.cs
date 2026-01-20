@@ -67,7 +67,7 @@ namespace backend.Controllers
             [FromQuery] int[]? unitGroupIds = null,
             [FromQuery] int[]? unitIds = null,
             [FromQuery] int[]? fieldIds = null,
-            [FromQuery] int[]? operationalPlans = null,
+            [FromQuery] int[]? operationalPlanIds = null,
             [FromQuery] int[]? productIds = null,
             [FromQuery] int[]? plannedStopIds = null,
             [FromQuery] bool? isHidden = null,
@@ -126,10 +126,10 @@ namespace backend.Controllers
                 );
             }
 
-            if (operationalPlans?.Any() == true)
+            if (operationalPlanIds?.Any() == true)
             {
                 query = query.Where(mp =>
-                    mp.OperationalPlans.Any(op => operationalPlans.Contains(op.Id))
+                    mp.OperationalPlans.Any(op => operationalPlanIds.Contains(op.Id))
                 );
             }
 
@@ -258,6 +258,24 @@ namespace backend.Controllers
                 .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
 
+            var productIdsCount = await _context
+                .ProductToMasterPlans.GroupBy(x => x.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    Count = g.Select(x => x.MasterPlanId).Distinct().Count(),
+                })
+                .ToDictionaryAsync(x => x.ProductId, x => x.Count);
+
+            var plannedStopIdsCount = await _context
+                .PlannedStopToMasterPlans.GroupBy(x => x.PlannedStopId)
+                .Select(g => new
+                {
+                    PlannedStopId = g.Key,
+                    Count = g.Select(x => x.MasterPlanId).Distinct().Count(),
+                })
+                .ToDictionaryAsync(x => x.PlannedStopId, x => x.Count);
+
             var masterPlans = query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -358,6 +376,8 @@ namespace backend.Controllers
                     fieldCount,
                     productCount,
                     plannedStopCount,
+                    productIdsCount,
+                    plannedStopIdsCount,
                 },
             };
 
@@ -486,7 +506,9 @@ namespace backend.Controllers
 
             var isInUse =
                 await _context.Units.AnyAsync(u => u.MasterPlanId == id)
-                || await _context.OperationalPlans.AnyAsync(op => op.MasterPlanId == id);
+                || await _context.OperationalPlans.AnyAsync(op => op.MasterPlanId == id)
+                || await _context.ProductToMasterPlans.AnyAsync(x => x.MasterPlanId == id)
+                || await _context.PlannedStopToMasterPlans.AnyAsync(x => x.MasterPlanId == id);
 
             if (isInUse)
             {
@@ -1178,6 +1200,40 @@ namespace backend.Controllers
                     masterPlan = dto,
                 }
             );
+        }
+
+        [HttpGet("{id}/products")]
+        public async Task<IActionResult> GetProducts(int id)
+        {
+            var exists = await _context.MasterPlans.AnyAsync(x => x.Id == id);
+            if (!exists)
+                return NotFound();
+
+            var items = await _context
+                .ProductToMasterPlans.AsNoTracking()
+                .Where(x => x.MasterPlanId == id)
+                .Select(x => new { id = x.ProductId, name = x.Product.Name })
+                .OrderBy(x => x.name)
+                .ToListAsync();
+
+            return Ok(new { items });
+        }
+
+        [HttpGet("{id}/planned-stops")]
+        public async Task<IActionResult> GetPlannedStops(int id)
+        {
+            var exists = await _context.MasterPlans.AnyAsync(x => x.Id == id);
+            if (!exists)
+                return NotFound();
+
+            var items = await _context
+                .PlannedStopToMasterPlans.AsNoTracking()
+                .Where(x => x.MasterPlanId == id)
+                .Select(x => new { id = x.PlannedStopId, name = x.PlannedStop.Name })
+                .OrderBy(x => x.name)
+                .ToListAsync();
+
+            return Ok(new { items });
         }
     }
 }

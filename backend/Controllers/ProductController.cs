@@ -447,24 +447,26 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
+            var masterPlanIds = product.ProductToMasterPlans.Select(x => x.MasterPlanId).ToList();
+            var masterPlanFieldIds = product
+                .ProductToMasterPlanFields.Select(x => x.MasterPlanFieldId)
+                .ToList();
+
+            var masterPlans = await _context
+                .MasterPlans.Where(mp => masterPlanIds.Contains(mp.Id))
+                .Select(mp => new MasterPlanDto { Id = mp.Id, Name = mp.Name })
+                .ToListAsync();
+            var masterPlanFields = await _context
+                .MasterPlanFields.Where(mpf => masterPlanFieldIds.Contains(mpf.Id))
+                .Select(mpf => new MasterPlanFieldDto { Id = mpf.Id, Name = mpf.Name })
+                .ToListAsync();
+
             var result = new ProductDto
             {
                 Id = product.Id,
                 Name = product.Name,
-                MasterPlans = product
-                    .ProductToMasterPlans.Select(mp => new MasterPlanDto
-                    {
-                        Id = mp.MasterPlan.Id,
-                        Name = mp.MasterPlan.Name,
-                    })
-                    .ToList(),
-                MasterPlanFields = product
-                    .ProductToMasterPlanFields.Select(mpf => new MasterPlanFieldDto
-                    {
-                        Id = mpf.MasterPlanField.Id,
-                        Name = mpf.MasterPlanField.Name,
-                    })
-                    .ToList(),
+                MasterPlans = masterPlans,
+                MasterPlanFields = masterPlanFields,
                 IsHidden = product.IsHidden,
 
                 // Meta data.

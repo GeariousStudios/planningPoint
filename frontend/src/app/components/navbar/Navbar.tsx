@@ -572,7 +572,7 @@ const Navbar = (props: Props) => {
             ? onToggleFavourite
             : undefined,
       })),
-    [unitItems, favourites],
+    [unitItems, favourites, isLoggedIn, props.isEditingFavourites],
   );
 
   const masterPlanItemsResolved = useMemo(
@@ -585,7 +585,7 @@ const Navbar = (props: Props) => {
             ? onToggleFavourite
             : undefined,
       })),
-    [masterPlanItems, favourites],
+    [masterPlanItems, favourites, isLoggedIn, props.isEditingFavourites],
   );
 
   const operationalPlanItemsResolved = useMemo(
@@ -598,7 +598,7 @@ const Navbar = (props: Props) => {
             ? onToggleFavourite
             : undefined,
       })),
-    [operationalPlanItems, favourites],
+    [operationalPlanItems, favourites, isLoggedIn, props.isEditingFavourites],
   );
 
   // useEffect(() => {

@@ -166,9 +166,9 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
             var plannedStop = await _context
-                .PlannedStops.Include(st => st.PlannedStopToMasterPlans)
-                .ThenInclude(pst => pst.MasterPlan)
-                .FirstOrDefaultAsync(st => st.Id == id);
+                .PlannedStops.Include(p => p.PlannedStopToMasterPlans)
+                .ThenInclude(x => x.MasterPlan)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (plannedStop == null)
             {
@@ -209,7 +209,10 @@ namespace backend.Controllers
             }
 
             var (deletedBy, userId) = userInfo.Value;
-            var plannedStop = await _context.PlannedStops.FindAsync(id);
+            var plannedStop = await _context
+                .PlannedStops.Include(p => p.PlannedStopToMasterPlans)
+                .ThenInclude(x => x.MasterPlan)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (plannedStop == null)
             {
@@ -362,7 +365,10 @@ namespace backend.Controllers
         public async Task<IActionResult> UpdatePlannedStop(int id, UpdatePlannedStopDto dto)
         {
             var lang = await GetLangAsync();
-            var plannedStop = await _context.PlannedStops.FindAsync(id);
+            var plannedStop = await _context
+                .PlannedStops.Include(p => p.PlannedStopToMasterPlans)
+                .ThenInclude(x => x.MasterPlan)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (plannedStop == null)
             {
@@ -438,6 +444,15 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
+            var masterPlanIds = plannedStop
+                .PlannedStopToMasterPlans.Select(x => x.MasterPlanId)
+                .ToList();
+
+            var masterPlans = await _context
+                .MasterPlans.Where(mp => masterPlanIds.Contains(mp.Id))
+                .Select(mp => new MasterPlanDto { Id = mp.Id, Name = mp.Name })
+                .ToListAsync();
+
             var result = new PlannedStopDto
             {
                 Id = plannedStop.Id,
@@ -447,10 +462,7 @@ namespace backend.Controllers
                 LightTextColorHex = ColorHelper.GetReadableTextColor(plannedStop.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(plannedStop.DarkColorHex),
                 ReverseColor = plannedStop.ReverseColor,
-                MasterPlans = plannedStop
-                    .PlannedStopToMasterPlans.Select(pst => pst.MasterPlan)
-                    .Select(mp => new MasterPlanDto { Id = mp.Id, Name = mp.Name })
-                    .ToList(),
+                MasterPlans = masterPlans,
                 IsHidden = plannedStop.IsHidden,
 
                 // Meta data.

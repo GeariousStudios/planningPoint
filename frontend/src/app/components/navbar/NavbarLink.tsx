@@ -83,7 +83,7 @@ const NavbarLink = (props: Props) => {
             )}
 
             <span
-              className={`${isActive ? "font-bold" : ""} line-clamp-2 overflow-hidden text-ellipsis`}
+              className={`${isActive ? "font-bold" : ""} [overflow-wrap:anywhere]`}
             >
               {props.label}
             </span>

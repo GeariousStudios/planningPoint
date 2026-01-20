@@ -281,6 +281,8 @@ export type MasterPlanItem = {
   isHidden?: boolean;
   allowRemovingElements?: boolean;
   allowImport?: boolean;
+  productCount: number;
+  plannedStopCount: number;
 
   creationDate: string;
   updateDate: string;
@@ -293,6 +295,8 @@ export type MasterPlanFilters = {
   operationalPlanIds?: number[];
   unitGroupIds?: number[];
   masterPlanFieldIds?: number[];
+  productIds?: number[];
+  plannedStopIds?: number[];
   isHidden?: boolean;
   allowRemovingElements?: boolean;
   allowImport?: boolean;

@@ -455,7 +455,7 @@
             "aria-hidden": !e.isOpen,
             className: "".concat(
               e.isOpen ? "visible opacity-100" : "invisible opacity-0",
-              " absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-(--bg-topbar)] p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-(--fast)]",
+              " absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-(--bg-topbar)] p-4 [overflow-wrap:anywhere] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-(--fast)]",
             ),
             style: { width: r },
             children: e.children,

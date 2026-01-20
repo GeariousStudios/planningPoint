@@ -639,7 +639,7 @@ const AuditTrailClient = (props: Props) => {
                                                     <td className="px-4 pr-2 align-top font-medium whitespace-nowrap">
                                                       {key}
                                                     </td>
-                                                    <td className="px-4 break-words">
+                                                    <td className="px-4 [overflow-wrap:anywhere]">
                                                       {checkIfHtml(value) ? (
                                                         <div
                                                           className="prose prose-sm max-w-none"
@@ -749,7 +749,7 @@ const AuditTrailClient = (props: Props) => {
                                                     <td className="px-4 pr-2 align-top font-medium whitespace-nowrap">
                                                       {key}
                                                     </td>
-                                                    <td className="px-4 break-words">
+                                                    <td className="px-4 [overflow-wrap:anywhere]">
                                                       {checkIfHtml(value) ? (
                                                         <div
                                                           className="prose prose-sm max-w-none"
@@ -863,7 +863,7 @@ const AuditTrailClient = (props: Props) => {
                                                 <td className="px-4 pr-2 align-top font-medium whitespace-nowrap">
                                                   {key}
                                                 </td>
-                                                <td className="px-4 break-words">
+                                                <td className="px-4 [overflow-wrap:anywhere]">
                                                   {checkIfHtml(value) ? (
                                                     <div
                                                       className="prose prose-sm max-w-none"

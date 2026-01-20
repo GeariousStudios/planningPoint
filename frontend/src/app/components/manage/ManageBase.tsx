@@ -679,7 +679,7 @@ const ManageBase = <TItem extends { id: number }>({
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className={`${gridItems.length > 1 ? "gap-2" : ""} ${selectedItems.includes(item.id) ? "border-(--accent-color)" : "border-(--border-main)"} ${getIsDisabled(item) ? "!cursor-not-allowed !border-(--border-main)" : ""} flex max-h-[462.5px] cursor-pointer flex-col overflow-auto rounded border p-4 transition-colors duration-(--fast) hover:border-(--accent-color) bg-(--bg-grid)`}
+                  className={`${gridItems.length > 1 ? "gap-2" : ""} ${selectedItems.includes(item.id) ? "border-(--accent-color)" : "border-(--border-main)"} ${getIsDisabled(item) ? "!cursor-not-allowed !border-(--border-main)" : ""} flex max-h-[462.5px] cursor-pointer flex-col overflow-auto rounded border bg-(--bg-grid) p-4 [overflow-wrap:anywhere] transition-colors duration-(--fast) hover:border-(--accent-color)`}
                   onClick={() => toggleSelect(item.id)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {

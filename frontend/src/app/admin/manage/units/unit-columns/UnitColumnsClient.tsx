@@ -334,7 +334,7 @@ const UnitColumnsClient = (props: Props) => {
       labelAsc: t("Columns/Data1"),
       labelDesc: t("Columns/Data2"),
       classNameAddition: "w-[120px] min-w-[120px]",
-      childClassNameAddition: "w-[92px] min-w-[92px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: UnitColumnItem) => (
         <span
           className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}

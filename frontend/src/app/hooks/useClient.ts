@@ -10,10 +10,10 @@ export const thClass =
   "px-4 py-2 h-[40px] text-left border-b-1 border-b-(--border-main) border-r-1 border-r-(--border-secondary) flex-inline items-center justify-center";
 
 export const tdClass =
-  "px-4 py-2 h-[40px] text-left break-all border border-(--border-secondary) flex-inline items-center justify-center";
+  "px-4 py-2 h-[40px] text-left [overflow-wrap:anywhere] border border-(--border-secondary) flex-inline items-center justify-center";
 
 export const tdClassSpecial =
-  "px-4 py-2 h-[40px] text-left break-all flex-inline items-center justify-center";
+  "px-4 py-2 h-[40px] text-left [overflow-wrap:anywhere] flex-inline items-center justify-center";
 
 export const shiftsClass =
   "truncate font-semibold transition-colors duration-(--fast) group-hover:text-(--accent-color)";

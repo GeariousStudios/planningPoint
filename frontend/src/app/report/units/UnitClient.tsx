@@ -1417,7 +1417,7 @@ const UnitClient = (props: any) => {
                                           )}
                                         </div>
                                         <div
-                                          className="text-sm break-all"
+                                          className="text-sm [overflow-wrap:anywhere]"
                                           dangerouslySetInnerHTML={{
                                             __html: report.content,
                                           }}
