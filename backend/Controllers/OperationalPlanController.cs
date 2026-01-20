@@ -156,6 +156,14 @@ namespace backend.Controllers
                     UnitGroupName = t.UnitGroup.Name,
                     MasterPlanId = t.MasterPlanId,
                     MasterPlanName = t.MasterPlan == null ? "" : t.MasterPlan.Name,
+                    ProductLightColorHex = t.ProductLightColorHex,
+                    ProductDarkColorHex = t.ProductDarkColorHex,
+                    ProductLightTextColorHex = ColorHelper.GetReadableTextColor(
+                        t.ProductLightColorHex
+                    ),
+                    ProductDarkTextColorHex = ColorHelper.GetReadableTextColor(
+                        t.ProductDarkColorHex
+                    ),
                     IsHidden = t.IsHidden,
 
                     // Meta data.
@@ -213,6 +221,14 @@ namespace backend.Controllers
                 UnitGroupName = operationalPlan.UnitGroup.Name ?? unknownGroup,
                 MasterPlanId = operationalPlan.MasterPlanId,
                 MasterPlanName = operationalPlan.MasterPlan?.Name ?? unknownMasterPlan,
+                ProductLightColorHex = operationalPlan.ProductLightColorHex,
+                ProductDarkColorHex = operationalPlan.ProductDarkColorHex,
+                ProductLightTextColorHex = ColorHelper.GetReadableTextColor(
+                    operationalPlan.ProductLightColorHex
+                ),
+                ProductDarkTextColorHex = ColorHelper.GetReadableTextColor(
+                    operationalPlan.ProductDarkColorHex
+                ),
                 IsHidden = operationalPlan.IsHidden,
 
                 // Check-out system.
@@ -269,6 +285,8 @@ namespace backend.Controllers
                         operationalPlan.MasterPlan == null
                             ? "—"
                             : $"{operationalPlan.MasterPlan.Name} (ID: {operationalPlan.MasterPlanId})",
+                    ["LightColorHex"] = operationalPlan.ProductLightColorHex,
+                    ["DarkColorHex"] = operationalPlan.ProductDarkColorHex,
                     ["IsHidden"] = operationalPlan.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -353,6 +371,8 @@ namespace backend.Controllers
                 Name = dto.Name,
                 UnitGroup = unitGroup,
                 MasterPlan = masterPlan,
+                ProductLightColorHex = dto.ProductLightColorHex,
+                ProductDarkColorHex = dto.ProductDarkColorHex,
                 IsHidden = dto.IsHidden,
 
                 // Meta data.
@@ -371,6 +391,14 @@ namespace backend.Controllers
                 Name = operationalPlan.Name,
                 UnitGroupId = operationalPlan.UnitGroupId,
                 MasterPlanId = operationalPlan.MasterPlanId,
+                ProductLightColorHex = operationalPlan.ProductLightColorHex,
+                ProductDarkColorHex = operationalPlan.ProductDarkColorHex,
+                ProductLightTextColorHex = ColorHelper.GetReadableTextColor(
+                    operationalPlan.ProductLightColorHex
+                ),
+                ProductDarkTextColorHex = ColorHelper.GetReadableTextColor(
+                    operationalPlan.ProductDarkColorHex
+                ),
                 IsHidden = operationalPlan.IsHidden,
 
                 // Meta data.
@@ -398,6 +426,8 @@ namespace backend.Controllers
                         operationalPlan.MasterPlan == null
                             ? "—"
                             : $"{operationalPlan.MasterPlan.Name} (ID: {operationalPlan.MasterPlanId})",
+                    ["LightColorHex"] = operationalPlan.ProductLightColorHex,
+                    ["DarkColorHex"] = operationalPlan.ProductDarkColorHex,
                     ["IsHidden"] = operationalPlan.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -495,6 +525,8 @@ namespace backend.Controllers
                     operationalPlan.MasterPlan == null
                         ? "—"
                         : $"{operationalPlan.MasterPlan.Name} (ID: {operationalPlan.MasterPlanId})",
+                ["LightColorHex"] = operationalPlan.ProductLightColorHex,
+                ["DarkColorHex"] = operationalPlan.ProductDarkColorHex,
                 ["IsHidden"] = operationalPlan.IsHidden
                     ? new[] { "Common/Yes" }
                     : new[] { "Common/No" },
@@ -502,8 +534,10 @@ namespace backend.Controllers
 
             operationalPlan.Name = dto.Name;
             operationalPlan.UnitGroup = unitGroup;
-            operationalPlan.IsHidden = dto.IsHidden;
             operationalPlan.MasterPlan = masterPlan;
+            operationalPlan.ProductLightColorHex = dto.ProductLightColorHex;
+            operationalPlan.ProductDarkColorHex = dto.ProductDarkColorHex;
+            operationalPlan.IsHidden = dto.IsHidden;
             operationalPlan.UpdateDate = now;
             operationalPlan.UpdatedBy = updatedBy;
 
@@ -513,7 +547,16 @@ namespace backend.Controllers
             {
                 Id = operationalPlan.Id,
                 Name = operationalPlan.Name,
+                UnitGroupId = operationalPlan.UnitGroupId,
                 MasterPlanId = operationalPlan.MasterPlanId,
+                ProductLightColorHex = operationalPlan.ProductLightColorHex,
+                ProductDarkColorHex = operationalPlan.ProductDarkColorHex,
+                ProductLightTextColorHex = ColorHelper.GetReadableTextColor(
+                    operationalPlan.ProductLightColorHex
+                ),
+                ProductDarkTextColorHex = ColorHelper.GetReadableTextColor(
+                    operationalPlan.ProductDarkColorHex
+                ),
                 IsHidden = operationalPlan.IsHidden,
 
                 // Meta data.
@@ -542,6 +585,8 @@ namespace backend.Controllers
                             operationalPlan.MasterPlan == null
                                 ? "—"
                                 : $"{operationalPlan.MasterPlan.Name} (ID: {operationalPlan.MasterPlanId})",
+                        ["LightColorHex"] = operationalPlan.ProductLightColorHex,
+                        ["DarkColorHex"] = operationalPlan.ProductDarkColorHex,
                         ["IsHidden"] = operationalPlan.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },

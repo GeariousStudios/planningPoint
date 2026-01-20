@@ -68,6 +68,8 @@ namespace backend.Controllers
             [FromQuery] int[]? unitIds = null,
             [FromQuery] int[]? fieldIds = null,
             [FromQuery] int[]? operationalPlans = null,
+            [FromQuery] int[]? productIds = null,
+            [FromQuery] int[]? plannedStopIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] bool? allowRemovingElements = null,
             [FromQuery] bool? allowImport = null,
@@ -84,7 +86,9 @@ namespace backend.Controllers
                 .ThenInclude(mpf => mpf.MasterPlanField)
                 .Include(mp => mp.MasterPlanToMasterPlanElements)
                 .ThenInclude(mpe => mpe.MasterPlanElement)
-                .Include(mp => mp.OperationalPlans);
+                .Include(mp => mp.OperationalPlans)
+                .Include(mp => mp.ProductToMasterPlans)
+                .Include(mp => mp.PlannedStopToMasterPlans);
 
             if (isHidden.HasValue)
             {
@@ -129,6 +133,24 @@ namespace backend.Controllers
                 );
             }
 
+            if (productIds?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    _context.ProductToMasterPlans.Any(x =>
+                        x.MasterPlanId == mp.Id && productIds.Contains(x.ProductId)
+                    )
+                );
+            }
+
+            if (plannedStopIds?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    _context.PlannedStopToMasterPlans.Any(x =>
+                        x.MasterPlanId == mp.Id && plannedStopIds.Contains(x.PlannedStopId)
+                    )
+                );
+            }
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var lowered = search.ToLower();
@@ -165,6 +187,12 @@ namespace backend.Controllers
                 "allowimport" => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.AllowImport)
                     : query.OrderBy(mp => mp.AllowImport),
+                "productcount" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.ProductToMasterPlans.Count)
+                    : query.OrderBy(mp => mp.ProductToMasterPlans.Count),
+                "plannedstopcount" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.PlannedStopToMasterPlans.Count)
+                    : query.OrderBy(mp => mp.PlannedStopToMasterPlans.Count),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.Id)
                     : query.OrderBy(mp => mp.Id),
@@ -219,6 +247,16 @@ namespace backend.Controllers
                     Count = g.Select(mpf => mpf.MasterPlanId).Distinct().Count(),
                 })
                 .ToDictionaryAsync(x => x.FieldId, x => x.Count);
+
+            var productCount = await _context
+                .ProductToMasterPlans.GroupBy(x => x.MasterPlanId)
+                .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
+
+            var plannedStopCount = await _context
+                .PlannedStopToMasterPlans.GroupBy(x => x.MasterPlanId)
+                .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
 
             var masterPlans = query
                 .Skip((page - 1) * pageSize)
@@ -287,6 +325,10 @@ namespace backend.Controllers
                         .MasterPlanToMasterPlanFields.Where(x => x.IsGroupKey)
                         .Select(x => (int?)x.MasterPlanFieldId)
                         .FirstOrDefault(),
+                    Products = new(),
+                    ProductCount = productCount.TryGetValue(t.Id, out var pc) ? pc : 0,
+                    PlannedStops = new(),
+                    PlannedStopCount = plannedStopCount.TryGetValue(t.Id, out var psc) ? psc : 0,
 
                     // Meta data.
                     CreationDate = t.CreationDate,
@@ -314,6 +356,8 @@ namespace backend.Controllers
                     unitCount,
                     operationalPlanCount,
                     fieldCount,
+                    productCount,
+                    plannedStopCount,
                 },
             };
 

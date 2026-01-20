@@ -38,24 +38,6 @@ const AdminManageNavClient = (props: Props) => {
           href: "/admin/manage/units/unit-columns/",
           label: t("Common/Columns"),
         },
-        {
-          title: t("Navbar/Master planning"),
-          href: "/admin/manage/units/master-plans/",
-          label: t("Common/Master plans"),
-        },
-        {
-          href: "/admin/manage/units/master-plans/master-plan-fields/",
-          label: t("Common/Master plan fields"),
-        },
-        {
-          href: "/admin/manage/units/master-plans/import-rules/",
-          label: t("ImportRules/Import rules"),
-        },
-        {
-          title: t("Navbar/Operational planning"),
-          href: "/admin/manage/units/operational-plans/",
-          label: t("Common/Operational plans"),
-        },
       ],
     },
     {
@@ -78,11 +60,33 @@ const AdminManageNavClient = (props: Props) => {
       ],
     },
     {
-      sectionLabel: t("Common/Planned stops"),
+      sectionLabel: t("Navbar/Plan"),
       items: [
         {
-          href: "/admin/manage/planned-stops/stop-types/",
-          label: t("Common/Stop types"),
+          href: "/admin/manage/plan/planned-stops/",
+          label: t("Common/Planned stops"),
+        },
+        {
+          href: "/admin/manage/plan/products/",
+          label: t("Common/Products"),
+        },
+        {
+          title: t("Navbar/Master planning"),
+          href: "/admin/manage/plan/master-plans/",
+          label: t("Common/Master plans"),
+        },
+        {
+          href: "/admin/manage/plan/master-plans/master-plan-fields/",
+          label: t("Common/Master plan fields"),
+        },
+        {
+          href: "/admin/manage/plan/master-plans/import-rules/",
+          label: t("ImportRules/Import rules"),
+        },
+        {
+          title: t("Navbar/Operational planning"),
+          href: "/admin/manage/units/operational-plans/",
+          label: t("Common/Operational plans"),
         },
       ],
     },

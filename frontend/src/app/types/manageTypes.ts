@@ -120,7 +120,6 @@ export type UnitItem = {
   unitColumnIds: number[];
   categoryIds: number[];
   shiftIds: number[];
-  stopTypeIds: number[];
   isHidden?: boolean;
   isPlannable?: boolean;
   masterPlanName: string;
@@ -141,7 +140,6 @@ export type UnitFilters = {
   unitColumnIds?: number[];
   categoryIds?: number[];
   shiftIds?: number[];
-  stopTypeIds?: number[];
   isPlannable?: boolean;
   masterPlanIds?: number[];
   isHidden?: boolean;
@@ -232,18 +230,13 @@ export type ShiftTeamFilters = {
   isHidden?: boolean;
 };
 
-// --- admin/manage/planned-stops/stop-types/StopTypesClient.tsx ---
-export type StopTypeItem = {
+// --- admin/manage/plan/planned-stops/PlannedStopsClient.tsx ---
+export type PlannedStopItem = {
   id: number;
   name: string;
-  units: {
+  masterPlans: {
     id: number;
     name: string;
-    lightColorHex: string;
-    darkColorHex: string;
-    reverseColor?: boolean;
-    lightTextColorHex: string;
-    darkTextColorHex: string;
   }[];
   lightColorHex: string;
   darkColorHex: string;
@@ -258,12 +251,12 @@ export type StopTypeItem = {
   updatedBy: string;
 };
 
-export type StopTypeFilters = {
-  unitIds?: number[];
+export type PlannedStopFilters = {
+  masterPlanIds?: number[];
   isHidden?: boolean;
 };
 
-// --- admin/manage/units/master-plans/MasterPlansClient.tsx ---
+// --- admin/manage/plan/master-plans/MasterPlansClient.tsx ---
 export type MasterPlanItem = {
   id: number;
   name: string;
@@ -305,7 +298,7 @@ export type MasterPlanFilters = {
   allowImport?: boolean;
 };
 
-// --- admin/manage/units/master-plan-fields/MasterPlanFieldsClient.tsx ---
+// --- admin/manage/plan/master-plan-fields/MasterPlanFieldsClient.tsx ---
 export type MasterPlanFieldItem = {
   id: number;
   name: string;
@@ -367,7 +360,7 @@ export const getMasterPlanFieldAlignmentOptions = (
   },
 ];
 
-// --- admin/manage/units/operational-plans/OperationalPlansClient.tsx ---
+// --- admin/manage/plan/operational-plans/OperationalPlansClient.tsx ---
 export type OperationalPlanItem = {
   id: number;
   name: string;
@@ -384,5 +377,31 @@ export type OperationalPlanItem = {
 export type OperationalPlanFilters = {
   unitGroupIds?: number[];
   masterPlanIds?: number[];
+  isHidden?: boolean;
+};
+
+// --- admin/manage/plan/products/ProductsClient.tsx ---
+export type ProductItem = {
+  id: number;
+  name: string;
+  masterPlans: {
+    id: number;
+    name: string;
+  }[];
+  masterPlanFields: {
+    id: number;
+    name: string;
+  }[];
+  isHidden?: boolean;
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type ProductFilters = {
+  masterPlanIds?: number[];
+  masterPlanFieldIds?: number[];
   isHidden?: boolean;
 };

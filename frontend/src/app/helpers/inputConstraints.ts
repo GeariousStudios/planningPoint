@@ -52,8 +52,8 @@ export const trendingPanelConstraints = {
   name: { maxLength: 32 },
 };
 
-// --- StopTypeModal ---
-export const stopTypeConstraints = {
+// --- PlannedStopModal ---
+export const plannedStopConstraints = {
   name: { maxLength: 32 },
   colorHex: { pattern: /^#([0-9A-Fa-f]{6})$/ },
 };
@@ -66,4 +66,15 @@ export const masterPlanConstraints = {
 // --- MasterPlanFieldModal ---
 export const masterPlanFieldConstraints = {
   name: { maxLength: 32 },
+};
+
+// --- OperationalPlanModal ---
+export const operationalPlanConstraints = {
+  name: { maxLength: 32 },
+  colorHex: { pattern: /^#([0-9A-Fa-f]{6})$/ },
+};
+
+// --- ProductModal ---
+export const productConstraints = {
+  name: { maxLength: 64 },
 };

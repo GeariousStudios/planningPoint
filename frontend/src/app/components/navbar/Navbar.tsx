@@ -86,7 +86,7 @@ const Navbar = (props: Props) => {
   const fetchUnits = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/unit?sortBy=unitGroupName&sortOrder=desc`,
+        `${apiUrl}/unit?sortBy=unitGroupName&sortOrder=asc`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -161,7 +161,7 @@ const Navbar = (props: Props) => {
   const fetchMasterPlans = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=desc`,
+        `${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=asc`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -236,7 +236,7 @@ const Navbar = (props: Props) => {
   const fetchOperationalPlans = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/operational-plan?sortBy=unitGroupName&sortOrder=desc`,
+        `${apiUrl}/operational-plan?sortBy=unitGroupName&sortOrder=asc`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -439,18 +439,28 @@ const Navbar = (props: Props) => {
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/units/master-plans/",
+        href: "/admin/manage/plan/master-plans/",
         label: t("Common/Master plans"),
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/units/master-plans/import-rules/",
+        href: "/admin/manage/plan/master-plans/import-rules/",
         label: t("ImportRules/Import rules"),
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/units/master-plans/master-plan-fields/",
+        href: "/admin/manage/plan/master-plans/master-plan-fields/",
         label: t("Common/Master plan fields"),
+        icon: "WrenchIcon",
+      },
+      {
+        href: "/admin/manage/plan/planned-stops/",
+        label: t("Common/Planned stops"),
+        icon: "WrenchIcon",
+      },
+      {
+        href: "/admin/manage/plan/products/",
+        label: t("Common/Products"),
         icon: "WrenchIcon",
       },
       {
@@ -471,11 +481,6 @@ const Navbar = (props: Props) => {
       {
         href: "/admin/manage/shifts/shift-teams/",
         label: t("Common/Shift teams"),
-        icon: "WrenchIcon",
-      },
-      {
-        href: "/admin/manage/planned-stops/stop-types/",
-        label: t("Common/Stop types"),
         icon: "WrenchIcon",
       },
       {
@@ -1057,64 +1062,6 @@ const Navbar = (props: Props) => {
                                           "/admin/manage/units/unit-columns/",
                                       ),
                                     },
-                                    {
-                                      title: t("Navbar/Master planning"),
-                                      href: "/admin/manage/units/master-plans/",
-                                      label: t("Common/Master plans"),
-
-                                      onToggleFavourite:
-                                        isLoggedIn && props.isEditingFavourites
-                                          ? onToggleFavourite
-                                          : undefined,
-                                      isFavourite: favourites.some(
-                                        (f) =>
-                                          f.href ===
-                                          "/admin/manage/units/master-plans/",
-                                      ),
-                                    },
-                                    {
-                                      href: "/admin/manage/units/master-plans/master-plan-fields/",
-                                      label: t("Common/Master plan fields"),
-
-                                      onToggleFavourite:
-                                        isLoggedIn && props.isEditingFavourites
-                                          ? onToggleFavourite
-                                          : undefined,
-                                      isFavourite: favourites.some(
-                                        (f) =>
-                                          f.href ===
-                                          "/admin/manage/units/master-plans/master-plan-fields/",
-                                      ),
-                                    },
-                                    {
-                                      href: "/admin/manage/units/master-plans/import-rules/",
-                                      label: t("ImportRules/Import rules"),
-
-                                      onToggleFavourite:
-                                        isLoggedIn && props.isEditingFavourites
-                                          ? onToggleFavourite
-                                          : undefined,
-                                      isFavourite: favourites.some(
-                                        (f) =>
-                                          f.href ===
-                                          "/admin/manage/units/master-plans/import-rules/",
-                                      ),
-                                    },
-                                    {
-                                      title: t("Navbar/Operational planning"),
-                                      href: "/admin/manage/units/operational-plans/",
-                                      label: t("Common/Operational plans"),
-
-                                      onToggleFavourite:
-                                        isLoggedIn && props.isEditingFavourites
-                                          ? onToggleFavourite
-                                          : undefined,
-                                      isFavourite: favourites.some(
-                                        (f) =>
-                                          f.href ===
-                                          "/admin/manage/units/operational-plans/",
-                                      ),
-                                    },
                                   ],
                                 },
                                 {
@@ -1169,11 +1116,11 @@ const Navbar = (props: Props) => {
                                   ],
                                 },
                                 {
-                                  label: t("Common/Planned stops"),
+                                  label: t("Navbar/Plan"),
                                   items: [
                                     {
-                                      href: "/admin/manage/planned-stops/stop-types/",
-                                      label: t("Common/Stop types"),
+                                      href: "/admin/manage/plan/planned-stops/",
+                                      label: t("Common/Planned stops"),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1182,7 +1129,79 @@ const Navbar = (props: Props) => {
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href ===
-                                          "/admin/manage/planned-stops/stop-types/",
+                                          "/admin/manage/plan/planned-stops/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/plan/products/",
+                                      label: t("Common/Products"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/products/",
+                                      ),
+                                    },
+                                    {
+                                      title: t("Navbar/Master planning"),
+                                      href: "/admin/manage/plan/master-plans/",
+                                      label: t("Common/Master plans"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/master-plans/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/plan/master-plans/master-plan-fields/",
+                                      label: t("Common/Master plan fields"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/master-plans/master-plan-fields/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/plan/master-plans/import-rules/",
+                                      label: t("ImportRules/Import rules"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/master-plans/import-rules/",
+                                      ),
+                                    },
+                                    {
+                                      title: t("Navbar/Operational planning"),
+                                      href: "/admin/manage/units/operational-plans/",
+                                      label: t("Common/Operational plans"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/operational-plans/",
                                       ),
                                     },
                                   ],

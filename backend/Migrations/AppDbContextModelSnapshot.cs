@@ -147,6 +147,69 @@ namespace planningPoint.Migrations
                     b.ToTable("MasterPlanToMasterPlanFields");
                 });
 
+            modelBuilder.Entity("backend.Models.ManyToMany.PlannedStopToMasterPlan", b =>
+                {
+                    b.Property<int>("PlannedStopId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MasterPlanId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PlannedStopId", "MasterPlanId");
+
+                    b.HasIndex("MasterPlanId");
+
+                    b.ToTable("PlannedStopToMasterPlans");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.ProductToMasterPlan", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MasterPlanId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ProductId", "MasterPlanId");
+
+                    b.HasIndex("MasterPlanId");
+
+                    b.ToTable("ProductToMasterPlans");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.ProductToMasterPlanField", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MasterPlanFieldId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ProductId", "MasterPlanFieldId");
+
+                    b.HasIndex("MasterPlanFieldId");
+
+                    b.ToTable("ProductToMasterPlanFields");
+                });
+
             modelBuilder.Entity("backend.Models.ManyToMany.ShiftToShiftTeam", b =>
                 {
                     b.Property<int>("ShiftId")
@@ -254,27 +317,6 @@ namespace planningPoint.Migrations
                     b.HasIndex("ShiftId");
 
                     b.ToTable("UnitToShifts");
-                });
-
-            modelBuilder.Entity("backend.Models.ManyToMany.UnitToStopType", b =>
-                {
-                    b.Property<int>("UnitId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("StopTypeId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("UnitId", "StopTypeId");
-
-                    b.HasIndex("StopTypeId");
-
-                    b.ToTable("UnitToStopTypes");
                 });
 
             modelBuilder.Entity("backend.Models.ManyToMany.UnitToUnitColumn", b =>
@@ -642,6 +684,16 @@ namespace planningPoint.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ProductDarkColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProductLightColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("UnitGroupId")
                         .HasColumnType("INTEGER");
 
@@ -659,6 +711,85 @@ namespace planningPoint.Migrations
                     b.HasIndex("UnitGroupId");
 
                     b.ToTable("OperationalPlans");
+                });
+
+            modelBuilder.Entity("backend.Models.PlannedStop", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DarkColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LightColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ReverseColor")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PlannedStops");
+                });
+
+            modelBuilder.Entity("backend.Models.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("backend.Models.Report", b =>
@@ -835,52 +966,6 @@ namespace planningPoint.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ShiftTeams");
-                });
-
-            modelBuilder.Entity("backend.Models.StopType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreationDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DarkColorHex")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsHidden")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("LightColorHex")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("ReverseColor")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UpdateDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("StopTypes");
                 });
 
             modelBuilder.Entity("backend.Models.SubCategory", b =>
@@ -1367,6 +1452,63 @@ namespace planningPoint.Migrations
                     b.Navigation("MasterPlanField");
                 });
 
+            modelBuilder.Entity("backend.Models.ManyToMany.PlannedStopToMasterPlan", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
+                        .WithMany("PlannedStopToMasterPlans")
+                        .HasForeignKey("MasterPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.PlannedStop", "PlannedStop")
+                        .WithMany("PlannedStopToMasterPlans")
+                        .HasForeignKey("PlannedStopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MasterPlan");
+
+                    b.Navigation("PlannedStop");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.ProductToMasterPlan", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
+                        .WithMany("ProductToMasterPlans")
+                        .HasForeignKey("MasterPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Product", "Product")
+                        .WithMany("ProductToMasterPlans")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MasterPlan");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.ProductToMasterPlanField", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlanField", "MasterPlanField")
+                        .WithMany("ProductToMasterPlanFields")
+                        .HasForeignKey("MasterPlanFieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Product", "Product")
+                        .WithMany("ProductToMasterPlanFields")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MasterPlanField");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("backend.Models.ManyToMany.ShiftToShiftTeam", b =>
                 {
                     b.HasOne("backend.Models.Shift", "Shift")
@@ -1458,25 +1600,6 @@ namespace planningPoint.Migrations
                         .IsRequired();
 
                     b.Navigation("Shift");
-
-                    b.Navigation("Unit");
-                });
-
-            modelBuilder.Entity("backend.Models.ManyToMany.UnitToStopType", b =>
-                {
-                    b.HasOne("backend.Models.StopType", "StopType")
-                        .WithMany("UnitToStopTypes")
-                        .HasForeignKey("StopTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.Unit", "Unit")
-                        .WithMany("UnitToStopTypes")
-                        .HasForeignKey("UnitId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("StopType");
 
                     b.Navigation("Unit");
                 });
@@ -1680,6 +1803,10 @@ namespace planningPoint.Migrations
                     b.Navigation("MasterPlanToMasterPlanFields");
 
                     b.Navigation("OperationalPlans");
+
+                    b.Navigation("PlannedStopToMasterPlans");
+
+                    b.Navigation("ProductToMasterPlans");
                 });
 
             modelBuilder.Entity("backend.Models.MasterPlanElement", b =>
@@ -1694,6 +1821,20 @@ namespace planningPoint.Migrations
                     b.Navigation("FieldMappings");
 
                     b.Navigation("MasterPlanToMasterPlanFields");
+
+                    b.Navigation("ProductToMasterPlanFields");
+                });
+
+            modelBuilder.Entity("backend.Models.PlannedStop", b =>
+                {
+                    b.Navigation("PlannedStopToMasterPlans");
+                });
+
+            modelBuilder.Entity("backend.Models.Product", b =>
+                {
+                    b.Navigation("ProductToMasterPlanFields");
+
+                    b.Navigation("ProductToMasterPlans");
                 });
 
             modelBuilder.Entity("backend.Models.Shift", b =>
@@ -1710,11 +1851,6 @@ namespace planningPoint.Migrations
                     b.Navigation("ShiftToShiftTeamSchedules");
 
                     b.Navigation("ShiftToShiftTeams");
-                });
-
-            modelBuilder.Entity("backend.Models.StopType", b =>
-                {
-                    b.Navigation("UnitToStopTypes");
                 });
 
             modelBuilder.Entity("backend.Models.SubCategory", b =>
@@ -1738,8 +1874,6 @@ namespace planningPoint.Migrations
                     b.Navigation("UnitToCategories");
 
                     b.Navigation("UnitToShifts");
-
-                    b.Navigation("UnitToStopTypes");
 
                     b.Navigation("UnitToUnitColumns");
                 });

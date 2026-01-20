@@ -8,6 +8,10 @@ namespace backend.Dtos.OperationalPlan
         public string UnitGroupName { get; set; } = string.Empty;
         public int? MasterPlanId { get; set; }
         public string MasterPlanName { get; set; } = string.Empty;
+        public string ProductLightColorHex { get; set; } = "#ff9505";
+        public string ProductDarkColorHex { get; set; } = "#e2711d";
+        public string ProductLightTextColorHex { get; set; } = "#ffffff";
+        public string ProductDarkTextColorHex { get; set; } = "#000000";
         public bool IsHidden { get; set; }
 
         // Meta data.

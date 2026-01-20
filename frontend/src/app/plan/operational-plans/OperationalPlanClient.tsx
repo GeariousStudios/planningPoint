@@ -66,7 +66,11 @@ const OperationalPlanClient = (props: Props) => {
     setHandbook("Operational plan");
   }, [setHandbook]);
 
-  return <></>;
+  return (
+    <>
+      <Message content={t("Common/Not implemented")} />
+    </>
+  );
 };
 
 export default OperationalPlanClient;

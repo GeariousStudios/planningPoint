@@ -183,9 +183,6 @@ const LayoutWrapper = (props: Props) => {
       shifts: { label: t("Common/Shifts"), clickable: true },
       "shift-teams": { label: t("Common/Shift teams"), clickable: true },
 
-      "planned-stops": { label: t("Common/Planned stops"), clickable: false },
-      "stop-types": { label: t("Common/Stop types"), clickable: true },
-
       // --- Developer ---
       developer: { label: t("Common/Developer"), clickable: false },
       users: { label: t("Common/Users"), clickable: true },

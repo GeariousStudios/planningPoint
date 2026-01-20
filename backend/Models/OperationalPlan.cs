@@ -12,6 +12,12 @@ namespace backend.Models
         public required UnitGroup UnitGroup { get; set; }
         public int? MasterPlanId { get; set; }
         public MasterPlan? MasterPlan { get; set; }
+
+        [MaxLength(7)]
+        public string ProductLightColorHex { get; set; } = "#ff9505";
+
+        [MaxLength(7)]
+        public string ProductDarkColorHex { get; set; } = "#e2711d";
         public bool IsHidden { get; set; }
 
         // Meta data.

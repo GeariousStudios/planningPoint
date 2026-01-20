@@ -27,7 +27,7 @@ namespace backend.Data
         public DbSet<UnitShiftChange> UnitShiftChanges { get; set; }
         public DbSet<TrendingPanel> TrendingPanels { get; set; }
         public DbSet<AuditTrail> AuditTrails { get; set; }
-        public DbSet<StopType> StopTypes { get; set; }
+        public DbSet<PlannedStop> PlannedStops { get; set; }
         public DbSet<MasterPlan> MasterPlans { get; set; }
         public DbSet<MasterPlanElement> MasterPlanElements { get; set; }
         public DbSet<MasterPlanElementValue> MasterPlanElementValues { get; set; }
@@ -35,18 +35,21 @@ namespace backend.Data
         public DbSet<MasterPlanFieldMapping> MasterPlanFieldMappings { get; set; }
         public DbSet<MasterPlanRevision> MasterPlanRevisions { get; set; }
         public DbSet<OperationalPlan> OperationalPlans { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
         public DbSet<UnitToCategory> UnitToCategories { get; set; }
         public DbSet<UnitToShift> UnitToShifts { get; set; }
-        public DbSet<UnitToStopType> UnitToStopTypes { get; set; }
+        public DbSet<PlannedStopToMasterPlan> PlannedStopToMasterPlans { get; set; }
         public DbSet<CategoryToSubCategory> CategoryToSubCategories { get; set; }
         public DbSet<ShiftToShiftTeam> ShiftToShiftTeams { get; set; }
         public DbSet<ShiftToShiftTeamSchedule> ShiftToShiftTeamSchedules { get; set; }
         public DbSet<TrendingPanelToUnit> TrendingPanelToUnits { get; set; }
         public DbSet<MasterPlanToMasterPlanField> MasterPlanToMasterPlanFields { get; set; }
         public DbSet<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; }
+        public DbSet<ProductToMasterPlan> ProductToMasterPlans { get; set; }
+        public DbSet<ProductToMasterPlanField> ProductToMasterPlanFields { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -131,22 +134,22 @@ namespace backend.Data
                 .WithMany(s => s.UnitToShifts)
                 .HasForeignKey(us => us.ShiftId);
 
-            // Unit <-> Stop type many-to-many relationship.
+            // Planned stop <-> Master plan many-to-many relationship.
             modelBuilder
-                .Entity<UnitToStopType>()
-                .HasKey(ust => new { ust.UnitId, ust.StopTypeId });
+                .Entity<PlannedStopToMasterPlan>()
+                .HasKey(pst => new { pst.PlannedStopId, pst.MasterPlanId });
 
             modelBuilder
-                .Entity<UnitToStopType>()
-                .HasOne(ust => ust.Unit)
-                .WithMany(u => u.UnitToStopTypes)
-                .HasForeignKey(us => us.UnitId);
+                .Entity<PlannedStopToMasterPlan>()
+                .HasOne(pst => pst.PlannedStop)
+                .WithMany(p => p.PlannedStopToMasterPlans)
+                .HasForeignKey(pst => pst.PlannedStopId);
 
             modelBuilder
-                .Entity<UnitToStopType>()
-                .HasOne(ust => ust.StopType)
-                .WithMany(s => s.UnitToStopTypes)
-                .HasForeignKey(us => us.StopTypeId);
+                .Entity<PlannedStopToMasterPlan>()
+                .HasOne(pst => pst.MasterPlan)
+                .WithMany(mp => mp.PlannedStopToMasterPlans)
+                .HasForeignKey(pst => pst.MasterPlanId);
 
             // User -> TrendingPanel 1-to-many relationship.
             modelBuilder
@@ -349,6 +352,40 @@ namespace backend.Data
                 .WithMany(mp => mp.OperationalPlans)
                 .HasForeignKey(op => op.MasterPlanId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Product <-> MasterPlan many-to-many relationship.
+            modelBuilder
+                .Entity<ProductToMasterPlan>()
+                .HasKey(pmp => new { pmp.ProductId, pmp.MasterPlanId });
+
+            modelBuilder
+                .Entity<ProductToMasterPlan>()
+                .HasOne(pmp => pmp.Product)
+                .WithMany(p => p.ProductToMasterPlans)
+                .HasForeignKey(pmp => pmp.ProductId);
+
+            modelBuilder
+                .Entity<ProductToMasterPlan>()
+                .HasOne(pmp => pmp.MasterPlan)
+                .WithMany(mp => mp.ProductToMasterPlans)
+                .HasForeignKey(pmp => pmp.MasterPlanId);
+
+            // Product <-> MasterPlanField many-to-many relationship.
+            modelBuilder
+                .Entity<ProductToMasterPlanField>()
+                .HasKey(pmf => new { pmf.ProductId, pmf.MasterPlanFieldId });
+
+            modelBuilder
+                .Entity<ProductToMasterPlanField>()
+                .HasOne(pmf => pmf.Product)
+                .WithMany(p => p.ProductToMasterPlanFields)
+                .HasForeignKey(pmf => pmf.ProductId);
+
+            modelBuilder
+                .Entity<ProductToMasterPlanField>()
+                .HasOne(pmf => pmf.MasterPlanField)
+                .WithMany(f => f.ProductToMasterPlanFields)
+                .HasForeignKey(pmf => pmf.MasterPlanFieldId);
         }
 
         public override int SaveChanges()

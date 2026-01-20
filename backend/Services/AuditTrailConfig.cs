@@ -22,12 +22,13 @@ namespace backend.Services
                 ("Unit", null),
                 ("UnitGroup", null),
                 ("ShiftChange", null),
-                ("StopType", null),
+                ("PlannedStop", null),
                 ("MasterPlan", null),
                 ("MasterPlanField", null),
                 ("MasterPlanElement", null),
                 ("MasterPlanImportRules", null),
                 ("OperationalPlan", null),
+                ("Product", null),
             },
 
             // Developers can see all actions.
@@ -44,6 +45,7 @@ namespace backend.Services
                 ("MasterPlanElement", null),
                 ("MasterPlanImportRules", null),
                 ("OperationalPlan", null),
+                ("Product", null),
             },
         };
     }

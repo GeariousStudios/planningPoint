@@ -41,7 +41,7 @@ const PlanMasterPlansNavClient = (props: Props) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch(`${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=desc`, {
+      const response = await fetch(`${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=asc`, {
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",

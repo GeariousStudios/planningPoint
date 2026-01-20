@@ -276,12 +276,13 @@ namespace backend.Controllers
                     "UserManagement",
                     // "UserPreferences",
                     "ShiftChange",
-                    "StopType",
+                    "PlannedStop",
                     "MasterPlan",
                     "MasterPlanField",
                     "MasterPlanElement",
                     "MasterPlanImportRules",
                     "OperationalPlan",
+                    "Product",
                 };
 
                 actions = new[] { "All", "Create", "Update", "Delete", "Move" };

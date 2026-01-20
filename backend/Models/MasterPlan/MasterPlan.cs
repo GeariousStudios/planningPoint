@@ -35,5 +35,7 @@ namespace backend.Models
         public List<MasterPlanFieldMapping> FieldMappings { get; set; } = new();
 
         public List<OperationalPlan> OperationalPlans { get; set; } = new();
+        public List<ProductToMasterPlan> ProductToMasterPlans { get; set; } = new();
+        public List<PlannedStopToMasterPlan> PlannedStopToMasterPlans { get; set; } = new();
     }
 }

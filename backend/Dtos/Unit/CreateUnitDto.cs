@@ -30,7 +30,6 @@ namespace backend.Dtos.Unit
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();
         public List<int> ShiftIds { get; set; } = new();
-        public List<int> StopTypeIds { get; set; } = new();
         public bool IsHidden { get; set; }
         public bool IsPlannable { get; set; }
         public int? MasterPlanId { get; set; }

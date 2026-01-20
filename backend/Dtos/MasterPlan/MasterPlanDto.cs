@@ -1,4 +1,6 @@
 using backend.Dtos.OperationalPlan;
+using backend.Dtos.PlannedStop;
+using backend.Dtos.Product;
 using backend.Dtos.Unit;
 
 namespace backend.Dtos.MasterPlan
@@ -13,6 +15,10 @@ namespace backend.Dtos.MasterPlan
         public List<OperationalPlanDto> OperationalPlans { get; set; } = new();
         public List<MasterPlanFieldDto> Fields { get; set; } = new();
         public List<MasterPlanElementDto> Elements { get; set; } = new();
+        public List<ProductListItemDto> Products { get; set; } = new();
+        public int ProductCount { get; set; }
+        public List<PlannedStopListItemDto> PlannedStops { get; set; } = new();
+        public int PlannedStopCount { get; set; }
         public bool AllowRemovingElements { get; set; }
         public bool AllowImport { get; set; }
         public bool ReplaceOnImport { get; set; }

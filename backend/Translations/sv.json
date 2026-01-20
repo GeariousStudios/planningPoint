@@ -110,9 +110,9 @@
   "TrendingPanel/Updated": "Panel uppdaterad!",
   "TrendingPanel/Deleted": "Panel borttagen!",
 
-  "StopType/NotFound": "Typen kunde inte hittas i databasen",
-  "StopType/Deleted": "Typ borttagen!",
-  "StopType/NameTaken": "En typ med detta namn finns redan!",
+  "PlannedStop/NotFound": "Planerat stopp kunde inte hittas i databasen",
+  "PlannedStop/Deleted": "Planerat stopp borttaget!",
+  "PlannedStop/NameTaken": "Ett planerat stopp med detta namn finns redan!",
 
   "MasterPlan/Unknown": "Okänd huvudplan",
   "MasterPlan/NotFound": "Huvudplanen kunde inte hittas i databasen",
@@ -141,6 +141,10 @@
   "OperationalPlan/Deleted": "Operativ plan borttagen!",
   "OperationalPlan/NameTaken": "En operativ plan med detta namn finns redan!",
   "OperationalPlan/CheckedOutByAnotherUser": "Operativa planen är utcheckad av en annan användare",
+
+  "Product/NotFound": "Produkten kunde inte hittas i databasen",
+  "Product/Deleted": "Produkt borttagen!",
+  "Product/NameTaken": "En produkt med detta namn finns redan!",
 
   "AuditTrail/All": "Alla",
   "AuditTrail/Category": "Kategori",
@@ -243,8 +247,8 @@
   "AuditTrail/Email": "Mejladress",
   "AuditTrail/Roles": "Behörigheter",
   "AuditTrail/IsLocked": "Låst",
-  "AuditTrail/StopType": "Stopptyp",
-  "AuditTrail/StopTypes": "Stopptyper",
+  "AuditTrail/PlannedStop": "Planerat stopp",
+  "AuditTrail/PlannedStops": "Planerade stopp",
   "AuditTrail/MasterPlan": "Huvudplan",
   "AuditTrail/MasterPlans": "Huvudplaner",
   "AuditTrail/IsPlannable": "Planeringsbar",
@@ -274,6 +278,8 @@
   "AuditTrail/ReplaceOnImport": "Ersätt huvudplan vid import",
   "AuditTrail/SkipRowOne": "Hoppa över rad 1 vid import",
   "AuditTrail/OperationalPlan": "Operativ plan",
+  "AuditTrail/Product": "Produkt",
+  "AuditTrail/PlannedStop": "Planerat stopp",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

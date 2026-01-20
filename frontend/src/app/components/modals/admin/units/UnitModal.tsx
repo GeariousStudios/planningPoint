@@ -50,7 +50,7 @@ type ShiftOptions = {
   name: string;
 };
 
-type StopTypeOptions = {
+type PlannedStopOptions = {
   id: number;
   name: string;
 };
@@ -80,12 +80,10 @@ const UnitModal = (props: Props) => {
   const [unitColumnIds, setUnitColumnIds] = useState<number[]>([]);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
   const [shiftIds, setShiftIds] = useState<number[]>([]);
-  const [stopTypeIds, setStopTypeIds] = useState<number[]>([]);
   const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
   const [unitColumns, setUnitColumns] = useState<UnitColumnOptions[]>([]);
   const [categories, setCategories] = useState<CategoryOptions[]>([]);
   const [shifts, setShifts] = useState<ShiftOptions[]>([]);
-  const [stopTypes, setStopTypes] = useState<StopTypeOptions[]>([]);
   const [isPlannable, setIsPlannable] = useState(false);
   const [masterPlan, setMasterPlan] = useState("");
   const [masterPlans, setMasterPlans] = useState<MasterPlanOptions[]>([]);
@@ -97,7 +95,9 @@ const UnitModal = (props: Props) => {
   );
   const [originalCategoryIds, setOriginalCategoryIds] = useState<number[]>([]);
   const [originalShiftIds, setOriginalShiftIds] = useState<number[]>([]);
-  const [originalStopTypeIds, setOriginalStopTypeIds] = useState<number[]>([]);
+  const [originalPlannedStopIds, setOriginalPlannedStopIds] = useState<
+    number[]
+  >([]);
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
   const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
@@ -122,7 +122,6 @@ const UnitModal = (props: Props) => {
     fetchUnitColumns();
     fetchCategories();
     fetchShifts();
-    fetchStopTypes();
     fetchMasterPlans();
 
     if (props.itemId !== null && props.itemId !== undefined) {
@@ -154,9 +153,6 @@ const UnitModal = (props: Props) => {
 
       setShiftIds([]);
       setOriginalShiftIds([]);
-
-      setStopTypeIds([]);
-      setOriginalStopTypeIds([]);
 
       setIsPlannable(false);
       setOriginalIsPlannable(false);
@@ -190,7 +186,6 @@ const UnitModal = (props: Props) => {
           unitColumnIds,
           categoryIds,
           shiftIds,
-          stopTypeIds,
           isPlannable,
           masterPlanId: parseInt(masterPlan),
         }),
@@ -346,33 +341,6 @@ const UnitModal = (props: Props) => {
     }
   };
 
-  // --- Fetch stop types ---
-  const fetchStopTypes = async () => {
-    try {
-      const response = await fetch(
-        `${apiUrl}/stop-type?sortBy=name&sortOrder=asc`,
-        {
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result?.message ?? t("Modal/Unknown error"));
-      } else {
-        const visibleItems = result.items.filter((x: any) => !x.isHidden);
-        setStopTypes(visibleItems);
-      }
-    } catch (err) {
-      notify("error", t("Modal/Unknown error"));
-    }
-  };
-
   // --- Fetch master plans ---
   const fetchMasterPlans = async () => {
     try {
@@ -448,9 +416,6 @@ const UnitModal = (props: Props) => {
     setShiftIds(result.shiftIds ?? []);
     setOriginalShiftIds(result.shiftIds ?? []);
 
-    setStopTypeIds(result.stopTypeIds ?? []);
-    setOriginalStopTypeIds(result.stopTypeIds ?? []);
-
     setIsPlannable(result.isPlannable ?? false);
     setOriginalIsPlannable(result.isPlannable ?? false);
 
@@ -481,7 +446,6 @@ const UnitModal = (props: Props) => {
           unitColumnIds,
           categoryIds,
           shiftIds,
-          stopTypeIds,
           isPlannable,
           masterPlanId: parseInt(masterPlan),
         }),
@@ -591,7 +555,6 @@ const UnitModal = (props: Props) => {
           JSON.stringify(originalUnitColumnIds) ||
         JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
         JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds) ||
-        JSON.stringify(stopTypeIds) !== JSON.stringify(originalStopTypeIds) ||
         isPlannable !== false ||
         masterPlan !== "";
 
@@ -609,7 +572,6 @@ const UnitModal = (props: Props) => {
       JSON.stringify(unitColumnIds) !== JSON.stringify(originalUnitColumnIds) ||
       JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
       JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds) ||
-      JSON.stringify(stopTypeIds) !== JSON.stringify(originalStopTypeIds) ||
       isPlannable !== originalIsPlannable ||
       masterPlan !== originalMasterPlan;
 
@@ -624,7 +586,6 @@ const UnitModal = (props: Props) => {
     unitColumnIds,
     categoryIds,
     shiftIds,
-    stopTypeIds,
     isPlannable,
     masterPlan,
     originalName,
@@ -636,7 +597,6 @@ const UnitModal = (props: Props) => {
     originalUnitColumnIds,
     originalCategoryIds,
     originalShiftIds,
-    originalStopTypeIds,
     originalIsPlannable,
     originalMasterPlan,
   ]);
@@ -940,62 +900,6 @@ const UnitModal = (props: Props) => {
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
                       t("Common/shift") +
-                      t("Modal/Drag and drop3")}
-                  </span>
-                </>
-              )}
-
-              <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-(--border-tertiary)" />
-                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("UnitModal/Info5")}
-                </h3>
-                <hr className="w-full text-(--border-tertiary)" />
-              </div>
-
-              <MultiDropdown
-                addSpacer={stopTypeIds.length === 0 && stopTypes.length > 3}
-                scrollContainer={getScrollEl}
-                label={t("Common/Stop types")}
-                value={stopTypeIds.map(String)}
-                onChange={(val: string[]) => setStopTypeIds(val.map(Number))}
-                options={stopTypes.map((c) => ({
-                  label: c.name,
-                  value: String(c.id),
-                }))}
-                onModal
-              />
-
-              {stopTypeIds.length > 0 && (
-                <>
-                  <DragDrop
-                    items={stopTypeIds}
-                    getId={(id) => String(id)}
-                    onReorder={(newList) => setStopTypeIds(newList)}
-                    onDraggingChange={setIsAnyDragging}
-                    renderItem={(id, isDragging) => {
-                      const col = stopTypes.find((c) => c.id === id);
-                      if (!col) {
-                        return null;
-                      }
-
-                      return (
-                        <DragChip
-                          label={col.name}
-                          isDragging={isDragging}
-                          dragging={isAnyDragging}
-                          onDelete={() =>
-                            setStopTypeIds((prev) =>
-                              prev.filter((v) => v !== id),
-                            )
-                          }
-                        />
-                      );
-                    }}
-                  />
-                  <span className="text-sm text-(--text-secondary) italic">
-                    {t("Modal/Drag and drop2") +
-                      t("Common/stop type") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </>
