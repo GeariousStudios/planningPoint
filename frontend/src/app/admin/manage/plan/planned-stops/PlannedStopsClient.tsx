@@ -177,7 +177,7 @@ const PlannedStopsClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("PlannedStops/Master plans")}:
+              {t("Manage/Master plans")}:
             </span>
             {item.masterPlans.length === 0 ? (
               <span className="-mt-2">-</span>
@@ -267,7 +267,7 @@ const PlannedStopsClient = (props: Props) => {
     },
     {
       key: "masterPlans",
-      label: t("PlannedStops/Master plans"),
+      label: t("Manage/Master plans"),
       sortingItem: "masterplancount",
       labelAsc: t("Manage/master plan amount") + t("Manage/ascending"),
       labelDesc: t("Manage/master plan amount") + t("Manage/descending"),
@@ -354,7 +354,7 @@ const PlannedStopsClient = (props: Props) => {
       ],
     },
     {
-      label: t("PlannedStops/Master plans"),
+      label: t("Manage/Master plans"),
       breakpoint: "lg",
       options: masterPlans.map((masterPlan) => {
         return {

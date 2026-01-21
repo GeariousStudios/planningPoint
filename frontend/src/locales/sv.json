@@ -235,6 +235,7 @@
   "Manage/Allowed": "Tillåten",
   "Manage/Disallowed": "Ej tillåten",
   "Manage/Empty": "Det finns inget innehåll att visa.",
+  "Manage/Master plans": "Huvudplaner med tillgång",
 
   "Users/Locked user": "Detta konto är låst!",
   "Users/Permissions": "Behörigheter",
@@ -422,8 +423,11 @@
   "OperationalPlanModal/Product dark color": "Produktfärg (mörkt tema)",
 
   "ProductModal/Info1": "Uppgifter om produkten",
-  "ProductModal/Info2": "",
+  "ProductModal/Info2": "Huvudplaner med tillgång",
+  "ProductModal/Info3": "Fält att förifylla med produktdata",
+  "ProductModal/needs to be assigned": "måste tilldelas följande fält:",
   "ProductModal/Hide product": "Dölj produkt",
+  "ProductModal/Selected fields": "Förifyll valda fält",
 
   "Shifts/None": "Inget",
   "Shifts/Unmanned": "Obemannad",
@@ -502,7 +506,6 @@
   "PlannedStops/Confirm1": "Tar du bort en planerat stopp så tar du bort möjligheten att kunna trenda kopplad data.",
   "PlannedStops/Confirm2": "Om planerat stoppen har mycket kopplad data så är det bättre att dölja det.",
   "PlannedStops/Confirm3": "Vill du ta bort ändå?",
-  "PlannedStops/Master plans": "Huvudplaner med tillgång",
 
   "MasterPlans/Hidden master plans": "Dolda huvudplaner",
   "MasterPlans/hidden master plans": "dolda huvudplaner",
@@ -548,6 +551,8 @@
   "MasterPlan/Element mode tooltip": "Byt till elementläge för att kunna flytta enskilda objekt",
   "MasterPlan/Strike tooltip": "Stryk markerat objekt",
   "MasterPlan/Add element tooltip": "Lägg till nytt element i huvudplanen",
+  "MasterPlan/Add from product list tooltip": "Lägg till nytt element från produktlista",
+  "MasterPlan/Add from product list": "Lägg till produkt...",
   "MasterPlan/Do not join groups": "Fristående element",
   "MasterPlan/Do not join groups tooltip": "Förhindra markerat element från att anslutas till befintliga grupper",
   "MasterPlan/Master Plan Toolbar": "Verktygsfält för huvudplan",

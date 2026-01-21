@@ -44,6 +44,7 @@ import {
 } from "@/app/components/manage/ManageClasses";
 import { useHandbook } from "@/app/context/HandbookContext";
 import SideMenu from "@/app/components/sideMenu/SideMenu";
+import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -93,6 +94,9 @@ const MasterPlanClient = (props: Props) => {
       );
     }
   };
+
+  // --- Product logic ---
+  const productListTriggerRef = useRef<HTMLButtonElement>(null);
 
   if (c.canShowLock) {
     return <Message icon="lock" content="lock" fullscreen />;
@@ -168,6 +172,14 @@ const MasterPlanClient = (props: Props) => {
     clearFilters,
     filterAllOpen,
     setFilterAllOpen,
+    productList,
+    isProductListOpen,
+    isProductListLoading,
+    openProductList,
+    closeProductList,
+    productSearch,
+    setProductSearch,
+    filteredProductList,
   } = c;
 
   ensureRefs(filters.length);
@@ -509,34 +521,119 @@ const MasterPlanClient = (props: Props) => {
 
                   <div className="flex w-full flex-col gap-4">
                     <div className="flex gap-4 lg:grid lg:grid-cols-3">
-                      {/* --- Add element --- */}
-                      <CustomTooltip
-                        content={t("MasterPlan/Add element tooltip")}
-                        showOnTouch
-                        longDelay
-                      >
-                        <button
-                          className={`${buttonPrimaryClass} group col-span-2 flex w-full items-center justify-center gap-2 lg:px-4`}
-                          onClick={() => {
-                            const topGroup =
-                              editMode === "group"
-                                ? (masterPlans[0]?.elements?.[0]?.groupId ??
-                                  null)
-                                : null;
-                            handleAddElement(
-                              masterPlans[0]?.id as number,
-                              topGroup,
-                            );
-                          }}
+                      <div className="col-span-2 flex w-full gap-1">
+                        {/* --- Add element --- */}
+                        <CustomTooltip
+                          content={t("MasterPlan/Add element tooltip")}
+                          showOnTouch
+                          longDelay
                         >
-                          <HoverIcon
-                            outline={Outline.PlusIcon}
-                            solid={Solid.PlusIcon}
-                            className="h-6 w-6"
-                          />
-                          {t("MasterPlan/Add element")}
-                        </button>
-                      </CustomTooltip>
+                          <button
+                            className={`${buttonPrimaryClass} group flex w-full items-center justify-center gap-2 px-4`}
+                            onClick={() => {
+                              const topGroup =
+                                editMode === "group"
+                                  ? (masterPlans[0]?.elements?.[0]?.groupId ??
+                                    null)
+                                  : null;
+                              handleAddElement(
+                                masterPlans[0]?.id as number,
+                                topGroup,
+                              );
+                            }}
+                          >
+                            <HoverIcon
+                              outline={Outline.PlusIcon}
+                              solid={Solid.PlusIcon}
+                              className="h-6 w-6"
+                            />
+                            {t("MasterPlan/Add element")}
+                          </button>
+                        </CustomTooltip>
+
+                        {/* --- Add element from product list--- */}
+                        <CustomTooltip
+                          content={t(
+                            "MasterPlan/Add from product list tooltip",
+                          )}
+                          showOnTouch
+                          longDelay
+                        >
+                          <button
+                            ref={productListTriggerRef}
+                            className={`${buttonPrimaryClass} group flex w-full flex-1 items-center justify-center gap-2 lg:px-4`}
+                            type="button"
+                            onClick={() => {
+                              setProductSearch("");
+                              openProductList();
+                            }}
+                          >
+                            <HoverIcon
+                              outline={Outline.ChevronDownIcon}
+                              solid={Solid.ChevronDownIcon}
+                              className="h-6 min-h-6 w-6 min-w-6"
+                            />
+                          </button>
+                        </CustomTooltip>
+                      </div>
+
+                      <MenuDropdown
+                        isOpen={isProductListOpen}
+                        onClose={closeProductList}
+                        triggerRef={productListTriggerRef}
+                        center
+                        maxHeight="50svh"
+                      >
+                        {isProductListLoading ? (
+                          <span>{t("Message/Loading")}</span>
+                        ) : filteredProductList.length === 0 ? (
+                          <div className="flex flex-col gap-4">
+                            <Input
+                              placeholder={`${t("Common/Search")}...`}
+                              value={productSearch}
+                              onChange={(val) => setProductSearch(String(val))}
+                            />
+                            <span>{t("Manage/No content")}</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-4">
+                            <Input
+                              placeholder={`${t("Common/Search")}...`}
+                              value={productSearch}
+                              onChange={(val) => setProductSearch(String(val))}
+                            />
+                            <div className="mt-2 flex flex-col gap-2">
+                              {filteredProductList.map((p) => (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  className={`${badgeClass} w-fit cursor-pointer justify-start bg-(--badge-main) text-(--text-main-reverse) transition-colors duration-(--fast) hover:bg-(--badge-main-reverse) hover:text-(--text-main)`}
+                                  onClick={() => {
+                                    const values: Record<number, string> = {};
+                                    for (const f of p.masterPlanFields) {
+                                      values[f.id] = String(f.value ?? "");
+                                    }
+
+                                    const topGroup =
+                                      editMode === "group"
+                                        ? (masterPlans[0]?.elements?.[0]
+                                            ?.groupId ?? null)
+                                        : null;
+
+                                    handleAddElement(
+                                      masterPlans[0]?.id as number,
+                                      topGroup,
+                                      values,
+                                    );
+                                  }}
+                                >
+                                  {p.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </MenuDropdown>
 
                       {/* --- Duplicate object */}
                       <CustomTooltip

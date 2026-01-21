@@ -8,6 +8,7 @@ namespace backend.Dtos.Product
         public string Name { get; set; } = string.Empty;
         public List<MasterPlanDto> MasterPlans { get; set; } = new();
         public List<MasterPlanFieldDto> MasterPlanFields { get; set; } = new();
+        public List<ProductFieldValueDto> ProductFieldValues { get; set; } = new();
         public bool IsHidden { get; set; }
 
         // Meta data.

@@ -9,6 +9,7 @@ namespace backend.Dtos.Product
         public string Name { get; set; } = string.Empty;
         public int[]? MasterPlanIds { get; set; }
         public int[]? MasterPlanFieldIds { get; set; }
+        public List<ProductFieldValueDto>? ProductFieldValues { get; set; }
         public bool IsHidden { get; set; }
     }
 }

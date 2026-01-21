@@ -11,6 +11,7 @@ namespace backend.Dtos.MasterPlan
         public MasterPlanFieldDataType DataType { get; set; }
         public MasterPlanFieldAlignment Alignment { get; set; }
         public List<int> MasterPlanIds { get; set; } = new();
+        public string? Value { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }

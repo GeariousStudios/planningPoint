@@ -160,7 +160,7 @@ const ProductsClient = (props: Props) => {
           {/* </div> */}
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Common/Master plans")}:
+              {t("Manage/Master plans")}:
             </span>
             {item.masterPlans.length === 0 ? (
               <span className="-mt-2">-</span>
@@ -168,7 +168,7 @@ const ProductsClient = (props: Props) => {
               (item.masterPlans ?? []).map((masterPlan, i) => (
                 <span
                   key={i}
-                  className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-main)`}
+                  className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                 >
                   {masterPlan.name}
                 </span>
@@ -240,7 +240,7 @@ const ProductsClient = (props: Props) => {
     },
     {
       key: "masterPlans",
-      label: t("Common/Master plans"),
+      label: t("Manage/Master plans"),
       sortingItem: "masterplancount",
       labelAsc: t("Manage/master plan amount") + t("Manage/ascending"),
       labelDesc: t("Manage/master plan amount") + t("Manage/descending"),
@@ -249,7 +249,7 @@ const ProductsClient = (props: Props) => {
           {(item.masterPlans ?? []).map((masterPlan, i) => (
             <span
               key={i}
-              className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-main)`}
+              className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
             >
               {masterPlan.name}
             </span>
@@ -359,7 +359,7 @@ const ProductsClient = (props: Props) => {
       ],
     },
     {
-      label: t("Common/Master plans"),
+      label: t("Manage/Master plans"),
       breakpoint: "lg",
       options: masterPlans.map((masterPlan) => {
         return {

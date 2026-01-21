@@ -279,7 +279,6 @@
   "AuditTrail/SkipRowOne": "Hoppa över rad 1 vid import",
   "AuditTrail/OperationalPlan": "Operativ plan",
   "AuditTrail/Product": "Produkt",
-  "AuditTrail/PlannedStop": "Planerat stopp",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

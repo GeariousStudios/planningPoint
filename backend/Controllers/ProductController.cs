@@ -168,6 +168,8 @@ namespace backend.Controllers
                         {
                             Id = mpf.MasterPlanField.Id,
                             Name = mpf.MasterPlanField.Name,
+                            DataType = mpf.MasterPlanField.DataType,
+                            Value = mpf.Value,
                         })
                         .ToList(),
                     IsHidden = p.IsHidden,
@@ -201,7 +203,9 @@ namespace backend.Controllers
             var lang = await GetLangAsync();
             var product = await _context
                 .Products.Include(p => p.ProductToMasterPlans)
+                .ThenInclude(mp => mp.MasterPlan)
                 .Include(p => p.ProductToMasterPlanFields)
+                .ThenInclude(mpf => mpf.MasterPlanField)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
@@ -213,8 +217,20 @@ namespace backend.Controllers
             {
                 Id = product.Id,
                 Name = product.Name,
-                MasterPlans = new List<MasterPlanDto>(),
-                MasterPlanFields = new List<MasterPlanFieldDto>(),
+                MasterPlans = product
+                    .ProductToMasterPlans.Select(pst => pst.MasterPlan)
+                    .Select(mp => new MasterPlanDto { Id = mp.Id, Name = mp.Name })
+                    .ToList(),
+                MasterPlanFields = product
+                    .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
+                    .Select(x => new MasterPlanFieldDto
+                    {
+                        Id = x.MasterPlanField.Id,
+                        Name = x.MasterPlanField.Name,
+                        DataType = x.MasterPlanField.DataType,
+                        Value = x.Value,
+                    })
+                    .ToList(),
                 IsHidden = product.IsHidden,
             };
 
@@ -239,7 +255,9 @@ namespace backend.Controllers
             var (deletedBy, userId) = userInfo.Value;
             var product = await _context
                 .Products.Include(p => p.ProductToMasterPlans)
+                .ThenInclude(mp => mp.MasterPlan)
                 .Include(p => p.ProductToMasterPlanFields)
+                .ThenInclude(mpf => mpf.MasterPlanField)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
@@ -262,7 +280,14 @@ namespace backend.Controllers
                         .ProductToMasterPlans.Select(p => p.MasterPlanId)
                         .ToList(),
                     ["MasterPlanFields"] = product
-                        .ProductToMasterPlanFields.Select(p => p.MasterPlanFieldId)
+                        .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
+                        .Select(x => new
+                        {
+                            Id = x.MasterPlanFieldId,
+                            Name = x.MasterPlanField.Name,
+                            DataType = x.MasterPlanField.DataType.ToString(),
+                            Value = x.Value,
+                        })
                         .ToList(),
                     ["IsHidden"] = product.IsHidden
                         ? new[] { "Common/Yes" }
@@ -313,6 +338,40 @@ namespace backend.Controllers
                 );
             }
 
+            var mpIds = dto.MasterPlanIds ?? Array.Empty<int>();
+            var fieldIds = (dto.ProductFieldValues ?? new List<ProductFieldValueDto>())
+                .Select(x => x.MasterPlanFieldId)
+                .Distinct()
+                .ToArray();
+
+            if (mpIds.Length > 0 && fieldIds.Length > 0)
+            {
+                var missing = await GetMissingFieldsByMasterPlanAsync(mpIds, fieldIds);
+
+                if (missing.Any())
+                {
+                    var mpNames = await _context
+                        .MasterPlans.Where(x => missing.Keys.Contains(x.Id))
+                        .Select(x => new { x.Id, x.Name })
+                        .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+                    var fieldNames = await _context
+                        .MasterPlanFields.Where(x => fieldIds.Contains(x.Id))
+                        .Select(x => new { x.Id, x.Name })
+                        .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+                    var parts = missing.Select(kvp =>
+                        $"{mpNames.GetValueOrDefault(kvp.Key, $"#{kvp.Key}")}: "
+                        + string.Join(
+                            ", ",
+                            kvp.Value.Select(id => fieldNames.GetValueOrDefault(id, $"#{id}"))
+                        )
+                    );
+
+                    return BadRequest(new { message = string.Join(" | ", parts) });
+                }
+            }
+
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -334,6 +393,17 @@ namespace backend.Controllers
                 UpdatedBy = createdBy,
             };
 
+            product.ProductToMasterPlanFields = (
+                dto.ProductFieldValues ?? new List<ProductFieldValueDto>()
+            )
+                .Select(x => new ProductToMasterPlanField
+                {
+                    MasterPlanFieldId = x.MasterPlanFieldId,
+                    Value = x.Value ?? "",
+                })
+                .DistinctBy(x => x.MasterPlanFieldId)
+                .ToList();
+
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
@@ -351,6 +421,21 @@ namespace backend.Controllers
                 UpdatedBy = product.UpdatedBy,
             };
 
+            var dtoFieldIds = (dto.ProductFieldValues ?? new List<ProductFieldValueDto>())
+                .Select(x => x.MasterPlanFieldId)
+                .Distinct()
+                .ToArray();
+
+            var fieldMeta = await _context
+                .MasterPlanFields.Where(f => dtoFieldIds.Contains(f.Id))
+                .Select(f => new
+                {
+                    f.Id,
+                    f.Name,
+                    DataType = f.DataType.ToString(),
+                })
+                .ToDictionaryAsync(x => x.Id, x => x);
+
             // Audit trail.
             await _audit.LogAsync(
                 "Create",
@@ -363,7 +448,20 @@ namespace backend.Controllers
                     ["ObjectID"] = product.Id,
                     ["Name"] = product.Name,
                     ["MasterPlans"] = dto.MasterPlanIds,
-                    ["MasterPlanFields"] = dto.MasterPlanFieldIds,
+                    ["MasterPlanFields"] = product
+                        .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
+                        .Select(x => new
+                        {
+                            Id = x.MasterPlanFieldId,
+                            Name = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta)
+                                ? meta.Name
+                                : $"#{x.MasterPlanFieldId}",
+                            DataType = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta2)
+                                ? meta2.DataType
+                                : "",
+                            Value = x.Value,
+                        })
+                        .ToList(),
                     ["IsHidden"] = dto.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
             );
@@ -378,7 +476,9 @@ namespace backend.Controllers
             var lang = await GetLangAsync();
             var product = await _context
                 .Products.Include(p => p.ProductToMasterPlans)
+                .ThenInclude(mp => mp.MasterPlan)
                 .Include(p => p.ProductToMasterPlanFields)
+                .ThenInclude(mpf => mpf.MasterPlanField)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
@@ -418,6 +518,40 @@ namespace backend.Controllers
                 );
             }
 
+            var mpIds = dto.MasterPlanIds ?? Array.Empty<int>();
+            var fieldIds = (dto.ProductFieldValues ?? new List<ProductFieldValueDto>())
+                .Select(x => x.MasterPlanFieldId)
+                .Distinct()
+                .ToArray();
+
+            if (mpIds.Length > 0 && fieldIds.Length > 0)
+            {
+                var missing = await GetMissingFieldsByMasterPlanAsync(mpIds, fieldIds);
+
+                if (missing.Any())
+                {
+                    var mpNames = await _context
+                        .MasterPlans.Where(x => missing.Keys.Contains(x.Id))
+                        .Select(x => new { x.Id, x.Name })
+                        .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+                    var fieldNames = await _context
+                        .MasterPlanFields.Where(x => fieldIds.Contains(x.Id))
+                        .Select(x => new { x.Id, x.Name })
+                        .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+                    var parts = missing.Select(kvp =>
+                        $"{mpNames.GetValueOrDefault(kvp.Key, $"#{kvp.Key}")}: "
+                        + string.Join(
+                            ", ",
+                            kvp.Value.Select(id => fieldNames.GetValueOrDefault(id, $"#{id}"))
+                        )
+                    );
+
+                    return BadRequest(new { message = string.Join(" | ", parts) });
+                }
+            }
+
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -427,7 +561,14 @@ namespace backend.Controllers
                 ["Name"] = product.Name,
                 ["MasterPlans"] = product.ProductToMasterPlans.Select(p => p.MasterPlanId).ToList(),
                 ["MasterPlanFields"] = product
-                    .ProductToMasterPlanFields.Select(p => p.MasterPlanFieldId)
+                    .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
+                    .Select(x => new
+                    {
+                        Id = x.MasterPlanFieldId,
+                        Name = x.MasterPlanField.Name,
+                        DataType = x.MasterPlanField.DataType.ToString(),
+                        Value = x.Value,
+                    })
                     .ToList(),
                 ["IsHidden"] = product.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
@@ -436,8 +577,15 @@ namespace backend.Controllers
             product.ProductToMasterPlans = (dto.MasterPlanIds ?? Array.Empty<int>())
                 .Select(mpId => new ProductToMasterPlan { MasterPlanId = mpId })
                 .ToList();
-            product.ProductToMasterPlanFields = (dto.MasterPlanFieldIds ?? Array.Empty<int>())
-                .Select(mpfId => new ProductToMasterPlanField { MasterPlanFieldId = mpfId })
+            product.ProductToMasterPlanFields = (
+                dto.ProductFieldValues ?? new List<ProductFieldValueDto>()
+            )
+                .Select(x => new ProductToMasterPlanField
+                {
+                    MasterPlanFieldId = x.MasterPlanFieldId,
+                    Value = x.Value ?? "",
+                })
+                .DistinctBy(x => x.MasterPlanFieldId)
                 .ToList();
             product.IsHidden = dto.IsHidden;
 
@@ -448,6 +596,7 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             var masterPlanIds = product.ProductToMasterPlans.Select(x => x.MasterPlanId).ToList();
+
             var masterPlanFieldIds = product
                 .ProductToMasterPlanFields.Select(x => x.MasterPlanFieldId)
                 .ToList();
@@ -456,10 +605,43 @@ namespace backend.Controllers
                 .MasterPlans.Where(mp => masterPlanIds.Contains(mp.Id))
                 .Select(mp => new MasterPlanDto { Id = mp.Id, Name = mp.Name })
                 .ToListAsync();
+
             var masterPlanFields = await _context
                 .MasterPlanFields.Where(mpf => masterPlanFieldIds.Contains(mpf.Id))
                 .Select(mpf => new MasterPlanFieldDto { Id = mpf.Id, Name = mpf.Name })
                 .ToListAsync();
+
+            var dtoFieldIds = (dto.ProductFieldValues ?? new List<ProductFieldValueDto>())
+                .Select(x => x.MasterPlanFieldId)
+                .Distinct()
+                .ToArray();
+
+            var fieldMeta = await _context
+                .MasterPlanFields.Where(f => dtoFieldIds.Contains(f.Id))
+                .Select(f => new
+                {
+                    f.Id,
+                    f.Name,
+                    DataType = f.DataType.ToString(),
+                })
+                .ToDictionaryAsync(x => x.Id, x => x);
+
+            var newMasterPlanFields = (dto.ProductFieldValues ?? new List<ProductFieldValueDto>())
+                .GroupBy(x => x.MasterPlanFieldId)
+                .Select(g => g.First())
+                .OrderBy(x => x.MasterPlanFieldId)
+                .Select(x => new
+                {
+                    Id = x.MasterPlanFieldId,
+                    Name = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta)
+                        ? meta.Name
+                        : $"#{x.MasterPlanFieldId}",
+                    DataType = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta2)
+                        ? meta2.DataType
+                        : "",
+                    Value = x.Value ?? "",
+                })
+                .ToList();
 
             var result = new ProductDto
             {
@@ -488,11 +670,46 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = product.Id,
                         ["Name"] = product.Name,
+                        ["MasterPlans"] = dto.MasterPlanIds,
+                        ["MasterPlanFields"] = newMasterPlanFields,
+                        ["IsHidden"] = dto.IsHidden
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                     },
                 }
             );
 
             return Ok(result);
+        }
+
+        private async Task<Dictionary<int, List<int>>> GetMissingFieldsByMasterPlanAsync(
+            int[] masterPlanIds,
+            int[] masterPlanFieldIds
+        )
+        {
+            var allowed = await _context
+                .MasterPlanToMasterPlanFields.Where(x => masterPlanIds.Contains(x.MasterPlanId))
+                .Select(x => new { x.MasterPlanId, x.MasterPlanFieldId })
+                .ToListAsync();
+
+            var allowedSet = allowed.Select(x => (x.MasterPlanId, x.MasterPlanFieldId)).ToHashSet();
+
+            var missing = new Dictionary<int, List<int>>();
+
+            foreach (var mpId in masterPlanIds)
+            {
+                foreach (var fieldId in masterPlanFieldIds)
+                {
+                    if (!allowedSet.Contains((mpId, fieldId)))
+                    {
+                        if (!missing.ContainsKey(mpId))
+                            missing[mpId] = new List<int>();
+                        missing[mpId].Add(fieldId);
+                    }
+                }
+            }
+
+            return missing;
         }
     }
 }

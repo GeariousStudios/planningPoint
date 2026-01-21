@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("master-plan-elements")]
+    [Route("master-plan-element")]
     public class MasterPlanElementController : ControllerBase
     {
         private readonly AppDbContext _context;

@@ -235,6 +235,7 @@
   "Manage/Allowed": "Allowed",
   "Manage/Disallowed": "Disallowed",
   "Manage/Empty": "There is no content to display.",
+  "Manage/Master plans": "Master plans with access",
 
   "Users/Locked user": "This user is locked!",
   "Users/Permissions": "Permissions",
@@ -423,8 +424,11 @@
   "OperationalPlanModal/Product dark color": "Product colour (dark theme)",
 
   "ProductModal/Info1": "Details about the product",
-  "ProductModal/Info2": "",
+  "ProductModal/Info2": "Master plans with access",
+  "ProductModal/Info3": "Fields to prefill with product data",
+  "ProductModal/needs to be assigned": "needs to be assigned the following fields:",
   "ProductModal/Hide product": "Hide product",
+  "ProductModal/Selected fields": "Prefill selected fields",
 
   "Shifts/None": "None",
   "Shifts/Unmanned": "Unmanned",
@@ -503,7 +507,6 @@
   "PlannedStops/Confirm1": "Deleting a planned stop will also remove the ability to trend related data.",
   "PlannedStops/Confirm2": "If the planned stop has a lot of related data, it's better to hide it instead.",
   "PlannedStops/Confirm3": "Do you still want to delete?",
-  "PlannedStops/Master plans": "Master plans with access",
 
   "MasterPlans/Hidden master plans": "Hidden master plans",
   "MasterPlans/hidden master plans": "hidden master plans",
@@ -549,6 +552,8 @@
   "MasterPlan/Element mode tooltip": "Switch to element mode to move individual items",
   "MasterPlan/Strike tooltip": "Strike selected item",
   "MasterPlan/Add element tooltip": "Add new element to the master plan",
+  "MasterPlan/Add from product list tooltip": "Add new element from product list",
+  "MasterPlan/Add from product list": "Add product...",
   "MasterPlan/Do not join groups": "Standalone element",
   "MasterPlan/Do not join groups tooltip": "Prevent the selected element from joining existing groups",
   "MasterPlan/Master Plan Toolbar": "Master Plan Toolbar",

@@ -35,6 +35,12 @@ type MasterPlanRevision = {
   archivedBy: string;
 };
 
+type ProductListItem = {
+  id: number;
+  name: string;
+  masterPlanFields: { id: number; value: string | null }[];
+};
+
 export type MasterPlanElementStatus = "NotStarted" | "InProgress" | "Finished";
 
 export const useMasterPlan = (
@@ -51,6 +57,10 @@ export const useMasterPlan = (
   const dragControls = useDragControls();
 
   // --- States ---
+  const [productSearch, setProductSearch] = useState("");
+  const [productList, setProductList] = useState<ProductListItem[]>([]);
+  const [isProductListOpen, setIsProductListOpen] = useState(false);
+  const [isProductListLoading, setIsProductListLoading] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isInvalid, setIsInvalid] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -951,7 +961,7 @@ export const useMasterPlan = (
     try {
       for (const id of removedElementIds) {
         if (!isNaN(Number(id))) {
-          await fetch(`${apiUrl}/master-plan-elements/delete/${id}`, {
+          await fetch(`${apiUrl}/master-plan-element/delete/${id}`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
@@ -980,7 +990,7 @@ export const useMasterPlan = (
           };
 
           const res = await fetch(
-            `${apiUrl}/master-plan-elements/create/${plan.id}`,
+            `${apiUrl}/master-plan-element/create/${plan.id}`,
             {
               method: "POST",
               headers: {
@@ -1048,7 +1058,7 @@ export const useMasterPlan = (
         }
 
         const res = await fetch(
-          `${apiUrl}/master-plan-elements/update/${elementId}`,
+          `${apiUrl}/master-plan-element/update/${elementId}`,
           {
             method: "PUT",
             headers: {
@@ -1084,7 +1094,7 @@ export const useMasterPlan = (
     }
 
     const response = await fetch(
-      `${apiUrl}/master-plan-elements/update-status/${elementId}`,
+      `${apiUrl}/master-plan-element/update-status/${elementId}`,
       {
         method: "PUT",
         headers: {
@@ -1597,7 +1607,78 @@ export const useMasterPlan = (
     }
   };
 
+  // --- PRODUCT LIST ---
+  const fetchProductsForThisMasterPlan = async () => {
+    const planId = masterPlans?.[0]?.id;
+    if (!apiUrl || !token || !planId) {
+      setProductList([]);
+      return;
+    }
+
+    setIsProductListLoading(true);
+
+    try {
+      const params = new URLSearchParams();
+      params.append("sortBy", "name");
+      params.append("sortOrder", "asc");
+      params.append("page", "1");
+      params.append("pageSize", "1000");
+      params.append("masterPlanIds", String(planId));
+
+      const res = await fetch(`${apiUrl}/product?${params.toString()}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        setProductList([]);
+        return;
+      }
+
+      const data = await res.json();
+      const items = Array.isArray(data?.items) ? data.items : [];
+
+      setProductList(
+        items.filter((p: any) => !p.isHidden).map((p: any) => ({
+          id: Number(p.id),
+          name: String(p.name ?? ""),
+          masterPlanFields: Array.isArray(p.masterPlanFields)
+            ? p.masterPlanFields.map((f: any) => ({
+                id: Number(f.id),
+                value: f.value ?? "",
+              }))
+            : [],
+        })),
+      );
+    } finally {
+      setIsProductListLoading(false);
+    }
+  };
+
+  const filteredProductList = useMemo(() => {
+    const q = productSearch.trim().toLowerCase();
+    if (!q) return productList;
+
+    return productList.filter((p) => {
+      const name = String(p.name ?? "").toLowerCase();
+      return name.includes(q);
+    });
+  }, [productList, productSearch]);
+
   // --- HELPERS ---
+  const openProductList = async () => {
+    setIsProductListOpen(true);
+    await fetchProductsForThisMasterPlan();
+  };
+
+  const closeProductList = () => {
+    setProductSearch("");
+    setIsProductListOpen(false);
+  };
+
   const normalizedSearch = useMemo(
     () => searchTerm.trim().toLowerCase(),
     [searchTerm],
@@ -1753,10 +1834,6 @@ export const useMasterPlan = (
     startGroupIndex + itemsPerPage,
   );
 
-  // const visibleElements = visibleGroups
-  //   .flat()
-  //   .filter((el) => !removedElementIds.includes(el.id));
-
   const visibleElements = visibleGroups.flat();
 
   const totalGroups = groupedElements.length;
@@ -1859,5 +1936,15 @@ export const useMasterPlan = (
     clearFilters,
     filterAllOpen,
     setFilterAllOpen,
+    productList,
+    isProductListOpen,
+    setIsProductListOpen,
+    isProductListLoading,
+    openProductList,
+    closeProductList,
+    fetchProductsForThisMasterPlan,
+    productSearch,
+    setProductSearch,
+    filteredProductList,
   };
 };

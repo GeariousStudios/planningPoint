@@ -11,6 +11,8 @@ type Props = {
   onModal?: boolean;
   autoWidth?: boolean;
   alignLeft?: boolean;
+  center?: boolean;
+  maxHeight?: number | string;
 };
 
 const MenuDropdown = (props: Props) => {
@@ -20,6 +22,19 @@ const MenuDropdown = (props: Props) => {
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
   const updateWidthAndPosition = () => {
+    if (props.center) {
+      const w = props.autoWidth ? undefined : 256;
+
+      setWidth(props.autoWidth ? "max-content" : `${w}px`);
+
+      setPosition({
+        top: window.scrollY + window.innerHeight / 2,
+        left: window.scrollX + window.innerWidth / 2,
+      });
+
+      return;
+    }
+
     if (!props.triggerRef?.current) return;
 
     const rect = props.triggerRef.current.getBoundingClientRect();
@@ -165,6 +180,11 @@ const MenuDropdown = (props: Props) => {
           width: props.autoWidth ? "max-content" : width,
           top: position.top,
           left: position.left,
+          transform: props.center ? "translate(-50%, -50%)" : "",
+          maxHeight:
+            typeof props.maxHeight === "number"
+              ? `${props.maxHeight}px`
+              : props.maxHeight,
         }}
       >
         {props.children}

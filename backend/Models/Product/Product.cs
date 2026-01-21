@@ -19,5 +19,6 @@ namespace backend.Models
 
         public List<ProductToMasterPlan> ProductToMasterPlans { get; set; } = new();
         public List<ProductToMasterPlanField> ProductToMasterPlanFields { get; set; } = new();
+        public List<ProductFieldValue> ProductFieldValues { get; set; } = new();
     }
 }

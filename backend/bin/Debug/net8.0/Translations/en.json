@@ -277,6 +277,7 @@
   "AuditTrail/ReplaceOnImport": "Replace master plan on import",
   "AuditTrail/SkipRowOne": "Skip row 1 on import",
   "AuditTrail/OperationalPlan": "Operational plan",
+  "AuditTrail/Product": "Product",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",
