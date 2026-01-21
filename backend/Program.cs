@@ -121,14 +121,7 @@ app.MapHub<OperationalPlanHub>("/hubs/operational-plan");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    // db.Database.Migrate();
-
-    var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
-
-    if (env.IsDevelopment())
-    {
-        db.Database.Migrate();
-    }
+    db.Database.Migrate();
 
     if (!db.Users.Any())
     {
