@@ -52,6 +52,10 @@ const AdminManageNavClient = (props: Props) => {
           label: t("Common/Products"),
         },
         {
+          href: "/admin/manage/plan/products/product-groups/",
+          label: t("Common/Product groups"),
+        },
+        {
           title: t("Navbar/Master planning"),
           href: "/admin/manage/plan/master-plans/",
           label: t("Common/Master plans"),

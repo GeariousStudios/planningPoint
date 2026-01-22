@@ -409,3 +409,29 @@ export type ProductFilters = {
   masterPlanFieldIds?: number[];
   isHidden?: boolean;
 };
+
+// --- admin/manage/plan/products/product-groups/ProductGroupsClient.tsx ---
+export type ProductGroupItem = {
+  id: number;
+  name: string;
+  masterPlans: {
+    id: number;
+    name: string;
+  }[];
+  products: {
+    id: number;
+    name: string;
+  }[];
+  isHidden?: boolean;
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type ProductGroupFilters = {
+  masterPlanIds?: number[];
+  productIds?: number[];
+  isHidden?: boolean;
+};

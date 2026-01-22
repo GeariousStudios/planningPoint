@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -10,9 +11,11 @@ using backend.Data;
 namespace planningPoint.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260122202332_ProductGroup")]
+    partial class ProductGroup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
@@ -166,27 +169,6 @@ namespace planningPoint.Migrations
                     b.HasIndex("MasterPlanId");
 
                     b.ToTable("PlannedStopToMasterPlans");
-                });
-
-            modelBuilder.Entity("backend.Models.ManyToMany.ProductGroupToMasterPlan", b =>
-                {
-                    b.Property<int>("ProductGroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MasterPlanId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ProductGroupId", "MasterPlanId");
-
-                    b.HasIndex("MasterPlanId");
-
-                    b.ToTable("ProductGroupToMasterPlans");
                 });
 
             modelBuilder.Entity("backend.Models.ManyToMany.ProductGroupToProduct", b =>
@@ -1600,25 +1582,6 @@ namespace planningPoint.Migrations
                     b.Navigation("PlannedStop");
                 });
 
-            modelBuilder.Entity("backend.Models.ManyToMany.ProductGroupToMasterPlan", b =>
-                {
-                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
-                        .WithMany("ProductGroupToMasterPlans")
-                        .HasForeignKey("MasterPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.ProductGroup", "ProductGroup")
-                        .WithMany("ProductGroupToMasterPlans")
-                        .HasForeignKey("ProductGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MasterPlan");
-
-                    b.Navigation("ProductGroup");
-                });
-
             modelBuilder.Entity("backend.Models.ManyToMany.ProductGroupToProduct", b =>
                 {
                     b.HasOne("backend.Models.ProductGroup", "ProductGroup")
@@ -2011,8 +1974,6 @@ namespace planningPoint.Migrations
 
                     b.Navigation("PlannedStopToMasterPlans");
 
-                    b.Navigation("ProductGroupToMasterPlans");
-
                     b.Navigation("ProductToMasterPlans");
                 });
 
@@ -2051,8 +2012,6 @@ namespace planningPoint.Migrations
             modelBuilder.Entity("backend.Models.ProductGroup", b =>
                 {
                     b.Navigation("ProductGroupFieldValues");
-
-                    b.Navigation("ProductGroupToMasterPlans");
 
                     b.Navigation("ProductGroupToProducts");
                 });

@@ -69,6 +69,7 @@ namespace backend.Controllers
             [FromQuery] int[]? fieldIds = null,
             [FromQuery] int[]? operationalPlanIds = null,
             [FromQuery] int[]? productIds = null,
+            [FromQuery] int[]? productGroupIds = null,
             [FromQuery] int[]? plannedStopIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] bool? allowRemovingElements = null,
@@ -88,6 +89,7 @@ namespace backend.Controllers
                 .ThenInclude(mpe => mpe.MasterPlanElement)
                 .Include(mp => mp.OperationalPlans)
                 .Include(mp => mp.ProductToMasterPlans)
+                .Include(mp => mp.ProductGroupToMasterPlans)
                 .Include(mp => mp.PlannedStopToMasterPlans);
 
             if (isHidden.HasValue)
@@ -142,6 +144,15 @@ namespace backend.Controllers
                 );
             }
 
+            if (productGroupIds?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    _context.ProductGroupToMasterPlans.Any(x =>
+                        x.MasterPlanId == mp.Id && productGroupIds.Contains(x.ProductGroupId)
+                    )
+                );
+            }
+
             if (plannedStopIds?.Any() == true)
             {
                 query = query.Where(mp =>
@@ -189,6 +200,9 @@ namespace backend.Controllers
                     : query.OrderBy(mp => mp.AllowImport),
                 "productcount" => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.ProductToMasterPlans.Count)
+                    : query.OrderBy(mp => mp.ProductToMasterPlans.Count),
+                "productgroupcount" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.ProductGroupToMasterPlans.Count)
                     : query.OrderBy(mp => mp.ProductToMasterPlans.Count),
                 "plannedstopcount" => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.PlannedStopToMasterPlans.Count)
@@ -253,6 +267,11 @@ namespace backend.Controllers
                 .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
 
+            var productGroupCount = await _context
+                .ProductGroupToMasterPlans.GroupBy(x => x.MasterPlanId)
+                .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
+
             var plannedStopCount = await _context
                 .PlannedStopToMasterPlans.GroupBy(x => x.MasterPlanId)
                 .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
@@ -266,6 +285,15 @@ namespace backend.Controllers
                     Count = g.Select(x => x.MasterPlanId).Distinct().Count(),
                 })
                 .ToDictionaryAsync(x => x.ProductId, x => x.Count);
+
+            var productGroupIdsCount = await _context
+                .ProductGroupToMasterPlans.GroupBy(x => x.ProductGroupId)
+                .Select(g => new
+                {
+                    ProductGroupId = g.Key,
+                    Count = g.Select(x => x.MasterPlanId).Distinct().Count(),
+                })
+                .ToDictionaryAsync(x => x.ProductGroupId, x => x.Count);
 
             var plannedStopIdsCount = await _context
                 .PlannedStopToMasterPlans.GroupBy(x => x.PlannedStopId)
@@ -345,6 +373,8 @@ namespace backend.Controllers
                         .FirstOrDefault(),
                     Products = new(),
                     ProductCount = productCount.TryGetValue(t.Id, out var pc) ? pc : 0,
+                    ProductGroups = new(),
+                    ProductGroupCount = productGroupCount.TryGetValue(t.Id, out var pgc) ? pgc : 0,
                     PlannedStops = new(),
                     PlannedStopCount = plannedStopCount.TryGetValue(t.Id, out var psc) ? psc : 0,
 
@@ -375,8 +405,10 @@ namespace backend.Controllers
                     operationalPlanCount,
                     fieldCount,
                     productCount,
+                    productGroupCount,
                     plannedStopCount,
                     productIdsCount,
+                    productGroupIdsCount,
                     plannedStopIdsCount,
                 },
             };
@@ -1213,6 +1245,23 @@ namespace backend.Controllers
                 .ProductToMasterPlans.AsNoTracking()
                 .Where(x => x.MasterPlanId == id)
                 .Select(x => new { id = x.ProductId, name = x.Product.Name })
+                .OrderBy(x => x.name)
+                .ToListAsync();
+
+            return Ok(new { items });
+        }
+
+        [HttpGet("{id}/product-groups")]
+        public async Task<IActionResult> GetProductGroups(int id)
+        {
+            var exists = await _context.MasterPlans.AnyAsync(x => x.Id == id);
+            if (!exists)
+                return NotFound();
+
+            var items = await _context
+                .ProductGroupToMasterPlans.AsNoTracking()
+                .Where(x => x.MasterPlanId == id)
+                .Select(x => new { id = x.ProductGroupId, name = x.ProductGroup.Name })
                 .OrderBy(x => x.name)
                 .ToListAsync();
 

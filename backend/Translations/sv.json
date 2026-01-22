@@ -146,6 +146,11 @@
   "Product/Deleted": "Produkt borttagen!",
   "Product/NameTaken": "En produkt med detta namn finns redan!",
 
+  "ProductGroup/NotFound": "Produktgruppen kunde inte hittas i databasen",
+  "ProductGroup/Deleted": "Produktgruppen borttagen!",
+  "ProductGroup/NameTaken": "En produktgrupp med detta namn finns redan!",
+  "ProductGroup/RequiresFields": "Produktgrupp {0} kräver att huvudplan {1} har fälten: {2}",
+
   "AuditTrail/All": "Alla",
   "AuditTrail/Category": "Kategori",
   "AuditTrail/Categories": "Kategorier",
@@ -279,6 +284,8 @@
   "AuditTrail/SkipRowOne": "Hoppa över rad 1 vid import",
   "AuditTrail/OperationalPlan": "Operativ plan",
   "AuditTrail/Product": "Produkt",
+  "AuditTrail/Products": "Produkter",
+  "AuditTrail/ProductGroup": "Produktgrupp",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

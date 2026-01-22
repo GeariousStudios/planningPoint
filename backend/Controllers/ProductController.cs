@@ -552,6 +552,17 @@ namespace backend.Controllers
                 }
             }
 
+            var conflicts = await ValidateProductGroupsCompatibilityAsync(
+                id,
+                mpIds,
+                fieldIds,
+                lang
+            );
+            if (conflicts.Count > 0)
+            {
+                return BadRequest(new { messages = conflicts });
+            }
+
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -710,6 +721,99 @@ namespace backend.Controllers
             }
 
             return missing;
+        }
+
+        [HttpGet("required-fields")]
+        [Authorize]
+        public async Task<IActionResult> GetRequiredFields([FromQuery] int[] productIds)
+        {
+            if (productIds == null || productIds.Length == 0)
+            {
+                return Ok(new { fieldIds = Array.Empty<int>() });
+            }
+
+            var fieldIds = await _context
+                .Products.Where(p => productIds.Contains(p.Id))
+                .SelectMany(p => p.ProductToMasterPlanFields)
+                .Select(x => x.MasterPlanFieldId)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToListAsync();
+
+            return Ok(new { fieldIds });
+        }
+
+        private async Task<List<string>> ValidateProductGroupsCompatibilityAsync(
+            int productId,
+            int[] newProductMasterPlanIds,
+            int[] newProductFieldIds,
+            string lang
+        )
+        {
+            var groups = await _context
+                .ProductGroups.Where(pg =>
+                    pg.ProductGroupToProducts.Any(x => x.ProductId == productId)
+                )
+                .Select(pg => new
+                {
+                    pg.Id,
+                    pg.Name,
+                    MasterPlanIds = pg
+                        .ProductGroupToMasterPlans.Select(x => x.MasterPlanId)
+                        .ToList(),
+                })
+                .ToListAsync();
+
+            if (!groups.Any())
+                return new List<string>();
+
+            var allMpIds = groups.SelectMany(g => g.MasterPlanIds).Distinct().ToArray();
+
+            var mpNames = await _context
+                .MasterPlans.Where(mp => allMpIds.Contains(mp.Id))
+                .Select(mp => new { mp.Id, mp.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+            var fieldNames = await _context
+                .MasterPlanFields.Where(f => newProductFieldIds.Contains(f.Id))
+                .Select(f => new { f.Id, f.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+            var requiresFieldsTemplate = await _t.GetAsync("ProductGroup/RequiresFields", lang);
+
+            var messages = new List<string>();
+
+            foreach (var g in groups)
+            {
+                var groupMpIds = g.MasterPlanIds.Distinct().ToArray();
+
+                if (groupMpIds.Length == 0 || newProductFieldIds.Length == 0)
+                    continue;
+
+                var missingFieldsByMp = await GetMissingFieldsByMasterPlanAsync(
+                    groupMpIds,
+                    newProductFieldIds
+                );
+
+                foreach (var kvp in missingFieldsByMp.OrderBy(x => x.Key))
+                {
+                    if (kvp.Value == null || kvp.Value.Count == 0)
+                        continue;
+
+                    var mpName = mpNames.GetValueOrDefault(kvp.Key, $"#{kvp.Key}");
+
+                    var fieldsText = string.Join(
+                        ", ",
+                        kvp.Value.Distinct()
+                            .OrderBy(x => x)
+                            .Select(id => fieldNames.GetValueOrDefault(id, $"#{id}"))
+                    );
+
+                    messages.Add(string.Format(requiresFieldsTemplate, g.Name, mpName, fieldsText));
+                }
+            }
+
+            return messages;
         }
     }
 }

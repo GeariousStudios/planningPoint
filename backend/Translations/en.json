@@ -146,6 +146,11 @@
   "Product/Deleted": "Product deleted!",
   "Product/NameTaken": "A product with this name already exists!",
 
+  "ProductGroup/NotFound": "Product group could not be found in the database",
+  "ProductGroup/Deleted": "Product group deleted!",
+  "ProductGroup/NameTaken": "A product group with this name already exists!",
+  "ProductGroup/RequiresFields": "Product group {0} requires master plan {1} to have the fields: {2}",
+
   "AuditTrail/All": "All",
   "AuditTrail/Category": "Category",
   "AuditTrail/Categories": "Categories",
@@ -278,6 +283,8 @@
   "AuditTrail/SkipRowOne": "Skip row 1 on import",
   "AuditTrail/OperationalPlan": "Operational plan",
   "AuditTrail/Product": "Product",
+  "AuditTrail/Products": "Products",
+  "AuditTrail/ProductGroup": "Product group",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

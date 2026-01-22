@@ -162,14 +162,7 @@ const LayoutWrapper = (props: Props) => {
       // --- Plan ---
       plan: { label: t("Navbar/Plan"), clickable: true },
       "admin/manage/plan": { label: t("Navbar/Plan"), clickable: false },
-      products: { label: t("Common/Products"), clickable: true },
-      "planned-stops": { label: t("Common/Planned stops"), clickable: true },
       "master-plans": { label: t("Common/Master plans"), clickable: true },
-      "import-rules": { label: t("ImportRules/Import rules"), clickable: true },
-      "master-plan-fields": {
-        label: t("Common/Master plan fields"),
-        clickable: true,
-      },
       "operational-plans": {
         label: t("Common/Operational plans"),
         clickable: true,
@@ -195,6 +188,15 @@ const LayoutWrapper = (props: Props) => {
       shifts: { label: t("Common/Shifts"), clickable: true },
       "shift-teams": { label: t("Common/Shift teams"), clickable: true },
 
+      products: { label: t("Common/Products"), clickable: true },
+      "planned-stops": { label: t("Common/Planned stops"), clickable: true },
+      "import-rules": { label: t("ImportRules/Import rules"), clickable: true },
+      "master-plan-fields": {
+        label: t("Common/Master plan fields"),
+        clickable: true,
+      },
+      "product-groups": { label: t("Common/Product groups"), clickable: true },
+
       // --- Developer ---
       developer: { label: t("Common/Developer"), clickable: false },
       users: { label: t("Common/Users"), clickable: true },
@@ -214,6 +216,9 @@ const LayoutWrapper = (props: Props) => {
       "admin/manage/plan/master-plans": [
         "admin/manage/plan/master-plans/master-plan-fields",
         "admin/manage/plan/master-plans/import-rules",
+      ],
+      "admin/manage/plan/products": [
+        "admin/manage/plan/products/product-groups",
       ],
     }),
     [],

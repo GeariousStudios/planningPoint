@@ -36,6 +36,9 @@ namespace backend.Data
         public DbSet<MasterPlanRevision> MasterPlanRevisions { get; set; }
         public DbSet<OperationalPlan> OperationalPlans { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<ProductFieldValue> ProductFieldValues { get; set; }
+        public DbSet<ProductGroup> ProductGroups { get; set; }
+        public DbSet<ProductGroupFieldValue> ProductGroupFieldValues { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
@@ -50,6 +53,8 @@ namespace backend.Data
         public DbSet<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; }
         public DbSet<ProductToMasterPlan> ProductToMasterPlans { get; set; }
         public DbSet<ProductToMasterPlanField> ProductToMasterPlanFields { get; set; }
+        public DbSet<ProductGroupToProduct> ProductGroupToProducts { get; set; }
+        public DbSet<ProductGroupToMasterPlan> ProductGroupToMasterPlans { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -386,6 +391,40 @@ namespace backend.Data
                 .HasOne(pmf => pmf.MasterPlanField)
                 .WithMany(f => f.ProductToMasterPlanFields)
                 .HasForeignKey(pmf => pmf.MasterPlanFieldId);
+
+            // ProductGroup <-> Product many-to-many relationship.
+            modelBuilder
+                .Entity<ProductGroupToProduct>()
+                .HasKey(pgp => new { pgp.ProductGroupId, pgp.ProductId });
+
+            modelBuilder
+                .Entity<ProductGroupToProduct>()
+                .HasOne(pgp => pgp.ProductGroup)
+                .WithMany(pg => pg.ProductGroupToProducts)
+                .HasForeignKey(pgp => pgp.ProductGroupId);
+
+            modelBuilder
+                .Entity<ProductGroupToProduct>()
+                .HasOne(pgp => pgp.Product)
+                .WithMany(p => p.ProductGroupToProducts)
+                .HasForeignKey(pgp => pgp.ProductId);
+
+            // ProductGroup <-> MasterPlan many-to-many relationship.
+            modelBuilder
+                .Entity<ProductGroupToMasterPlan>()
+                .HasKey(pgmp => new { pgmp.ProductGroupId, pgmp.MasterPlanId });
+
+            modelBuilder
+                .Entity<ProductGroupToMasterPlan>()
+                .HasOne(pgmp => pgmp.ProductGroup)
+                .WithMany(pg => pg.ProductGroupToMasterPlans)
+                .HasForeignKey(pgmp => pgmp.ProductGroupId);
+
+            modelBuilder
+                .Entity<ProductGroupToMasterPlan>()
+                .HasOne(pgmp => pgmp.MasterPlan)
+                .WithMany(mp => mp.ProductGroupToMasterPlans)
+                .HasForeignKey(pgmp => pgmp.MasterPlanId);
         }
 
         public override int SaveChanges()

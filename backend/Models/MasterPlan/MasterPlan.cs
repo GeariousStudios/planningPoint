@@ -37,5 +37,6 @@ namespace backend.Models
         public List<OperationalPlan> OperationalPlans { get; set; } = new();
         public List<ProductToMasterPlan> ProductToMasterPlans { get; set; } = new();
         public List<PlannedStopToMasterPlan> PlannedStopToMasterPlans { get; set; } = new();
+        public List<ProductGroupToMasterPlan> ProductGroupToMasterPlans { get; set; } = new();
     }
 }

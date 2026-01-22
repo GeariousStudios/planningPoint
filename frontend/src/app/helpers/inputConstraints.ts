@@ -79,3 +79,8 @@ export const operationalPlanConstraints = {
 export const productConstraints = {
   name: { maxLength: 64 },
 };
+
+// --- ProductGroupModal ---
+export const productGroupConstraints = {
+  name: { maxLength: 64 },
+};

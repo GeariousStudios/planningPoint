@@ -464,6 +464,11 @@ const Navbar = (props: Props) => {
         icon: "WrenchIcon",
       },
       {
+        href: "/admin/manage/plan/products/product-groups/",
+        label: t("Common/Product groups"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/admin/manage/plan/operational-plans/",
         label: t("Common/Operational plans"),
         icon: "WrenchIcon",
@@ -1093,6 +1098,20 @@ const Navbar = (props: Props) => {
                                         (f) =>
                                           f.href ===
                                           "/admin/manage/plan/products/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/plan/products/product-groups/",
+                                      label: t("Common/Product groups"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/products/product-groups/",
                                       ),
                                     },
                                     {

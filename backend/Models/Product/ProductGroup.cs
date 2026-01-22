@@ -3,7 +3,7 @@ using backend.Models.ManyToMany;
 
 namespace backend.Models
 {
-    public class Product
+    public class ProductGroup
     {
         public int Id { get; set; }
 
@@ -17,9 +17,8 @@ namespace backend.Models
         public string CreatedBy { get; set; } = string.Empty;
         public string UpdatedBy { get; set; } = string.Empty;
 
-        public List<ProductToMasterPlan> ProductToMasterPlans { get; set; } = new();
-        public List<ProductToMasterPlanField> ProductToMasterPlanFields { get; set; } = new();
-        public List<ProductFieldValue> ProductFieldValues { get; set; } = new();
+        public List<ProductGroupToMasterPlan> ProductGroupToMasterPlans { get; set; } = new();
         public List<ProductGroupToProduct> ProductGroupToProducts { get; set; } = new();
+        public List<ProductGroupFieldValue> ProductGroupFieldValues { get; set; } = new();
     }
 }

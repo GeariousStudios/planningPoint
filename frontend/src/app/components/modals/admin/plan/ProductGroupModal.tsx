@@ -13,7 +13,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
-import { productConstraints } from "@/app/helpers/inputConstraints";
+import { productGroupConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import MultiDropdown from "@/app/components/common/MultiDropdown";
@@ -31,6 +31,11 @@ type MasterPlanOption = {
   name: string;
 };
 
+type ProductOption = {
+  id: number;
+  name: string;
+};
+
 type MasterPlanField = {
   id: number;
   name: string;
@@ -38,12 +43,26 @@ type MasterPlanField = {
   masterPlanIds: number[];
 };
 
-type ProductFieldValue = {
+type ProductGroupFieldValue = {
   masterPlanFieldId: number;
   value: string;
 };
 
-const ProductModal = (props: Props) => {
+type ProductGroupFetchResult = {
+  id: number;
+  name: string;
+  masterPlans: { id: number; name: string }[];
+  products: { id: number; name: string }[];
+  isHidden: boolean;
+  productGroupFieldValues?: {
+    masterPlanFieldId: number;
+    name?: string;
+    dataType?: string;
+    value?: string;
+  }[];
+};
+
+const ProductGroupModal = (props: Props) => {
   const t = useTranslations();
 
   // --- VARIABLES ---
@@ -55,15 +74,24 @@ const ProductModal = (props: Props) => {
   // --- States ---
   const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
+
   const [masterPlanOptions, setMasterPlanOptions] = useState<
     MasterPlanOption[]
   >([]);
   const [masterPlanIds, setMasterPlanIds] = useState<number[]>([]);
-  const [selectedFieldIds, setSelectedFieldIds] = useState<number[]>([]);
+
+  const [productOptions, setProductOptions] = useState<ProductOption[]>([]);
+  const [productIds, setProductIds] = useState<number[]>([]);
+
+  const [allFields, setAllFields] = useState<MasterPlanField[]>([]);
+  const [autoFieldIds, setAutoFieldIds] = useState<number[]>([]);
+
   const [fieldValueById, setFieldValueById] = useState<Record<number, string>>(
     {},
   );
-  const [allFields, setAllFields] = useState<MasterPlanField[]>([]);
+  const [touchedFieldIds, setTouchedFieldIds] = useState<number[]>([]);
+  const [requiredFieldIds, setRequiredFieldIds] = useState<number[]>([]);
+
   const [missingByMasterPlan, setMissingByMasterPlan] = useState<
     Record<number, number[]>
   >({});
@@ -73,12 +101,13 @@ const ProductModal = (props: Props) => {
   const [originalMasterPlanIds, setOriginalMasterPlanIds] = useState<number[]>(
     [],
   );
-  const [originalSelectedFieldIds, setOriginalSelectedFieldIds] = useState<
-    number[]
-  >([]);
+  const [originalProductIds, setOriginalProductIds] = useState<number[]>([]);
   const [originalFieldValueById, setOriginalFieldValueById] = useState<
     Record<number, string>
   >({});
+  const [originalTouchedFieldIds, setOriginalTouchedFieldIds] = useState<
+    number[]
+  >([]);
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -93,10 +122,11 @@ const ProductModal = (props: Props) => {
     }
 
     fetchMasterPlans();
+    fetchProducts();
     fetchMasterPlanFields();
 
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchProduct();
+      fetchProductGroup();
     } else {
       setName("");
       setOriginalName("");
@@ -104,25 +134,52 @@ const ProductModal = (props: Props) => {
       setMasterPlanIds([]);
       setOriginalMasterPlanIds([]);
 
-      setSelectedFieldIds([]);
-      setOriginalSelectedFieldIds([]);
+      setProductIds([]);
+      setOriginalProductIds([]);
 
       setFieldValueById({});
       setOriginalFieldValueById({});
+
+      setTouchedFieldIds([]);
+      setOriginalTouchedFieldIds([]);
 
       setIsHidden(false);
       setOriginalIsHidden(false);
     }
   }, [props.isOpen, props.itemId]);
 
+  useEffect(() => {
+    if (!props.isOpen) return;
+
+    const ids = requiredFieldIds.slice();
+
+    ids.sort((a, b) => {
+      const aName = allFields.find((x) => x.id === a)?.name ?? "";
+      const bName = allFields.find((x) => x.id === b)?.name ?? "";
+      return aName.localeCompare(bName);
+    });
+
+    setAutoFieldIds(ids);
+
+    setFieldValueById((prev) => {
+      const next: Record<number, string> = {};
+      for (const id of ids) {
+        next[id] = prev[id] ?? "";
+      }
+      return next;
+    });
+
+    setTouchedFieldIds((prev) => prev.filter((id) => ids.includes(id)));
+  }, [props.isOpen, requiredFieldIds, allFields]);
+
   // --- BACKEND ---
-  // --- Create product ---
-  const createProduct = async (event: FormEvent) => {
+  // --- Create product group ---
+  const createProductGroup = async (event: FormEvent) => {
     event.preventDefault();
     setIsSaving(true);
 
     try {
-      const response = await fetch(`${apiUrl}/product/create`, {
+      const response = await fetch(`${apiUrl}/product-group/create`, {
         method: "POST",
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
@@ -132,8 +189,9 @@ const ProductModal = (props: Props) => {
         body: JSON.stringify({
           name,
           masterPlanIds,
-          productFieldValues: buildProductFieldValues(
-            selectedFieldIds,
+          productIds,
+          productGroupFieldValues: buildProductGroupFieldValues(
+            touchedFieldIds,
             fieldValueById,
           ),
           isHidden,
@@ -171,13 +229,6 @@ const ProductModal = (props: Props) => {
           return;
         }
 
-        if (Array.isArray(result.messages) && result.messages.length > 0) {
-          for (const msg of result.messages) {
-            notify("error", String(msg));
-          }
-          return;
-        }
-
         if (result.message) {
           notify("error", result.message);
           return;
@@ -189,7 +240,7 @@ const ProductModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Product") + t("Modal/created1"), 4000);
+      notify("success", t("Common/Product group") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -224,6 +275,40 @@ const ProductModal = (props: Props) => {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/product`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      const result = await response.json();
+      const items =
+        result?.items ?? result?.data?.items ?? result?.data ?? result ?? [];
+
+      const products: ProductOption[] = Array.isArray(items)
+        ? items.map((x: any) => ({
+            id: Number(x.id),
+            name: String(x.name ?? ""),
+          }))
+        : [];
+
+      products.sort((a, b) => a.name.localeCompare(b.name));
+      setProductOptions(products);
+    } catch {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  // --- Fetch master plan fields ---
   const fetchMasterPlanFields = async () => {
     try {
       const response = await fetch(`${apiUrl}/master-plan-field`, {
@@ -261,87 +346,142 @@ const ProductModal = (props: Props) => {
     }
   };
 
-  // --- Fetch product ---
-  const fetchProduct = async () => {
+  // --- Fetch required fields for selected products ---
+  const fetchRequiredFieldsForProducts = async (ids: number[]) => {
     try {
-      const response = await fetch(`${apiUrl}/product/fetch/${props.itemId}`, {
+      if (ids.length === 0) {
+        setRequiredFieldIds([]);
+        return;
+      }
+
+      const qs = ids
+        .map((id) => `productIds=${encodeURIComponent(String(id))}`)
+        .join("&");
+      const response = await fetch(`${apiUrl}/product/required-fields?${qs}`, {
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      const result = await response.json();
+      const fieldIds = Array.isArray(result?.fieldIds)
+        ? result.fieldIds.map(Number)
+        : [];
+      fieldIds.sort((a: number, b: number) => a - b);
+
+      setRequiredFieldIds(fieldIds);
+    } catch {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  useEffect(() => {
+    if (!props.isOpen) return;
+    fetchRequiredFieldsForProducts(productIds);
+  }, [props.isOpen, productIds]);
+
+  // --- Fetch product group ---
+  const fetchProductGroup = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/product-group/fetch/${props.itemId}`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       const result = await response.json();
 
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        fillProductData(result);
+        fillProductGroupData(result as ProductGroupFetchResult);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  const fillProductData = (result: any) => {
+  const fillProductGroupData = (result: ProductGroupFetchResult) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
 
-    const ids = Array.isArray(result.masterPlans)
-      ? result.masterPlans.map((mp: { id: number }) => mp.id)
+    const mpIds = Array.isArray(result.masterPlans)
+      ? result.masterPlans.map((mp) => mp.id)
       : [];
 
-    setMasterPlanIds(ids);
-    setOriginalMasterPlanIds(ids);
+    setMasterPlanIds(mpIds);
+    setOriginalMasterPlanIds(mpIds);
 
-    const values: ProductFieldValue[] = Array.isArray(result.masterPlanFields)
-      ? result.masterPlanFields.map((f: any) => ({
-          masterPlanFieldId: Number(f.id),
-          value: f.value ?? "",
+    const pIds = Array.isArray(result.products)
+      ? result.products.map((p) => p.id)
+      : [];
+
+    setProductIds(pIds);
+    setOriginalProductIds(pIds);
+
+    const values = Array.isArray(result.productGroupFieldValues)
+      ? result.productGroupFieldValues.map((x) => ({
+          masterPlanFieldId: Number(x.masterPlanFieldId),
+          value: String(x.value ?? ""),
         }))
       : [];
-
-    const fieldIds = values.map((x) => x.masterPlanFieldId);
 
     const map: Record<number, string> = {};
     for (const v of values) {
       map[v.masterPlanFieldId] = v.value ?? "";
     }
 
-    setSelectedFieldIds(fieldIds);
-    setFieldValueById(map);
+    const touched = values.map((x) => x.masterPlanFieldId);
 
-    setOriginalSelectedFieldIds(fieldIds);
+    setFieldValueById(map);
     setOriginalFieldValueById(map);
+
+    setTouchedFieldIds(touched);
+    setOriginalTouchedFieldIds(touched);
 
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
   };
 
-  // --- Update product ---
-  const updateProduct = async (event: FormEvent) => {
+  // --- Update product group ---
+  const updateProductGroup = async (event: FormEvent) => {
     event.preventDefault();
     setIsSaving(true);
 
     try {
-      const response = await fetch(`${apiUrl}/product/update/${props.itemId}`, {
-        method: "PUT",
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/product-group/update/${props.itemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+            masterPlanIds,
+            productIds,
+            productGroupFieldValues: buildProductGroupFieldValues(
+              touchedFieldIds,
+              fieldValueById,
+            ),
+            isHidden,
+          }),
         },
-        body: JSON.stringify({
-          name,
-          masterPlanIds,
-          productFieldValues: buildProductFieldValues(
-            selectedFieldIds,
-            fieldValueById,
-          ),
-          isHidden,
-        }),
-      });
+      );
 
       if (response.status === 401) {
         localStorage.removeItem("token");
@@ -374,13 +514,6 @@ const ProductModal = (props: Props) => {
           return;
         }
 
-        if (Array.isArray(result.messages) && result.messages.length > 0) {
-          for (const msg of result.messages) {
-            notify("error", String(msg), 6000);
-          }
-          return;
-        }
-
         if (result.message) {
           notify("error", result.message);
           return;
@@ -392,7 +525,7 @@ const ProductModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Product") + t("Modal/updated1"), 4000);
+      notify("success", t("Common/Product group") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -408,12 +541,8 @@ const ProductModal = (props: Props) => {
     setMasterPlanIds((prev) => prev.filter((x) => x !== id));
   };
 
-  const getInputType = (dataType: string) => {
-    const dt = String(dataType).toLowerCase();
-    if (dt === "date") return "date";
-    if (dt === "number") return "number";
-    if (dt === "boolean") return "checkbox";
-    return "text";
+  const deleteProduct = (id: number) => {
+    setProductIds((prev) => prev.filter((x) => x !== id));
   };
 
   const getFieldValue = (fieldId: number) => {
@@ -425,6 +554,18 @@ const ProductModal = (props: Props) => {
       ...prev,
       [fieldId]: value,
     }));
+
+    setTouchedFieldIds((prev) =>
+      prev.includes(fieldId) ? prev : [...prev, fieldId],
+    );
+  };
+
+  const clearFieldOverride = (fieldId: number) => {
+    setFieldValueById((prev) => ({
+      ...prev,
+      [fieldId]: "",
+    }));
+    setTouchedFieldIds((prev) => prev.filter((x) => x !== fieldId));
   };
 
   const computeMissing = (mpIds: number[], fieldIds: number[]) => {
@@ -442,17 +583,18 @@ const ProductModal = (props: Props) => {
     return missing;
   };
 
-  const buildProductFieldValues = (
+  const buildProductGroupFieldValues = (
     ids: number[],
     map: Record<number, string>,
-  ) => {
+  ): ProductGroupFieldValue[] => {
     return ids
       .slice()
       .sort((a, b) => a - b)
       .map((id) => ({
         masterPlanFieldId: id,
         value: map[id] ?? "",
-      }));
+      }))
+      .filter((x) => String(x.value ?? "").trim() !== "");
   };
 
   useEffect(() => {
@@ -463,10 +605,10 @@ const ProductModal = (props: Props) => {
       return;
     }
 
-    const missing = computeMissing(masterPlanIds, selectedFieldIds);
+    const missing = computeMissing(masterPlanIds, requiredFieldIds);
 
     setMissingByMasterPlan(missing);
-  }, [props.isOpen, masterPlanIds, allFields, selectedFieldIds]);
+  }, [props.isOpen, masterPlanIds, allFields, requiredFieldIds]);
 
   const validationError = (() => {
     if (masterPlanIds.length === 0) return null;
@@ -501,7 +643,7 @@ const ProductModal = (props: Props) => {
         {parts.map((p) => (
           <p className="text-(--note-error)" key={p.mpId}>
             {t("Common/Master plan")} <b>{mpName(p.mpId)}</b>{" "}
-            {t("ProductModal/needs to be assigned")}{" "}
+            {t("ProductGroupModal/needs to be assigned")}{" "}
             <span className="text-(--text-main)">{p.names}</span>
           </p>
         ))}
@@ -543,25 +685,67 @@ const ProductModal = (props: Props) => {
     );
   };
 
+  const ProductChip = ({
+    id,
+    label,
+    onDelete,
+  }: {
+    id: number;
+    label: string;
+    onDelete: () => void;
+  }) => {
+    return (
+      <div
+        className={`${roundedButtonClass} flex w-auto !cursor-default items-center gap-2 !bg-(--bg-modal-link) px-4 transition-transform duration-(--fast)`}
+      >
+        <span className="truncate font-semibold select-none">{label}</span>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
+          style={{ cursor: "pointer" }}
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+      </div>
+    );
+  };
+
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     const normalizeIds = (ids: number[]) => ids.slice().sort((a, b) => a - b);
 
-    const currIds = normalizeIds(selectedFieldIds);
-    const origIds = normalizeIds(originalSelectedFieldIds);
+    const currMp = normalizeIds(masterPlanIds);
+    const origMp = normalizeIds(originalMasterPlanIds);
 
-    const currValues = buildProductFieldValues(currIds, fieldValueById);
-    const origValues = buildProductFieldValues(origIds, originalFieldValueById);
+    const currP = normalizeIds(productIds);
+    const origP = normalizeIds(originalProductIds);
+
+    const currTouched = normalizeIds(touchedFieldIds);
+    const origTouched = normalizeIds(originalTouchedFieldIds);
+
+    const currValues = buildProductGroupFieldValues(
+      currTouched,
+      fieldValueById,
+    );
+    const origValues = buildProductGroupFieldValues(
+      origTouched,
+      originalFieldValueById,
+    );
 
     const fieldsDirty =
-      JSON.stringify(currIds) !== JSON.stringify(origIds) ||
+      JSON.stringify(currTouched) !== JSON.stringify(origTouched) ||
       JSON.stringify(currValues) !== JSON.stringify(origValues);
 
     if (props.itemId === null || props.itemId === undefined) {
       const dirty =
         name !== "" ||
-        JSON.stringify(masterPlanIds) !==
-          JSON.stringify(originalMasterPlanIds) ||
+        JSON.stringify(currMp) !== JSON.stringify(origMp) ||
+        JSON.stringify(currP) !== JSON.stringify(origP) ||
         fieldsDirty ||
         isHidden !== false;
 
@@ -571,7 +755,8 @@ const ProductModal = (props: Props) => {
 
     const dirty =
       name !== originalName ||
-      JSON.stringify(masterPlanIds) !== JSON.stringify(originalMasterPlanIds) ||
+      JSON.stringify(currMp) !== JSON.stringify(origMp) ||
+      JSON.stringify(currP) !== JSON.stringify(origP) ||
       fieldsDirty ||
       isHidden !== originalIsHidden;
 
@@ -580,12 +765,14 @@ const ProductModal = (props: Props) => {
     props.itemId,
     name,
     masterPlanIds,
-    selectedFieldIds,
+    productIds,
+    touchedFieldIds,
     fieldValueById,
     isHidden,
     originalName,
     originalMasterPlanIds,
-    originalSelectedFieldIds,
+    originalProductIds,
+    originalTouchedFieldIds,
     originalFieldValueById,
     originalIsHidden,
   ]);
@@ -595,7 +782,9 @@ const ProductModal = (props: Props) => {
       {props.isOpen && (
         <form
           ref={formRef}
-          onSubmit={(e) => (props.itemId ? updateProduct(e) : createProduct(e))}
+          onSubmit={(e) =>
+            props.itemId ? updateProductGroup(e) : createProductGroup(e)
+          }
         >
           <ModalBase
             ref={modalRef}
@@ -604,8 +793,8 @@ const ProductModal = (props: Props) => {
             icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/product")
-                : t("Common/Add") + " " + t("Common/product")
+                ? t("Common/Edit") + " " + t("Common/product group")
+                : t("Common/Add") + " " + t("Common/product group")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -614,7 +803,7 @@ const ProductModal = (props: Props) => {
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("ProductModal/Info1")}
+                  {t("ProductGroupModal/Info1")}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -629,7 +818,7 @@ const ProductModal = (props: Props) => {
                     }}
                     onModal
                     required
-                    {...productConstraints.name}
+                    {...productGroupConstraints.name}
                   />
                 </div>
               </div>
@@ -637,7 +826,49 @@ const ProductModal = (props: Props) => {
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("ProductModal/Info2")}
+                  {t("Common/Products")}
+                </h3>
+                <hr className="w-full text-(--border-tertiary)" />
+              </div>
+
+              <MultiDropdown
+                scrollContainer={getScrollEl}
+                label={t("Common/Products")}
+                options={productOptions.map((p) => ({
+                  value: String(p.id),
+                  label: p.name,
+                }))}
+                value={productIds.map(String)}
+                onChange={(val: string[]) => setProductIds(val.map(Number))}
+                onModal
+              />
+
+              {productIds.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {productIds
+                    .slice()
+                    .sort((a, b) => a - b)
+                    .map((id) => {
+                      const label =
+                        productOptions.find((p) => p.id === id)?.name ??
+                        `#${id}`;
+
+                      return (
+                        <ProductChip
+                          key={id}
+                          id={id}
+                          label={label}
+                          onDelete={() => deleteProduct(id)}
+                        />
+                      );
+                    })}
+                </div>
+              )}
+
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
+                  {t("ProductGroupModal/Info2")}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -657,6 +888,7 @@ const ProductModal = (props: Props) => {
               {masterPlanIds.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {masterPlanIds
+                    .slice()
                     .sort((a, b) => a - b)
                     .map((id) => {
                       const label =
@@ -678,34 +910,23 @@ const ProductModal = (props: Props) => {
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("ProductModal/Info3")}
+                  {t("Common/Master plan fields")}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
 
-              <MultiDropdown
-                scrollContainer={getScrollEl}
-                label={t("Common/Master plan fields")}
-                options={allFields.map((f) => ({
-                  value: String(f.id),
-                  label: f.name,
-                }))}
-                value={selectedFieldIds.map(String)}
-                onChange={(val: string[]) => {
-                  const ids = val.map(Number);
-                  setSelectedFieldIds(ids);
-                }}
-                onModal
-              />
-
-              {selectedFieldIds.length > 0 && (
+              {autoFieldIds.length === 0 ? (
+                <div className="mt-2 text-sm text-(--text-secondary)">
+                  -
+                </div>
+              ) : (
                 <div className="flex flex-col gap-6 rounded-2xl bg-(--bg-main) p-8">
                   <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                    {t("ProductModal/Selected fields")}
+                    {t("ProductGroupModal/Override values")}
                   </h3>
 
                   <div className="grid grid-cols-1 gap-6">
-                    {selectedFieldIds
+                    {autoFieldIds
                       .map((id) => ({
                         id,
                         f: allFields.find((x) => x.id === id),
@@ -726,6 +947,7 @@ const ProductModal = (props: Props) => {
                                 : "text";
 
                         const current = getFieldValue(id);
+                        const isTouched = touchedFieldIds.includes(id);
 
                         if (inputType === "checkbox") {
                           const checked = current === "true";
@@ -734,9 +956,21 @@ const ProductModal = (props: Props) => {
                               key={id}
                               className="flex items-center justify-between gap-6 rounded-2xl bg-(--bg-secondary) p-4"
                             >
-                              <span className="truncate font-semibold">
-                                {f.name}
-                              </span>
+                              <div className="flex min-w-0 flex-col">
+                                <span className="truncate font-semibold">
+                                  {f.name}
+                                </span>
+                                {isTouched && (
+                                  <button
+                                    type="button"
+                                    className="mt-1 w-fit text-sm text-(--text-secondary) hover:text-(--accent-color)"
+                                    onClick={() => clearFieldOverride(id)}
+                                  >
+                                    {t("ProductGroupModal/Clear override")}
+                                  </button>
+                                )}
+                              </div>
+
                               <button
                                 type="button"
                                 role="switch"
@@ -760,14 +994,33 @@ const ProductModal = (props: Props) => {
                             key={id}
                             className="rounded-2xl bg-(--bg-secondary)"
                           >
-                            <Input
-                              label={f.name}
-                              value={current}
-                              onChange={(val) =>
-                                updateFieldValue(id, String(val))
-                              }
-                              type={inputType as any}
-                            />
+                            <div className="flex items-center justify-between gap-6">
+                              <div className="min-w-0">
+                                <div className="truncate font-semibold">
+                                  {f.name}
+                                </div>
+                                {isTouched && (
+                                  <button
+                                    type="button"
+                                    className="mt-1 text-sm text-(--text-secondary) hover:text-(--accent-color)"
+                                    onClick={() => clearFieldOverride(id)}
+                                  >
+                                    {t("ProductGroupModal/Clear override")}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="mt-3">
+                              <Input
+                                label={f.name}
+                                value={current}
+                                onChange={(val) =>
+                                  updateFieldValue(id, String(val))
+                                }
+                                type={inputType as any}
+                              />
+                            </div>
                           </div>
                         );
                       })}
@@ -795,7 +1048,7 @@ const ProductModal = (props: Props) => {
                     <div className={switchKnobClass(isHidden)} />
                   </button>
                   <span className="mb-0.5">
-                    {t("ProductModal/Hide product")}
+                    {t("ProductGroupModal/Hide product group")}
                   </span>
                 </div>
               </div>
@@ -844,4 +1097,4 @@ const ProductModal = (props: Props) => {
   );
 };
 
-export default ProductModal;
+export default ProductGroupModal;

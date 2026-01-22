@@ -17,6 +17,8 @@ namespace backend.Dtos.MasterPlan
         public List<MasterPlanElementDto> Elements { get; set; } = new();
         public List<ProductListItemDto> Products { get; set; } = new();
         public int ProductCount { get; set; }
+        public List<ProductGroupListItemDto> ProductGroups { get; set; } = new();
+        public int ProductGroupCount { get; set; }
         public List<PlannedStopListItemDto> PlannedStops { get; set; } = new();
         public int PlannedStopCount { get; set; }
         public bool AllowRemovingElements { get; set; }
