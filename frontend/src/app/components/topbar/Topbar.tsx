@@ -3,6 +3,7 @@ import {
   roundedButtonClass,
 } from "@/app/styles/buttonClasses";
 import * as Solid from "@heroicons/react/24/solid";
+import * as SolidSmall from "@heroicons/react/16/solid";
 import * as Outline from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
@@ -19,18 +20,28 @@ import { badgeClass } from "../manage/ManageClasses";
 import HandbookModal from "../modals/HandbookModal";
 import { useHandbook } from "@/app/context/HandbookContext";
 
+type BreadcrumbChild = {
+  label: string;
+  href: string;
+  clickable: boolean;
+  isActive: boolean;
+};
+
+type Breadcrumb = {
+  label: string;
+  href: string;
+  clickable: boolean;
+  isActive: boolean;
+  children?: BreadcrumbChild[];
+};
+
 type Props = {
   hasScrollbar: boolean;
   navbarHidden: boolean;
   setNavbarHidden: (value: boolean) => void;
   setIsEditingFavourites: (value: boolean) => void;
   isEditingFavourites: boolean;
-  breadcrumbs?: {
-    label: string;
-    href: string;
-    clickable: boolean;
-    isActive: boolean;
-  }[];
+  breadcrumbs?: Breadcrumb[];
   breadcrumbsLoading?: boolean;
 };
 
@@ -42,6 +53,10 @@ const Topbar = (props: Props) => {
   const userIconRef = useRef<HTMLButtonElement>(null);
   const bellIconRef = useRef<HTMLButtonElement>(null);
   const crumbsIconRef = useRef<HTMLButtonElement>(null);
+  const crumbMenuTriggerRefs = useRef<Record<string, HTMLButtonElement | null>>(
+    {},
+  );
+  const [openCrumbHref, setOpenCrumbHref] = useState<string | null>(null);
 
   // --- States ---
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -70,7 +85,6 @@ const Topbar = (props: Props) => {
   const { toggleTheme, currentTheme } = useTheme();
   const { toggleLanguage, currentLanguage } = useLanguage();
   const breadcrumbs = props.breadcrumbs ?? [];
-  const hasBreadcrumbs = breadcrumbs.length > 0;
 
   // --- HIDE TOPBAR ON SCROLL ---
   useEffect(() => {
@@ -127,6 +141,13 @@ const Topbar = (props: Props) => {
     setUserIconClicked(false);
     setBellIconClicked(false);
     setCrumbsIconClicked(false);
+    setOpenCrumbHref(null);
+  };
+
+  const closeOtherMenus = () => {
+    setUserIconClicked(false);
+    setBellIconClicked(false);
+    setCrumbsIconClicked(false);
   };
 
   return (
@@ -176,7 +197,7 @@ const Topbar = (props: Props) => {
                     <>
                       {/* --- Mobile (<640px) --- */}
                       <div className="flex flex-wrap items-center sm:hidden">
-                        {breadcrumbs.length > 1 && (
+                        {breadcrumbs.length > 2 && (
                           <div className="relative">
                             <button
                               ref={crumbsIconRef}
@@ -187,7 +208,7 @@ const Topbar = (props: Props) => {
                               aria-label="Breadcrumbs"
                               className={`${crumbsIconClicked ? "bg-(--bg-navbar-link) text-(--accent-color)" : ""} flex h-8 min-h-8 w-8 min-w-8 cursor-pointer items-center justify-center rounded-full font-semibold transition-colors hover:bg-(--bg-navbar-link) hover:text-(--accent-color)`}
                             >
-                              <span className="">. . .</span>
+                              <span>. . .</span>
                             </button>
 
                             <MenuDropdown
@@ -198,7 +219,7 @@ const Topbar = (props: Props) => {
                               alignLeft
                             >
                               <div className="flex flex-col gap-2">
-                                {breadcrumbs.slice(0, -1).map((item) =>
+                                {breadcrumbs.slice(0, -2).map((item) =>
                                   item.clickable ? (
                                     <span
                                       key={item.href}
@@ -229,9 +250,109 @@ const Topbar = (props: Props) => {
                           </div>
                         )}
 
-                        {breadcrumbs.length > 1 && <span>&nbsp;/&nbsp;</span>}
+                        {breadcrumbs.length > 2 && <span>&nbsp;/&nbsp;</span>}
 
-                        {/* --- Active crumb --- */}
+                        {breadcrumbs.length > 1 && (
+                          <>
+                            <span className="relative flex items-center">
+                              {(() => {
+                                const parent = breadcrumbs.at(-2);
+                                const hasChildren = !!parent?.children?.length;
+
+                                if (!parent) {
+                                  return null;
+                                }
+
+                                return (
+                                  <>
+                                    {parent.clickable ? (
+                                      <Link
+                                        href={parent.href}
+                                        className="transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline"
+                                      >
+                                        {parent.label}
+                                      </Link>
+                                    ) : (
+                                      <span className="opacity-50">
+                                        {parent.label}
+                                      </span>
+                                    )}
+
+                                    {hasChildren ? (
+                                      <>
+                                        <button
+                                          ref={(el) => {
+                                            crumbMenuTriggerRefs.current[
+                                              parent.href
+                                            ] = el;
+                                          }}
+                                          onClick={() => {
+                                            closeOtherMenus();
+                                            setOpenCrumbHref((prev) =>
+                                              prev === parent.href
+                                                ? null
+                                                : parent.href,
+                                            );
+                                          }}
+                                          aria-label="Submenu"
+                                          className={`${openCrumbHref === parent.href ? "bg-(--bg-navbar-link) text-(--accent-color)" : ""} ml-1 flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full transition-colors hover:bg-(--bg-navbar-link) hover:text-(--accent-color)`}
+                                        >
+                                          <SolidSmall.ChevronDownIcon className="h-4 w-4" />
+                                        </button>
+
+                                        <MenuDropdown
+                                          triggerRef={{
+                                            current:
+                                              crumbMenuTriggerRefs.current[
+                                                parent.href
+                                              ],
+                                          }}
+                                          isOpen={openCrumbHref === parent.href}
+                                          onClose={() => setOpenCrumbHref(null)}
+                                          autoWidth
+                                          alignLeft
+                                        >
+                                          <div className="flex flex-col gap-2">
+                                            {(parent.children ?? []).map(
+                                              (child) =>
+                                                child.clickable ? (
+                                                  <span
+                                                    key={child.href}
+                                                    className={`${child.isActive ? "font-semibold text-(--accent-color)" : ""} transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline`}
+                                                  >
+                                                    <Link
+                                                      href={child.href}
+                                                      onClick={() =>
+                                                        setOpenCrumbHref(null)
+                                                      }
+                                                      className={`${child.isActive ? "bg-(--bg-navbar-link)" : ""} flex items-center gap-2 rounded px-2 py-1 whitespace-nowrap`}
+                                                    >
+                                                      {child.label}
+                                                      <Outline.ArrowRightIcon className="h-3 min-h-3 w-3 min-w-3" />
+                                                    </Link>
+                                                  </span>
+                                                ) : (
+                                                  <span
+                                                    key={child.href}
+                                                    className={`${child.isActive ? "font-semibold text-(--accent-color)" : ""} whitespace-nowrap opacity-50`}
+                                                  >
+                                                    {child.label}
+                                                  </span>
+                                                ),
+                                            )}
+                                          </div>
+                                        </MenuDropdown>
+                                      </>
+                                    ) : null}
+                                  </>
+                                );
+                              })()}
+                            </span>
+
+                            <span>&nbsp;/&nbsp;</span>
+                          </>
+                        )}
+
                         <span className="font-semibold text-(--accent-color)">
                           {breadcrumbs.at(-1)?.label}
                         </span>
@@ -239,31 +360,100 @@ const Topbar = (props: Props) => {
 
                       {/* --- Desktop (>=640px) --- */}
                       <div className="hidden flex-wrap items-center sm:flex">
-                        {breadcrumbs.map((item, idx) => (
-                          <span key={item.href}>
-                            {item.clickable ? (
-                              <Link
-                                href={item.href}
-                                className="transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline"
-                              >
-                                {item.label}
-                              </Link>
-                            ) : (
-                              <span
-                                className={
-                                  item.isActive
-                                    ? "font-semibold text-(--accent-color)"
-                                    : "opacity-50"
-                                }
-                              >
-                                {item.label}
-                              </span>
-                            )}
-                            {idx !== breadcrumbs.length - 1 && (
-                              <span>&nbsp;/&nbsp;</span>
-                            )}
-                          </span>
-                        ))}
+                        {breadcrumbs.map((item, idx) => {
+                          const hasChildren = !!item.children?.length;
+
+                          return (
+                            <span
+                              key={item.href}
+                              className="relative inline-flex items-center"
+                            >
+                              {item.clickable ? (
+                                <Link
+                                  href={item.href}
+                                  className="transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline"
+                                >
+                                  {item.label}
+                                </Link>
+                              ) : (
+                                <span
+                                  className={
+                                    item.isActive
+                                      ? "font-semibold text-(--accent-color)"
+                                      : "opacity-50"
+                                  }
+                                >
+                                  {item.label}
+                                </span>
+                              )}
+
+                              {hasChildren ? (
+                                <>
+                                  <button
+                                    ref={(el) => {
+                                      crumbMenuTriggerRefs.current[item.href] =
+                                        el;
+                                    }}
+                                    onClick={() => {
+                                      closeOtherMenus();
+                                      setOpenCrumbHref((prev) =>
+                                        prev === item.href ? null : item.href,
+                                      );
+                                    }}
+                                    aria-label="Submenu"
+                                    className={`${openCrumbHref === item.href ? "bg-(--bg-navbar-link) text-(--accent-color)" : ""} ml-1 flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full transition-colors hover:bg-(--bg-navbar-link) hover:text-(--accent-color)`}
+                                  >
+                                    <SolidSmall.ChevronDownIcon className="h-4 w-4" />
+                                  </button>
+
+                                  <MenuDropdown
+                                    triggerRef={{
+                                      current:
+                                        crumbMenuTriggerRefs.current[item.href],
+                                    }}
+                                    isOpen={openCrumbHref === item.href}
+                                    onClose={() => setOpenCrumbHref(null)}
+                                    autoWidth
+                                    alignLeft
+                                  >
+                                    <div className="flex flex-col gap-2">
+                                      {(item.children ?? []).map((child) =>
+                                        child.clickable ? (
+                                          <span
+                                            key={child.href}
+                                            className={`${child.isActive ? "font-semibold text-(--accent-color)" : ""} transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline`}
+                                          >
+                                            <Link
+                                              href={child.href}
+                                              onClick={() =>
+                                                setOpenCrumbHref(null)
+                                              }
+                                              className={`${child.isActive ? "bg-(--bg-navbar-link)" : ""} flex items-center gap-2 rounded px-2 py-1 whitespace-nowrap`}
+                                            >
+                                              {child.label}
+                                              <Outline.ArrowRightIcon className="h-3 min-h-3 w-3 min-w-3" />
+                                            </Link>
+                                          </span>
+                                        ) : (
+                                          <span
+                                            key={child.href}
+                                            className={`${child.isActive ? "font-semibold text-(--accent-color)" : ""} whitespace-nowrap opacity-50`}
+                                          >
+                                            {child.label}
+                                          </span>
+                                        ),
+                                      )}
+                                    </div>
+                                  </MenuDropdown>
+                                </>
+                              ) : null}
+
+                              {idx !== breadcrumbs.length - 1 && (
+                                <span>&nbsp;/&nbsp;</span>
+                              )}
+                            </span>
+                          );
+                        })}
                       </div>
                     </>
                   ) : null}

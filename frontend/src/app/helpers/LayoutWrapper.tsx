@@ -10,11 +10,19 @@ type Props = {
   children: ReactNode;
 };
 
+type BreadcrumbChild = {
+  label: string;
+  href: string;
+  clickable: boolean;
+  isActive: boolean;
+};
+
 type Breadcrumb = {
   label: string;
   href: string;
   clickable: boolean;
   isActive: boolean;
+  children?: BreadcrumbChild[];
 };
 
 const sameCrumbs = (a?: Breadcrumb[], b?: Breadcrumb[]) =>
@@ -193,6 +201,32 @@ const LayoutWrapper = (props: Props) => {
     [t],
   );
 
+  // --- BREADCRUMB CHILDREN MAP ---
+  const breadcrumbChildrenMap = useMemo<Record<string, string[]>>(
+    () => ({
+      "admin/manage/shifts": ["admin/manage/shifts/shift-teams"],
+      "admin/manage/units": [
+        "admin/manage/units/unit-groups",
+        "admin/manage/units/unit-columns",
+        "admin/manage/units/categories",
+      ],
+    }),
+    [],
+  );
+
+  const getLabelForPath = (pathKey: string, fallbackPart?: string) => {
+    const translation =
+      breadcrumbTranslation[pathKey.toLowerCase()] ??
+      breadcrumbTranslation[(fallbackPart ?? "").toLowerCase()];
+    if (translation?.label) {
+      return translation.label;
+    }
+    if (fallbackPart) {
+      return fallbackPart.charAt(0).toUpperCase() + fallbackPart.slice(1);
+    }
+    return pathKey;
+  };
+
   // --- CREATE BREADCRUMBS ---
   const createBreadcrumbs = (
     path: string,
@@ -228,8 +262,10 @@ const LayoutWrapper = (props: Props) => {
         .slice(0, index + 1)
         .join("/")
         .toLowerCase();
+
       const translation =
         breadcrumbTranslation[prefixKey] ?? breadcrumbTranslation[key];
+
       const isLast = index === filteredParts.length - 1;
 
       // --- Special cases ---
@@ -288,7 +324,21 @@ const LayoutWrapper = (props: Props) => {
               ? "/plan/operational-plans"
               : "/" + filteredParts.slice(0, index + 1).join("/");
 
-      crumbs.push({ label, href, clickable, isActive: isLast });
+      const childKeys = breadcrumbChildrenMap[prefixKey] ?? [];
+      const children =
+        childKeys.length > 0
+          ? childKeys.map((k) => {
+              const href = "/" + k;
+              return {
+                label: getLabelForPath(k, k.split("/").at(-1)),
+                href,
+                clickable: true,
+                isActive: pathname.toLowerCase() === href.toLowerCase(),
+              };
+            })
+          : undefined;
+
+      crumbs.push({ label, href, clickable, isActive: isLast, children });
     }
 
     // --- Invalid page if invalid href ---
