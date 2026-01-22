@@ -132,6 +132,8 @@
   "Common/Product": "Product",
   "Common/product": "product",
   "Common/Activities": "Activities",
+  "Common/Undo": "Undo",
+  "Common/Redo": "Redo",
 
   "Message/Loading": "Loading...",
   "Message/Auth": "Authenticating...",

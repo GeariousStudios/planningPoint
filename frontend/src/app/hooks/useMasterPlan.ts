@@ -8,6 +8,15 @@ import { useDragControls } from "framer-motion";
 import { useParams } from "next/navigation";
 import * as XLSX from "xlsx-js-style";
 
+type HistorySnapshot = {
+  masterPlans: any[];
+  removedElementIds: (number | string)[];
+  selectedId: string | null;
+  editMode: "element" | "group";
+  isKeepSeparate: boolean;
+  currentPage: number;
+};
+
 type MasterPlanElement = {
   id: number | string;
   status?: MasterPlanElementStatus | null;
@@ -55,8 +64,11 @@ export const useMasterPlan = (
   const constraintsRef = useRef(null);
   const isViewingRevisionRef = useRef(false);
   const dragControls = useDragControls();
+  const undoStackRef = useRef<HistorySnapshot[]>([]);
+  const redoStackRef = useRef<HistorySnapshot[]>([]);
 
   // --- States ---
+  const [historyTick, setHistoryTick] = useState(0);
   const [productSearch, setProductSearch] = useState("");
   const [productList, setProductList] = useState<ProductListItem[]>([]);
   const [isProductListOpen, setIsProductListOpen] = useState(false);
@@ -576,6 +588,8 @@ export const useMasterPlan = (
   };
 
   const applyPlanToState = (data: any) => {
+    resetHistory();
+
     setMasterPlans([
       {
         ...data,
@@ -617,6 +631,7 @@ export const useMasterPlan = (
       setSelectedRevisionId("latest");
       setIsViewingRevision(false);
       isViewingRevisionRef.current = false;
+      resetHistory();
       requestRefetch();
       return;
     }
@@ -633,6 +648,7 @@ export const useMasterPlan = (
       isViewingRevisionRef.current = true;
       setIsEditing(false);
       setEditMode("element");
+      resetHistory();
       clearRemovedElements();
       setSelectedId(null);
       applyPlanToState(snapshot);
@@ -701,6 +717,8 @@ export const useMasterPlan = (
     groupId: number | null = null,
     values: Record<number, string> = {},
   ) => {
+    pushHistory();
+
     setMasterPlans((prev) =>
       prev.map((p) => {
         if (p.id !== planId) return p;
@@ -774,6 +792,8 @@ export const useMasterPlan = (
     elementId: string,
     mode: "element" | "group",
   ) => {
+    pushHistory();
+
     setMasterPlans((prev) =>
       prev.map((plan) => {
         if (String(plan.id) !== String(planId)) return plan;
@@ -853,6 +873,8 @@ export const useMasterPlan = (
     fieldId: number,
     newValue: string,
   ) => {
+    pushHistory();
+
     setMasterPlans((prev) =>
       prev.map((plan) =>
         String(plan.id) !== String(planId)
@@ -885,6 +907,8 @@ export const useMasterPlan = (
     elementId: string,
     mode: "element" | "group",
   ) => {
+    pushHistory();
+
     setMasterPlans((prev) =>
       prev.map((plan) => {
         const target = plan.elements.find(
@@ -917,6 +941,8 @@ export const useMasterPlan = (
     elementId: string,
     mode: "element" | "group" = "element",
   ) => {
+    pushHistory();
+
     setRemovedElementIds((prev) => {
       const updated = new Set(prev);
 
@@ -1075,6 +1101,7 @@ export const useMasterPlan = (
 
       setIsEditing(false);
       setEditMode("element");
+      resetHistory();
       requestRefetch();
       await handleCheck(true);
       clearRemovedElements();
@@ -1125,6 +1152,7 @@ export const useMasterPlan = (
   const handleAbortChanges = async () => {
     setIsEditing(false);
     setEditMode("element");
+    resetHistory();
     requestRefetch();
     await handleCheck(true, true);
     clearRemovedElements();
@@ -1332,6 +1360,8 @@ export const useMasterPlan = (
     direction: "up" | "down",
     keepSeparate = false,
   ) => {
+    pushHistory();
+
     setMasterPlans((prev) =>
       prev.map((plan) => {
         if (String(plan.id) !== String(planId)) return plan;
@@ -1525,6 +1555,8 @@ export const useMasterPlan = (
     groupId: number | string | null,
     direction: "up" | "down",
   ) => {
+    pushHistory();
+
     setMasterPlans((prev) =>
       prev.map((plan) => {
         if (String(plan.id) !== String(planId)) return plan;
@@ -1642,16 +1674,18 @@ export const useMasterPlan = (
       const items = Array.isArray(data?.items) ? data.items : [];
 
       setProductList(
-        items.filter((p: any) => !p.isHidden).map((p: any) => ({
-          id: Number(p.id),
-          name: String(p.name ?? ""),
-          masterPlanFields: Array.isArray(p.masterPlanFields)
-            ? p.masterPlanFields.map((f: any) => ({
-                id: Number(f.id),
-                value: f.value ?? "",
-              }))
-            : [],
-        })),
+        items
+          .filter((p: any) => !p.isHidden)
+          .map((p: any) => ({
+            id: Number(p.id),
+            name: String(p.name ?? ""),
+            masterPlanFields: Array.isArray(p.masterPlanFields)
+              ? p.masterPlanFields.map((f: any) => ({
+                  id: Number(f.id),
+                  value: f.value ?? "",
+                }))
+              : [],
+          })),
       );
     } finally {
       setIsProductListLoading(false);
@@ -1813,6 +1847,70 @@ export const useMasterPlan = (
     );
   };
 
+  // --- Undo/Redo ---
+  const cloneValue = <T>(v: T): T => {
+    const sc = (globalThis as any).structuredClone;
+    if (typeof sc === "function") return sc(v);
+    return JSON.parse(JSON.stringify(v));
+  };
+
+  const makeSnapshot = (): HistorySnapshot => ({
+    masterPlans: cloneValue(masterPlans),
+    removedElementIds: cloneValue(removedElementIds),
+    selectedId,
+    editMode,
+    isKeepSeparate,
+    currentPage,
+  });
+
+  const resetHistory = () => {
+    undoStackRef.current = [];
+    redoStackRef.current = [];
+    setHistoryTick((x) => x + 1);
+  };
+
+  const pushHistory = () => {
+    undoStackRef.current.push(makeSnapshot());
+    if (undoStackRef.current.length > 50) undoStackRef.current.shift();
+    redoStackRef.current = [];
+    setHistoryTick((x) => x + 1);
+  };
+
+  const undo = () => {
+    const prev = undoStackRef.current.pop();
+    if (!prev) return;
+
+    redoStackRef.current.push(makeSnapshot());
+
+    setMasterPlans(prev.masterPlans);
+    setRemovedElementIds(prev.removedElementIds);
+    setSelectedId(prev.selectedId);
+    setEditMode(prev.editMode);
+    setIsKeepSeparate(prev.isKeepSeparate);
+    setCurrentPage(prev.currentPage);
+
+    setHistoryTick((x) => x + 1);
+  };
+
+  const redo = () => {
+    const next = redoStackRef.current.pop();
+    if (!next) return;
+
+    undoStackRef.current.push(makeSnapshot());
+
+    setMasterPlans(next.masterPlans);
+    setRemovedElementIds(next.removedElementIds);
+    setSelectedId(next.selectedId);
+    setEditMode(next.editMode);
+    setIsKeepSeparate(next.isKeepSeparate);
+    setCurrentPage(next.currentPage);
+
+    setHistoryTick((x) => x + 1);
+  };
+
+  const canUndo = undoStackRef.current.length > 0;
+  const canRedo = redoStackRef.current.length > 0;
+
   const groups: MasterPlanElement[][] = [];
   const seenGroups = new Set<string>();
 
@@ -1946,5 +2044,9 @@ export const useMasterPlan = (
     productSearch,
     setProductSearch,
     filteredProductList,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   };
 };

@@ -133,6 +133,8 @@
   "Common/Product": "Produkt",
   "Common/product": "produkt",
   "Common/Activities": "Aktiviteter",
+  "Common/Undo": "Ångra",
+  "Common/Redo": "Gör om",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
