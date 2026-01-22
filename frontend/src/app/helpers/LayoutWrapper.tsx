@@ -58,6 +58,7 @@ const LayoutWrapper = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const parts = pathname.split("/").filter(Boolean);
   const [breadcrumbsLoading, setBreadcrumbsLoading] = useState(true);
+  const locale = useLocale();
 
   // --- IF UNIT, MASTER PLAN OR OPERATIONAL PLAN, GET UNIT/MASTER PLAN/OPERATIONAL PLAN/GROUP INFO ---
   useEffect(() => {
@@ -210,9 +211,34 @@ const LayoutWrapper = (props: Props) => {
         "admin/manage/units/unit-columns",
         "admin/manage/units/categories",
       ],
+      "admin/manage/plan/master-plans": [
+        "admin/manage/plan/master-plans/master-plan-fields",
+        "admin/manage/plan/master-plans/import-rules",
+      ],
     }),
     [],
   );
+
+  const normalizePath = (p: string) => {
+    let x = (p || "/").toLowerCase();
+
+    const loc = `/${locale.toLowerCase()}`;
+    if (x === loc) {
+      x = "/";
+    } else if (x.startsWith(loc + "/")) {
+      x = x.slice(loc.length);
+    }
+
+    if (!x.startsWith("/")) {
+      x = "/" + x;
+    }
+
+    if (x.length > 1 && x.endsWith("/")) {
+      x = x.slice(0, -1);
+    }
+
+    return x;
+  };
 
   const getLabelForPath = (pathKey: string, fallbackPart?: string) => {
     const translation =
@@ -333,7 +359,7 @@ const LayoutWrapper = (props: Props) => {
                 label: getLabelForPath(k, k.split("/").at(-1)),
                 href,
                 clickable: true,
-                isActive: pathname.toLowerCase() === href.toLowerCase(),
+                isActive: normalizePath(pathname) === normalizePath(href),
               };
             })
           : undefined;
