@@ -402,7 +402,7 @@ const ImportRulesClient = (props: Props) => {
                   <hr className="w-full text-(--border-tertiary)" />
                 </div>
 
-                <div className="flex gap-x-12 gap-y-6 flex-wrap">
+                <div className="flex flex-wrap gap-x-12 gap-y-6">
                   <div className="flex items-center gap-2 truncate">
                     <button
                       type="button"
@@ -457,11 +457,13 @@ const ImportRulesClient = (props: Props) => {
             {fields.map((f) => (
               <div key={f.id} className="flex flex-col gap-2">
                 <div
-                  className={`${f.dataType !== "Text" ? "border-(--locked) opacity-50" : "border-(--border-main)"} overflow-x-auto rounded border`}
+                  // className={`${f.dataType !== "Text" ? "border-(--locked) opacity-50" : "border-(--border-main)"} overflow-x-auto rounded border`}
+                  className="overflow-x-auto rounded border border-(--border-main)"
                 >
                   <table className="table w-full table-auto border-collapse bg-(--bg-grid)">
                     <thead
-                      className={`${f.dataType !== "Text" ? "bg-(--locked)/75" : "bg-(--bg-grid-header)"}`}
+                      // className={`${f.dataType !== "Text" ? "bg-(--locked)/75" : "bg-(--bg-grid-header)"}`}
+                      className="bg-(--bg-grid-header)"
                     >
                       <tr>
                         {/* <ThCell
@@ -488,7 +490,7 @@ const ImportRulesClient = (props: Props) => {
                                   )} ${columnMapping[f.id] ? "" : "!cursor-not-allowed"}`}
                                   onClick={() => toggleGroupField(f.id)}
                                   disabled={
-                                    f.dataType !== "Text" ||
+                                    // f.dataType !== "Text" ||
                                     !columnMapping[f.id]
                                   }
                                 >
@@ -506,14 +508,14 @@ const ImportRulesClient = (props: Props) => {
                             </div>
                           }
                           sortable={false}
-                          classNameAddition={
-                            f.dataType !== "Text" ? "border-b-(--locked)" : ""
-                          }
+                          // classNameAddition={
+                          //   f.dataType !== "Text" ? "border-b-(--locked)" : ""
+                          // }
                         />
                       </tr>
                     </thead>
                     <tbody
-                      className={`${f.dataType !== "Text" ? "bg-(--locked)/25" : ""}`}
+                    // className={`${f.dataType !== "Text" ? "bg-(--locked)/25" : ""}`}
                     >
                       <tr>
                         <TdCell childClassNameAddition="overflow-visible -mx-2">
@@ -530,9 +532,9 @@ const ImportRulesClient = (props: Props) => {
                             //     : undefined
                             // }
                             onChange={(val) => {
-                              if (f.dataType !== "Text") {
-                                return;
-                              }
+                              // if (f.dataType !== "Text") {
+                              //   return;
+                              // }
 
                               setColumnMapping((prev) => {
                                 const next = { ...prev, [f.id]: val };
@@ -545,18 +547,18 @@ const ImportRulesClient = (props: Props) => {
                               });
                             }}
                             placeholder={t("ImportRules/Select excel column")}
-                            disabled={f.dataType !== "Text"}
+                            // disabled={f.dataType !== "Text"}
                           />
                         </TdCell>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                {f.dataType !== "Text" && (
+                {/* {f.dataType !== "Text" && (
                   <span className="text-sm text-(--text-secondary)">
                     {t("ImportRules/Non-text fields cannot be mapped")}
                   </span>
-                )}
+                )} */}
               </div>
             ))}
           </div>
