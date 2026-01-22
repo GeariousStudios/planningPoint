@@ -5,7 +5,7 @@ namespace backend.Dtos.Product
     public class UpdateProductDto
     {
         [Required(ErrorMessage = "[1|Common/a name] Validation/Please enter")]
-        [MaxLength(64, ErrorMessage = "[2|Common/Name] Validation/cannot exceed")]
+        [MaxLength(64, ErrorMessage = "[2|Common/Name|64] Validation/cannot exceed")]
         public string Name { get; set; } = string.Empty;
         public int[]? MasterPlanIds { get; set; }
         public int[]? MasterPlanFieldIds { get; set; }

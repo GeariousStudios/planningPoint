@@ -8,7 +8,7 @@ namespace backend.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(32)]
+        [MaxLength(64)]
         public string Name { get; set; } = string.Empty;
 
         public TrendingTypes? Type { get; set; }

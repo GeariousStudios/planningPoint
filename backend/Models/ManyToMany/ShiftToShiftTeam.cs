@@ -10,7 +10,7 @@ namespace backend.Models.ManyToMany
         public int ShiftTeamId { get; set; }
         public ShiftTeam ShiftTeam { get; set; } = null!;
 
-        [MaxLength(32)]
+        [MaxLength(64)]
         public string? DisplayName { get; set; }
 
         public int Order { get; set; }

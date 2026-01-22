@@ -14,7 +14,7 @@ namespace backend.Models
         public DateTime ArchivedAt { get; set; }
         public string ArchivedBy { get; set; } = string.Empty;
 
-        [MaxLength(32)]
+        [MaxLength(64)]
         public string Name { get; set; } = string.Empty;
 
         public string SnapshotJson { get; set; } = string.Empty;

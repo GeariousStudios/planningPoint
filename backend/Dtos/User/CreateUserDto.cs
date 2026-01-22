@@ -15,7 +15,7 @@ namespace backend.Dtos.User
             @"^\S+$",
             ErrorMessage = "[4|User/Username] Validation/cannot contain spaces"
         )]
-        [MaxLength(16, ErrorMessage = "[5|User/Username|16] Validation/cannot exceed")]
+        [MaxLength(32, ErrorMessage = "[5|User/Username|32] Validation/cannot exceed")]
         public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "[6|User/a password] Validation/Please enter")]

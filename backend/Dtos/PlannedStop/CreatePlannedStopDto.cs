@@ -5,7 +5,7 @@ namespace backend.Dtos.PlannedStop
     public class CreatePlannedStopDto
     {
         [Required(ErrorMessage = "[1|Common/a name] Validation/Please enter")]
-        [MaxLength(32, ErrorMessage = "[2|Common/Name|32] Validation/cannot exceed")]
+        [MaxLength(64, ErrorMessage = "[2|Common/Name|64] Validation/cannot exceed")]
         public string Name { get; set; } = string.Empty;
 
         [MaxLength(7, ErrorMessage = "[3|Common/a color|7] Validation/cannot exceed")]

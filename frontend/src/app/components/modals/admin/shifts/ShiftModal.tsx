@@ -907,7 +907,7 @@ const ShiftModal = (props: Props) => {
                             }
                             aria-label={`${team.name} display name`}
                             inChip
-                            {...shiftTeamConstraints.name}
+                            {...shiftConstraints.displayName}
                           />
 
                           <div className="grid grid-cols-2 gap-6">
