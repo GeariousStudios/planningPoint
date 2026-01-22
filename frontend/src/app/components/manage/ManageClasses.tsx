@@ -2,7 +2,7 @@ export const thClass =
   "pl-4 p-2 min-w-48 h-[40px] cursor-pointer border border-t-0 border-(--border-secondary) border-b-(--border-main) text-left transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)";
 
 export const tdClass =
-  "py-2 px-4 min-w-48 h-[40px] border border-b-0 border-(--border-secondary) text-left [overflow-wrap:anywhere]";
+  "py-2 px-4 min-w-48 h-[40px] border border-b-0 border-(--border-secondary) text-left [overflow-wrap:anywhere] align-top";
 
 export const filterClass =
   "truncate font-semibold transition-colors duration-(--fast) group-hover:text-(--accent-color)";
