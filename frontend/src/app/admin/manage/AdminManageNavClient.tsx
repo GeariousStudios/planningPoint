@@ -27,8 +27,8 @@ const AdminManageNavClient = (props: Props) => {
     {
       sectionLabel: t("Common/Units"),
       items: [
-        { href: "/admin/manage/units/unit-groups/", label: t("Common/Groups") },
         { href: "/admin/manage/units/", label: t("Common/Units") },
+        { href: "/admin/manage/units/unit-groups/", label: t("Common/Groups") },
         {
           title: t("Navbar/Report"),
           href: "/admin/manage/units/categories/",

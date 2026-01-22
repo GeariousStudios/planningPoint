@@ -1008,19 +1008,6 @@ const Navbar = (props: Props) => {
                                   label: t("Common/Units"),
                                   items: [
                                     {
-                                      href: "/admin/manage/units/unit-groups/",
-                                      label: t("Common/Groups"),
-                                      onToggleFavourite:
-                                        isLoggedIn && props.isEditingFavourites
-                                          ? onToggleFavourite
-                                          : undefined,
-                                      isFavourite: favourites.some(
-                                        (f) =>
-                                          f.href ===
-                                          "/admin/manage/units/unit-groups/",
-                                      ),
-                                    },
-                                    {
                                       href: "/admin/manage/units/",
                                       label: t("Common/Units"),
 
@@ -1031,6 +1018,19 @@ const Navbar = (props: Props) => {
                                       isFavourite: favourites.some(
                                         (f) =>
                                           f.href === "/admin/manage/units/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/units/unit-groups/",
+                                      label: t("Common/Groups"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/unit-groups/",
                                       ),
                                     },
                                     {
