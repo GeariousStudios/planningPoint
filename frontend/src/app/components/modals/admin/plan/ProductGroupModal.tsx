@@ -18,6 +18,8 @@ import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import MultiDropdown from "@/app/components/common/MultiDropdown";
 import React from "react";
+import DragDrop from "@/app/components/common/DragDrop";
+import Message from "@/app/components/common/Message";
 
 type Props = {
   isOpen: boolean;
@@ -44,6 +46,7 @@ type MasterPlanField = {
 };
 
 type ProductGroupFieldValue = {
+  productId: number;
   masterPlanFieldId: number;
   value: string;
 };
@@ -55,6 +58,7 @@ type ProductGroupFetchResult = {
   products: { id: number; name: string }[];
   isHidden: boolean;
   productGroupFieldValues?: {
+    productId: number;
     masterPlanFieldId: number;
     name?: string;
     dataType?: string;
@@ -72,6 +76,7 @@ const ProductGroupModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isAnyDragging, setIsAnyDragging] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
 
@@ -84,13 +89,19 @@ const ProductGroupModal = (props: Props) => {
   const [productIds, setProductIds] = useState<number[]>([]);
 
   const [allFields, setAllFields] = useState<MasterPlanField[]>([]);
-  const [autoFieldIds, setAutoFieldIds] = useState<number[]>([]);
-
-  const [fieldValueById, setFieldValueById] = useState<Record<number, string>>(
-    {},
+  const [requiredFieldIdsByProduct, setRequiredFieldIdsByProduct] = useState<
+    Record<number, number[]>
+  >({});
+  const [requiredFieldIdsUnion, setRequiredFieldIdsUnion] = useState<number[]>(
+    [],
   );
-  const [touchedFieldIds, setTouchedFieldIds] = useState<number[]>([]);
-  const [requiredFieldIds, setRequiredFieldIds] = useState<number[]>([]);
+
+  const [activeProductId, setActiveProductId] = useState<number | null>(null);
+
+  const [fieldValueByKey, setFieldValueByKey] = useState<
+    Record<string, string>
+  >({});
+  const [touchedKeys, setTouchedKeys] = useState<string[]>([]);
 
   const [missingByMasterPlan, setMissingByMasterPlan] = useState<
     Record<number, number[]>
@@ -102,12 +113,11 @@ const ProductGroupModal = (props: Props) => {
     [],
   );
   const [originalProductIds, setOriginalProductIds] = useState<number[]>([]);
-  const [originalFieldValueById, setOriginalFieldValueById] = useState<
-    Record<number, string>
+  const [originalFieldValueByKey, setOriginalFieldValueByKey] = useState<
+    Record<string, string>
   >({});
-  const [originalTouchedFieldIds, setOriginalTouchedFieldIds] = useState<
-    number[]
-  >([]);
+  const [originalTouchedKeys, setOriginalTouchedKeys] = useState<string[]>([]);
+
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -137,40 +147,21 @@ const ProductGroupModal = (props: Props) => {
       setProductIds([]);
       setOriginalProductIds([]);
 
-      setFieldValueById({});
-      setOriginalFieldValueById({});
+      setRequiredFieldIdsByProduct({});
+      setRequiredFieldIdsUnion([]);
 
-      setTouchedFieldIds([]);
-      setOriginalTouchedFieldIds([]);
+      setActiveProductId(null);
+
+      setFieldValueByKey({});
+      setOriginalFieldValueByKey({});
+
+      setTouchedKeys([]);
+      setOriginalTouchedKeys([]);
 
       setIsHidden(false);
       setOriginalIsHidden(false);
     }
   }, [props.isOpen, props.itemId]);
-
-  useEffect(() => {
-    if (!props.isOpen) return;
-
-    const ids = requiredFieldIds.slice();
-
-    ids.sort((a, b) => {
-      const aName = allFields.find((x) => x.id === a)?.name ?? "";
-      const bName = allFields.find((x) => x.id === b)?.name ?? "";
-      return aName.localeCompare(bName);
-    });
-
-    setAutoFieldIds(ids);
-
-    setFieldValueById((prev) => {
-      const next: Record<number, string> = {};
-      for (const id of ids) {
-        next[id] = prev[id] ?? "";
-      }
-      return next;
-    });
-
-    setTouchedFieldIds((prev) => prev.filter((id) => ids.includes(id)));
-  }, [props.isOpen, requiredFieldIds, allFields]);
 
   // --- BACKEND ---
   // --- Create product group ---
@@ -191,8 +182,8 @@ const ProductGroupModal = (props: Props) => {
           masterPlanIds,
           productIds,
           productGroupFieldValues: buildProductGroupFieldValues(
-            touchedFieldIds,
-            fieldValueById,
+            touchedKeys,
+            fieldValueByKey,
           ),
           isHidden,
         }),
@@ -350,13 +341,15 @@ const ProductGroupModal = (props: Props) => {
   const fetchRequiredFieldsForProducts = async (ids: number[]) => {
     try {
       if (ids.length === 0) {
-        setRequiredFieldIds([]);
+        setRequiredFieldIdsByProduct({});
+        setRequiredFieldIdsUnion([]);
         return;
       }
 
       const qs = ids
         .map((id) => `productIds=${encodeURIComponent(String(id))}`)
         .join("&");
+
       const response = await fetch(`${apiUrl}/product/required-fields?${qs}`, {
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
@@ -370,21 +363,46 @@ const ProductGroupModal = (props: Props) => {
         return;
       }
 
+      if (!response.ok) {
+        notify("error", t("Modal/Unknown error"));
+        setRequiredFieldIdsByProduct({});
+        setRequiredFieldIdsUnion([]);
+        return;
+      }
+
       const result = await response.json();
-      const fieldIds = Array.isArray(result?.fieldIds)
+
+      const fieldIds: number[] = Array.isArray(result?.fieldIds)
         ? result.fieldIds.map(Number)
         : [];
-      fieldIds.sort((a: number, b: number) => a - b);
 
-      setRequiredFieldIds(fieldIds);
+      fieldIds.sort((a, b) => a - b);
+
+      setRequiredFieldIdsUnion(fieldIds);
+      setRequiredFieldIdsByProduct(
+        Object.fromEntries(ids.map((pid) => [pid, fieldIds])),
+      );
     } catch {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
   useEffect(() => {
-    if (!props.isOpen) return;
+    if (!props.isOpen) {
+      return;
+    }
+
     fetchRequiredFieldsForProducts(productIds);
+
+    if (productIds.length === 0) {
+      setActiveProductId(null);
+      return;
+    }
+
+    setActiveProductId((prev) => {
+      if (prev && productIds.includes(prev)) return prev;
+      return productIds[0];
+    });
   }, [props.isOpen, productIds]);
 
   // --- Fetch product group ---
@@ -433,26 +451,36 @@ const ProductGroupModal = (props: Props) => {
 
     const values = Array.isArray(result.productGroupFieldValues)
       ? result.productGroupFieldValues.map((x) => ({
+          productId: Number(x.productId),
           masterPlanFieldId: Number(x.masterPlanFieldId),
           value: String(x.value ?? ""),
         }))
       : [];
 
-    const map: Record<number, string> = {};
+    const map: Record<string, string> = {};
+    const touched: string[] = [];
+
     for (const v of values) {
-      map[v.masterPlanFieldId] = v.value ?? "";
+      const key = makeKey(v.productId, v.masterPlanFieldId);
+      map[key] = v.value ?? "";
+      touched.push(key);
     }
 
-    const touched = values.map((x) => x.masterPlanFieldId);
+    const uniqTouched = Array.from(new Set(touched)).sort();
 
-    setFieldValueById(map);
-    setOriginalFieldValueById(map);
+    setFieldValueByKey(map);
+    setOriginalFieldValueByKey(map);
 
-    setTouchedFieldIds(touched);
-    setOriginalTouchedFieldIds(touched);
+    setTouchedKeys(uniqTouched);
+    setOriginalTouchedKeys(uniqTouched);
 
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
+
+    setActiveProductId((prev) => {
+      if (prev && pIds.includes(prev)) return prev;
+      return pIds.length > 0 ? pIds[0] : null;
+    });
   };
 
   // --- Update product group ---
@@ -475,8 +503,8 @@ const ProductGroupModal = (props: Props) => {
             masterPlanIds,
             productIds,
             productGroupFieldValues: buildProductGroupFieldValues(
-              touchedFieldIds,
-              fieldValueById,
+              touchedKeys,
+              fieldValueByKey,
             ),
             isHidden,
           }),
@@ -545,27 +573,58 @@ const ProductGroupModal = (props: Props) => {
     setProductIds((prev) => prev.filter((x) => x !== id));
   };
 
-  const getFieldValue = (fieldId: number) => {
-    return fieldValueById[fieldId] ?? "";
+  const makeKey = (productId: number, fieldId: number) =>
+    `${productId}:${fieldId}`;
+
+  const getFieldValue = (productId: number, fieldId: number) => {
+    return fieldValueByKey[makeKey(productId, fieldId)] ?? "";
   };
 
-  const updateFieldValue = (fieldId: number, value: string) => {
-    setFieldValueById((prev) => ({
+  const updateFieldValue = (
+    productId: number,
+    fieldId: number,
+    value: string,
+  ) => {
+    const key = makeKey(productId, fieldId);
+
+    setFieldValueByKey((prev) => ({
       ...prev,
-      [fieldId]: value,
+      [key]: value,
     }));
 
-    setTouchedFieldIds((prev) =>
-      prev.includes(fieldId) ? prev : [...prev, fieldId],
-    );
+    setTouchedKeys((prev) => (prev.includes(key) ? prev : [...prev, key]));
   };
 
-  const clearFieldOverride = (fieldId: number) => {
-    setFieldValueById((prev) => ({
+  const clearFieldOverride = (productId: number, fieldId: number) => {
+    const key = makeKey(productId, fieldId);
+
+    setFieldValueByKey((prev) => ({
       ...prev,
-      [fieldId]: "",
+      [key]: "",
     }));
-    setTouchedFieldIds((prev) => prev.filter((x) => x !== fieldId));
+
+    setTouchedKeys((prev) => prev.filter((x) => x !== key));
+  };
+
+  const buildProductGroupFieldValues = (
+    keys: string[],
+    map: Record<string, string>,
+  ): ProductGroupFieldValue[] => {
+    return keys
+      .slice()
+      .sort()
+      .map((key) => {
+        const [p, f] = key.split(":");
+        const productId = Number(p);
+        const masterPlanFieldId = Number(f);
+
+        return {
+          productId,
+          masterPlanFieldId,
+          value: map[key] ?? "",
+        };
+      })
+      .filter((x) => String(x.value ?? "").trim() !== "");
   };
 
   const computeMissing = (mpIds: number[], fieldIds: number[]) => {
@@ -583,20 +642,6 @@ const ProductGroupModal = (props: Props) => {
     return missing;
   };
 
-  const buildProductGroupFieldValues = (
-    ids: number[],
-    map: Record<number, string>,
-  ): ProductGroupFieldValue[] => {
-    return ids
-      .slice()
-      .sort((a, b) => a - b)
-      .map((id) => ({
-        masterPlanFieldId: id,
-        value: map[id] ?? "",
-      }))
-      .filter((x) => String(x.value ?? "").trim() !== "");
-  };
-
   useEffect(() => {
     if (!props.isOpen) return;
 
@@ -605,10 +650,12 @@ const ProductGroupModal = (props: Props) => {
       return;
     }
 
-    const missing = computeMissing(masterPlanIds, requiredFieldIds);
+    const missing = computeMissing(masterPlanIds, requiredFieldIdsUnion);
 
     setMissingByMasterPlan(missing);
-  }, [props.isOpen, masterPlanIds, allFields, requiredFieldIds]);
+  }, [props.isOpen, masterPlanIds, allFields, requiredFieldIdsUnion]);
+
+  const activeFieldIds = requiredFieldIdsUnion;
 
   const validationError = (() => {
     if (masterPlanIds.length === 0) return null;
@@ -685,39 +732,44 @@ const ProductGroupModal = (props: Props) => {
     );
   };
 
+  // --- ProductChip ---
   const ProductChip = ({
-    id,
     label,
     onDelete,
+    isDragging = false,
+    dragging = false,
   }: {
-    id: number;
     label: string;
     onDelete: () => void;
+    isDragging?: boolean;
+    dragging?: boolean;
   }) => {
-    return (
-      <div
-        className={`${roundedButtonClass} flex w-auto !cursor-default items-center gap-2 !bg-(--bg-modal-link) px-4 transition-transform duration-(--fast)`}
-      >
-        <span className="truncate font-semibold select-none">{label}</span>
+    const disableHover = dragging && !isDragging;
 
+    return (
+      <>
         <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
-          style={{ cursor: "pointer" }}
+          disabled={isDragging}
+          className={`${roundedButtonClass} group w-auto gap-2 bg-(--bg-modal-link)! px-4`}
+          onClick={onDelete}
         >
-          <XMarkIcon className="h-6 w-6" />
+          <span
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} truncate font-semibold transition-colors duration-(--fast)`}
+          >
+            {label}
+          </span>
+          <XMarkIcon
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} h-6 w-6 transition-[color,rotate] duration-(--fast)`}
+          />
         </button>
-      </div>
+      </>
     );
   };
 
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     const normalizeIds = (ids: number[]) => ids.slice().sort((a, b) => a - b);
+    const normalizeKeys = (keys: string[]) => keys.slice().sort();
 
     const currMp = normalizeIds(masterPlanIds);
     const origMp = normalizeIds(originalMasterPlanIds);
@@ -725,16 +777,16 @@ const ProductGroupModal = (props: Props) => {
     const currP = normalizeIds(productIds);
     const origP = normalizeIds(originalProductIds);
 
-    const currTouched = normalizeIds(touchedFieldIds);
-    const origTouched = normalizeIds(originalTouchedFieldIds);
+    const currTouched = normalizeKeys(touchedKeys);
+    const origTouched = normalizeKeys(originalTouchedKeys);
 
     const currValues = buildProductGroupFieldValues(
       currTouched,
-      fieldValueById,
+      fieldValueByKey,
     );
     const origValues = buildProductGroupFieldValues(
       origTouched,
-      originalFieldValueById,
+      originalFieldValueByKey,
     );
 
     const fieldsDirty =
@@ -766,14 +818,14 @@ const ProductGroupModal = (props: Props) => {
     name,
     masterPlanIds,
     productIds,
-    touchedFieldIds,
-    fieldValueById,
+    touchedKeys,
+    fieldValueByKey,
     isHidden,
     originalName,
     originalMasterPlanIds,
     originalProductIds,
-    originalTouchedFieldIds,
-    originalFieldValueById,
+    originalTouchedKeys,
+    originalFieldValueByKey,
     originalIsHidden,
   ]);
 
@@ -826,48 +878,6 @@ const ProductGroupModal = (props: Props) => {
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Products")}
-                </h3>
-                <hr className="w-full text-(--border-tertiary)" />
-              </div>
-
-              <MultiDropdown
-                scrollContainer={getScrollEl}
-                label={t("Common/Products")}
-                options={productOptions.map((p) => ({
-                  value: String(p.id),
-                  label: p.name,
-                }))}
-                value={productIds.map(String)}
-                onChange={(val: string[]) => setProductIds(val.map(Number))}
-                onModal
-              />
-
-              {productIds.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {productIds
-                    .slice()
-                    .sort((a, b) => a - b)
-                    .map((id) => {
-                      const label =
-                        productOptions.find((p) => p.id === id)?.name ??
-                        `#${id}`;
-
-                      return (
-                        <ProductChip
-                          key={id}
-                          id={id}
-                          label={label}
-                          onDelete={() => deleteProduct(id)}
-                        />
-                      );
-                    })}
-                </div>
-              )}
-
-              <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-(--border-tertiary)" />
-                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("ProductGroupModal/Info2")}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
@@ -910,121 +920,201 @@ const ProductGroupModal = (props: Props) => {
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Master plan fields")}
+                  {t("ProductGroupModal/Info3")}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
 
-              {autoFieldIds.length === 0 ? (
-                <div className="mt-2 text-sm text-(--text-secondary)">
-                  -
+              <MultiDropdown
+                scrollContainer={getScrollEl}
+                label={t("Common/Products")}
+                options={productOptions.map((p) => ({
+                  value: String(p.id),
+                  label: p.name,
+                }))}
+                value={productIds.map(String)}
+                onChange={(val: string[]) => setProductIds(val.map(Number))}
+                onModal
+              />
+
+              {productIds.length > 0 && (
+                <div className="flex flex-col gap-4">
+                  <DragDrop
+                    items={productIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newList) => setProductIds(newList)}
+                    onDraggingChange={setIsAnyDragging}
+                    renderItem={(id, isDragging) => {
+                      const label =
+                        productOptions.find((p) => p.id === id)?.name ??
+                        `#${id}`;
+
+                      return (
+                        <ProductChip
+                          label={label}
+                          isDragging={isDragging}
+                          dragging={isAnyDragging}
+                          onDelete={() => deleteProduct(id)}
+                        />
+                      );
+                    }}
+                  />
+
+                  <span className="text-sm text-(--text-secondary) italic">
+                    {t("Modal/Drag and drop1") +
+                      t("Common/column") +
+                      t("Modal/Drag and drop3")}
+                  </span>
                 </div>
+              )}
+
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
+                  {t("ProductGroupModal/Info4")}
+                </h3>
+                <hr className="w-full text-(--border-tertiary)" />
+              </div>
+
+              {productIds.length === 0 ||
+              activeProductId === null ||
+              activeFieldIds.length === 0 ? (
+                <div className="mt-2 text-sm text-(--text-secondary)">-</div>
               ) : (
                 <div className="flex flex-col gap-6 rounded-2xl bg-(--bg-main) p-8">
                   <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                     {t("ProductGroupModal/Override values")}
                   </h3>
 
-                  <div className="grid grid-cols-1 gap-6">
-                    {autoFieldIds
-                      .map((id) => ({
-                        id,
-                        f: allFields.find((x) => x.id === id),
-                      }))
-                      .filter(
-                        (x): x is { id: number; f: MasterPlanField } => !!x.f,
-                      )
-                      .sort((a, b) => a.f.name.localeCompare(b.f.name))
-                      .map(({ id, f }) => {
-                        const dt = String(f.dataType).toLowerCase();
-                        const inputType =
-                          dt === "date"
-                            ? "date"
-                            : dt === "number"
-                              ? "number"
-                              : dt === "boolean"
-                                ? "checkbox"
-                                : "text";
+                  {activeFieldIds.length > 0 && allFields.length === 0 ? (
+                    <div className="mt-2 text-sm text-(--text-secondary)">
+                      <Message content="loading" icon="loading" sideMessage />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex flex-wrap gap-2">
+                        {productIds.map((id) => {
+                          const label =
+                            productOptions.find((p) => p.id === id)?.name ??
+                            `#${id}`;
 
-                        const current = getFieldValue(id);
-                        const isTouched = touchedFieldIds.includes(id);
+                          const isActive = id === activeProductId;
 
-                        if (inputType === "checkbox") {
-                          const checked = current === "true";
                           return (
-                            <div
+                            <button
                               key={id}
-                              className="flex items-center justify-between gap-6 rounded-2xl bg-(--bg-secondary) p-4"
+                              type="button"
+                              className={`${roundedButtonClass} ${isActive ? "!bg-(--accent-color) text-white" : "!bg-(--bg-modal-link)"} px-4`}
+                              onClick={() => setActiveProductId(id)}
                             >
-                              <div className="flex min-w-0 flex-col">
-                                <span className="truncate font-semibold">
-                                  {f.name}
-                                </span>
-                                {isTouched && (
-                                  <button
-                                    type="button"
-                                    className="mt-1 w-fit text-sm text-(--text-secondary) hover:text-(--accent-color)"
-                                    onClick={() => clearFieldOverride(id)}
-                                  >
-                                    {t("ProductGroupModal/Clear override")}
-                                  </button>
-                                )}
-                              </div>
-
-                              <button
-                                type="button"
-                                role="switch"
-                                aria-checked={checked}
-                                className={switchClass(checked)}
-                                onClick={() =>
-                                  updateFieldValue(
-                                    id,
-                                    checked ? "false" : "true",
-                                  )
-                                }
-                              >
-                                <div className={switchKnobClass(checked)} />
-                              </button>
-                            </div>
+                              <span className="truncate font-semibold">
+                                {label}
+                              </span>
+                            </button>
                           );
-                        }
+                        })}
+                      </div>
 
-                        return (
-                          <div
-                            key={id}
-                            className="rounded-2xl bg-(--bg-secondary)"
-                          >
-                            <div className="flex items-center justify-between gap-6">
-                              <div className="min-w-0">
-                                <div className="truncate font-semibold">
-                                  {f.name}
+                      <div className="grid grid-cols-1 gap-6">
+                        {activeFieldIds
+                          .map((id) => ({
+                            id,
+                            f: allFields.find((x) => x.id === id),
+                          }))
+                          .filter(
+                            (x): x is { id: number; f: MasterPlanField } =>
+                              !!x.f,
+                          )
+                          .sort((a, b) => a.f.name.localeCompare(b.f.name))
+                          .map(({ id, f }) => {
+                            const dt = String(f.dataType).toLowerCase();
+                            const inputType =
+                              dt === "date"
+                                ? "date"
+                                : dt === "number"
+                                  ? "number"
+                                  : dt === "boolean"
+                                    ? "checkbox"
+                                    : "text";
+
+                            const current = getFieldValue(activeProductId, id);
+                            const isTouched = touchedKeys.includes(
+                              makeKey(activeProductId, id),
+                            );
+
+                            if (inputType === "checkbox") {
+                              const checked = current === "true";
+                              return (
+                                <div key={id}>
+                                  <div className="flex items-center gap-4">
+                                    <button
+                                      type="button"
+                                      role="switch"
+                                      aria-checked={checked}
+                                      className={switchClass(checked)}
+                                      onClick={() =>
+                                        updateFieldValue(
+                                          activeProductId,
+                                          id,
+                                          checked ? "false" : "true",
+                                        )
+                                      }
+                                    >
+                                      <div
+                                        className={switchKnobClass(checked)}
+                                      />
+                                    </button>
+
+                                    <span>{f.name}</span>
+                                  </div>
+
+                                  {isTouched && (
+                                    <button
+                                      type="button"
+                                      className="mt-2 text-sm text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
+                                      onClick={() =>
+                                        clearFieldOverride(activeProductId, id)
+                                      }
+                                    >
+                                      {t("ProductGroupModal/Clear override")}
+                                    </button>
+                                  )}
                                 </div>
+                              );
+                            }
+
+                            return (
+                              <div key={id}>
+                                <Input
+                                  label={f.name}
+                                  value={current}
+                                  onChange={(val) =>
+                                    updateFieldValue(
+                                      activeProductId,
+                                      id,
+                                      String(val),
+                                    )
+                                  }
+                                  type={inputType as any}
+                                />
+
                                 {isTouched && (
                                   <button
                                     type="button"
-                                    className="mt-1 text-sm text-(--text-secondary) hover:text-(--accent-color)"
-                                    onClick={() => clearFieldOverride(id)}
+                                    className="mt-2 text-sm text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
+                                    onClick={() =>
+                                      clearFieldOverride(activeProductId, id)
+                                    }
                                   >
                                     {t("ProductGroupModal/Clear override")}
                                   </button>
                                 )}
                               </div>
-                            </div>
-
-                            <div className="mt-3">
-                              <Input
-                                label={f.name}
-                                value={current}
-                                onChange={(val) =>
-                                  updateFieldValue(id, String(val))
-                                }
-                                type={inputType as any}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
+                            );
+                          })}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

@@ -756,10 +756,7 @@ const ProductModal = (props: Props) => {
                         }
 
                         return (
-                          <div
-                            key={id}
-                            className="rounded-2xl bg-(--bg-secondary)"
-                          >
+                          <div key={id}>
                             <Input
                               label={f.name}
                               value={current}

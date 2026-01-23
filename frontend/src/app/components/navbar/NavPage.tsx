@@ -34,7 +34,7 @@ const SectionFrame = ({
     // <div className="p-4 bg-(--border-secondary) rounded-lg">
     <div className="p-4">
       <hr className="my-2 flex rounded-full text-(--border-main)" />
-      {showLabel && <div className="font-semibold uppercase">{label}</div>}
+      {showLabel && <div className=" uppercase">{label}</div>}
       <hr className="my-2 flex rounded-full text-(--border-main)" />
       {children}
     </div>
@@ -50,7 +50,7 @@ const ItemTitle = ({
 }) => {
   return (
     <div
-      className={`${!isFirstSection ? "mt-6" : "mt-4"} mb-1 text-sm font-semibold uppercase`}
+      className={`${!isFirstSection ? "mt-8" : "mt-4"} mb-1 text-sm font-semibold uppercase`}
     >
       {text}
     </div>
@@ -70,7 +70,7 @@ const NavPage = ({ sections, variant, pageLabel }: Props) => {
               label={section.sectionLabel}
               showLabel={true}
             >
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col">
                 {section.items.map((item, itemIndex) => (
                   <div key={item.href} className="flex flex-col">
                     {item.title && (
@@ -108,7 +108,7 @@ const NavPage = ({ sections, variant, pageLabel }: Props) => {
               !sectionEqualsPage && !singleItemEqualsSection;
 
             return (
-              <div key={section.sectionLabel} className="flex flex-col gap-2">
+              <div key={section.sectionLabel} className="flex flex-col">
                 {section.items.map((item, itemIndex) => (
                   <div key={item.href} className="flex flex-col">
                     {itemIndex === 0 && showSectionTitle && (

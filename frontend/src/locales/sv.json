@@ -431,7 +431,8 @@
 
   "ProductModal/Info1": "Uppgifter om produkten",
   "ProductModal/Info2": "Huvudplaner med tillgång",
-  "ProductModal/Info3": "Fält att förifylla med produktdata",
+  "ProductModal/Info3": "Produkter",
+  "ProductModal/Info4": "Fält att förifylla med produktdata",
   "ProductModal/needs to be assigned": "måste tilldelas följande fält:",
   "ProductModal/Hide product": "Dölj produkt",
   "ProductModal/Selected fields": "Förifyll valda fält",

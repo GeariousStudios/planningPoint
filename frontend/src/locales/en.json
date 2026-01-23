@@ -439,7 +439,8 @@
 
   "ProductGroupModal/Info1": "Details about the product group",
   "ProductGroupModal/Info2": "Master plans with access",
-  "ProductGroupModal/Info3": "Fields to prefill with product data",
+  "ProductGroupModal/Info3": "Products",
+  "ProductGroupModal/Info4": "Fields to prefill with product data",
   "ProductGroupModal/needs to be assigned": "needs to be assigned the following fields:",
   "ProductGroupModal/Hide product group": "Hide product group",
   "ProductGroupModal/Override values": "Prefill fields with custom values",

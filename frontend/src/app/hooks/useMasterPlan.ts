@@ -50,6 +50,19 @@ type ProductListItem = {
   masterPlanFields: { id: number; value: string | null }[];
 };
 
+type ProductGroupListItemDto = {
+  id: number;
+  name: string;
+  isHidden: boolean;
+};
+
+type ProductGroupFetchDto = {
+  id: number;
+  name: string;
+  isHidden: boolean;
+  productGroupFieldValues: { masterPlanFieldId: number; value: string }[];
+};
+
 export type MasterPlanElementStatus = "NotStarted" | "InProgress" | "Finished";
 
 export const useMasterPlan = (
@@ -1657,24 +1670,26 @@ export const useMasterPlan = (
       params.append("pageSize", "1000");
       params.append("masterPlanIds", String(planId));
 
-      const res = await fetch(`${apiUrl}/product?${params.toString()}`, {
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const [productsRes, groupAsProducts] = await Promise.all([
+        fetch(`${apiUrl}/product?${params.toString()}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        fetchProductGroupsAsProductsForThisMasterPlan(),
+      ]);
 
-      if (!res.ok) {
-        setProductList([]);
-        return;
-      }
+      let products: ProductListItem[] = [];
 
-      const data = await res.json();
-      const items = Array.isArray(data?.items) ? data.items : [];
+      if (productsRes.ok) {
+        const productsData = await productsRes.json();
+        const items = Array.isArray(productsData?.items)
+          ? productsData.items
+          : [];
 
-      setProductList(
-        items
+        products = items
           .filter((p: any) => !p.isHidden)
           .map((p: any) => ({
             id: Number(p.id),
@@ -1685,8 +1700,16 @@ export const useMasterPlan = (
                   value: f.value ?? "",
                 }))
               : [],
-          })),
+          }));
+      }
+
+      const merged = [...products, ...groupAsProducts].sort((a, b) =>
+        String(a.name ?? "").localeCompare(String(b.name ?? ""), undefined, {
+          sensitivity: "base",
+        }),
       );
+
+      setProductList(merged);
     } finally {
       setIsProductListLoading(false);
     }
@@ -1701,6 +1724,77 @@ export const useMasterPlan = (
       return name.includes(q);
     });
   }, [productList, productSearch]);
+
+  // --- PRODUCT GROUPS ---
+  const fetchProductGroupsAsProductsForThisMasterPlan = async (): Promise<
+    ProductListItem[]
+  > => {
+    const planId = masterPlans?.[0]?.id;
+    if (!apiUrl || !token || !planId) {
+      return [];
+    }
+
+    const params = new URLSearchParams();
+    params.append("sortBy", "name");
+    params.append("sortOrder", "asc");
+    params.append("page", "1");
+    params.append("pageSize", "1000");
+    params.append("masterPlanIds", String(planId));
+    params.append("isHidden", "false");
+
+    const res = await fetch(`${apiUrl}/product-group?${params.toString()}`, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Language": localStorage.getItem("language") || "sv",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      return [];
+    }
+
+    const data = await res.json();
+    const items: ProductGroupListItemDto[] = Array.isArray(data?.items)
+      ? data.items
+      : [];
+
+    const visible = items.filter((x) => !x.isHidden);
+
+    const detailResults = await Promise.all(
+      visible.map(async (g) => {
+        const r = await fetch(`${apiUrl}/product-group/fetch/${g.id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!r.ok) {
+          return null;
+        }
+
+        const d: ProductGroupFetchDto = await r.json();
+        if (d.isHidden) {
+          return null;
+        }
+
+        return {
+          id: Number(d.id),
+          name: String(d.name ?? ""),
+          masterPlanFields: Array.isArray(d.productGroupFieldValues)
+            ? d.productGroupFieldValues.map((fv) => ({
+                id: Number(fv.masterPlanFieldId),
+                value: fv.value ?? "",
+              }))
+            : [],
+        } as ProductListItem;
+      }),
+    );
+
+    return detailResults.filter((x): x is ProductListItem => x !== null);
+  };
 
   // --- HELPERS ---
   const openProductList = async () => {

@@ -162,7 +162,8 @@ namespace backend.Controllers
                         })
                         .ToList(),
                     Products = p
-                        .ProductGroupToProducts.Select(pgp => new ProductDto
+                        .ProductGroupToProducts.OrderBy(x => x.Order)
+                        .Select(pgp => new ProductDto
                         {
                             Id = pgp.Product.Id,
                             Name = pgp.Product.Name,
@@ -219,14 +220,16 @@ namespace backend.Controllers
                     .Select(mp => new MasterPlanDto { Id = mp.Id, Name = mp.Name })
                     .ToList(),
                 Products = productGroup
-                    .ProductGroupToProducts.OrderBy(x => x.ProductId)
+                    .ProductGroupToProducts.OrderBy(x => x.Order)
                     .Select(x => new ProductDto { Id = x.Product.Id, Name = x.Product.Name })
                     .ToList(),
                 IsHidden = productGroup.IsHidden,
                 ProductGroupFieldValues = productGroup
-                    .ProductGroupFieldValues.OrderBy(x => x.MasterPlanFieldId)
+                    .ProductGroupFieldValues.OrderBy(x => x.ProductId)
+                    .ThenBy(x => x.MasterPlanFieldId)
                     .Select(x => new ProductGroupFieldValueDto
                     {
+                        ProductId = x.ProductId,
                         MasterPlanFieldId = x.MasterPlanFieldId,
                         Value = x.Value ?? "",
                     })
@@ -376,7 +379,10 @@ namespace backend.Controllers
                     .Select(mpId => new ProductGroupToMasterPlan { MasterPlanId = mpId })
                     .ToList(),
                 ProductGroupToProducts = (dto.ProductIds ?? Array.Empty<int>())
-                    .Select(productId => new ProductGroupToProduct { ProductId = productId })
+                    .Select(
+                        (productId, index) =>
+                            new ProductGroupToProduct { ProductId = productId, Order = index }
+                    )
                     .ToList(),
                 IsHidden = dto.IsHidden,
 
@@ -392,10 +398,11 @@ namespace backend.Controllers
             )
                 .Select(x => new ProductGroupFieldValue
                 {
+                    ProductId = x.ProductId,
                     MasterPlanFieldId = x.MasterPlanFieldId,
                     Value = x.Value ?? "",
                 })
-                .DistinctBy(x => x.MasterPlanFieldId)
+                .DistinctBy(x => new { x.ProductId, x.MasterPlanFieldId })
                 .ToList();
 
             _context.ProductGroups.Add(productGroup);
@@ -542,9 +549,28 @@ namespace backend.Controllers
             productGroup.ProductGroupToMasterPlans = (dto.MasterPlanIds ?? Array.Empty<int>())
                 .Select(mpId => new ProductGroupToMasterPlan { MasterPlanId = mpId })
                 .ToList();
-            productGroup.ProductGroupToProducts = (dto.ProductIds ?? Array.Empty<int>())
-                .Select(productId => new ProductGroupToProduct { ProductId = productId })
+
+            var oldProductLinks = await _context
+                .ProductGroupToProducts.Where(x => x.ProductGroupId == productGroup.Id)
+                .ToListAsync();
+
+            _context.ProductGroupToProducts.RemoveRange(oldProductLinks);
+
+            var newProductLinks = (dto.ProductIds ?? Array.Empty<int>())
+                .Select(
+                    (productId, index) =>
+                        new ProductGroupToProduct
+                        {
+                            ProductGroupId = productGroup.Id,
+                            ProductId = productId,
+                            Order = index,
+                        }
+                )
                 .ToList();
+
+            _context.ProductGroupToProducts.AddRange(newProductLinks);
+            productGroup.ProductGroupToProducts = newProductLinks;
+
             productGroup.IsHidden = dto.IsHidden;
 
             productGroup.ProductGroupFieldValues = (
@@ -552,10 +578,11 @@ namespace backend.Controllers
             )
                 .Select(x => new ProductGroupFieldValue
                 {
+                    ProductId = x.ProductId,
                     MasterPlanFieldId = x.MasterPlanFieldId,
                     Value = x.Value ?? "",
                 })
-                .DistinctBy(x => x.MasterPlanFieldId)
+                .DistinctBy(x => new { x.ProductId, x.MasterPlanFieldId })
                 .ToList();
 
             // Meta data.
@@ -575,10 +602,14 @@ namespace backend.Controllers
                 .Select(mp => new MasterPlanDto { Id = mp.Id, Name = mp.Name })
                 .ToListAsync();
 
-            var products = await _context
+            var productsList = await _context
                 .Products.Where(p => productIds.Contains(p.Id))
-                .Select(p => new ProductDto { Id = p.Id, Name = p.Name })
                 .ToListAsync();
+
+            var products = productsList
+                .OrderBy(p => productIds.IndexOf(p.Id))
+                .Select(p => new ProductDto { Id = p.Id, Name = p.Name })
+                .ToList();
 
             var result = new ProductGroupDto
             {
@@ -649,9 +680,42 @@ namespace backend.Controllers
             return missing;
         }
 
+        [HttpGet("required-fields-by-product")]
+        public async Task<IActionResult> GetRequiredFieldsByProduct([FromQuery] int[] productIds)
+        {
+            if (productIds == null || productIds.Length == 0)
+            {
+                return Ok(
+                    new
+                    {
+                        byProduct = new Dictionary<int, int[]>(),
+                        unionFieldIds = Array.Empty<int>(),
+                    }
+                );
+            }
+
+            var rows = await _context
+                .ProductFieldValues.Where(x => productIds.Contains(x.ProductId))
+                .Select(x => new { x.ProductId, x.MasterPlanFieldId })
+                .ToListAsync();
+
+            var byProduct = rows.GroupBy(x => x.ProductId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.MasterPlanFieldId).Distinct().OrderBy(x => x).ToArray()
+                );
+
+            var unionFieldIds = rows.Select(x => x.MasterPlanFieldId)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToArray();
+
+            return Ok(new { byProduct, unionFieldIds });
+        }
+
         private async Task<int[]> GetRequiredFieldIdsByProductsAsync(int[] productIds)
         {
-            if (productIds.Length == 0)
+            if (productIds == null || productIds.Length == 0)
                 return Array.Empty<int>();
 
             return await _context
