@@ -127,6 +127,7 @@ const MasterPlanClient = (props: Props) => {
     isEditing,
     isStrikeMode,
     handleAddElement,
+    handleAddFromProductListItem,
     handleCellChange,
     toggleStrikeThrough,
     handleSave,
@@ -449,7 +450,7 @@ const MasterPlanClient = (props: Props) => {
                     dragMomentum={false}
                     dragElastic={0}
                     dragConstraints={constraintsRef}
-                    className="pointer-events-auto absolute bottom-4 mx-4 flex  w-fit flex-col gap-4 rounded-2xl bg-(--bg-modal) p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] lg:left-1/2 lg:-translate-x-1/2"
+                    className="pointer-events-auto absolute bottom-4 mx-4 flex w-fit flex-col gap-4 rounded-2xl bg-(--bg-modal) p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] lg:left-1/2 lg:-translate-x-1/2"
                     style={{ touchAction: "none" }}
                   >
                     <div
@@ -612,8 +613,12 @@ const MasterPlanClient = (props: Props) => {
                                 solid={Solid.PlusIcon}
                                 className="h-6 w-6"
                               />
-                              <span className="2xs:hidden block">{t("Common/Add")}</span>
-                              <span className="hidden 2xs:block">{t("MasterPlan/Add element")}</span>
+                              <span className="2xs:hidden block">
+                                {t("Common/Add")}
+                              </span>
+                              <span className="2xs:block hidden">
+                                {t("MasterPlan/Add element")}
+                              </span>
                             </button>
                           </CustomTooltip>
 
@@ -679,21 +684,16 @@ const MasterPlanClient = (props: Props) => {
                                     type="button"
                                     className={`${badgeClass} w-fit cursor-pointer justify-start bg-(--badge-main) text-(--text-main-reverse) transition-colors duration-(--fast) hover:bg-(--badge-main-reverse) hover:text-(--text-main)`}
                                     onClick={() => {
-                                      const values: Record<number, string> = {};
-                                      for (const f of p.masterPlanFields) {
-                                        values[f.id] = String(f.value ?? "");
-                                      }
-
                                       const topGroup =
                                         editMode === "group"
                                           ? (masterPlans[0]?.elements?.[0]
                                               ?.groupId ?? null)
                                           : null;
 
-                                      handleAddElement(
+                                      handleAddFromProductListItem(
                                         masterPlans[0]?.id as number,
+                                        p,
                                         topGroup,
-                                        values,
                                       );
                                     }}
                                   >

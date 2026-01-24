@@ -346,42 +346,53 @@ const ProductGroupModal = (props: Props) => {
         return;
       }
 
-      const qs = ids
-        .map((id) => `productIds=${encodeURIComponent(String(id))}`)
-        .join("&");
+      const requests = ids.map(async (pid) => {
+        const qs = `productIds=${encodeURIComponent(String(pid))}`;
 
-      const response = await fetch(`${apiUrl}/product/required-fields?${qs}`, {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        const response = await fetch(
+          `${apiUrl}/product/required-fields?${qs}`,
+          {
+            headers: {
+              "X-User-Language": localStorage.getItem("language") || "sv",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          return { pid, fieldIds: [] as number[] };
+        }
+
+        if (!response.ok) {
+          return { pid, fieldIds: [] as number[] };
+        }
+
+        const result = await response.json();
+
+        const fieldIds = Array.isArray(result?.fieldIds)
+          ? result.fieldIds.map(Number).filter((x: any) => !Number.isNaN(x))
+          : [];
+
+        fieldIds.sort((a: number, b: number) => a - b);
+
+        return { pid, fieldIds };
       });
 
-      if (response.status === 401) {
-        localStorage.removeItem("token");
-        return;
+      const rows = await Promise.all(requests);
+
+      const byProduct: Record<number, number[]> = {};
+      for (const r of rows) {
+        byProduct[r.pid] = r.fieldIds;
       }
 
-      if (!response.ok) {
-        notify("error", t("Modal/Unknown error"));
-        setRequiredFieldIdsByProduct({});
-        setRequiredFieldIdsUnion([]);
-        return;
-      }
-
-      const result = await response.json();
-
-      const fieldIds: number[] = Array.isArray(result?.fieldIds)
-        ? result.fieldIds.map(Number)
-        : [];
-
-      fieldIds.sort((a, b) => a - b);
-
-      setRequiredFieldIdsUnion(fieldIds);
-      setRequiredFieldIdsByProduct(
-        Object.fromEntries(ids.map((pid) => [pid, fieldIds])),
+      const union = Array.from(new Set(rows.flatMap((r) => r.fieldIds))).sort(
+        (a, b) => a - b,
       );
+
+      setRequiredFieldIdsByProduct(byProduct);
+      setRequiredFieldIdsUnion(union);
     } catch {
       notify("error", t("Modal/Unknown error"));
     }
@@ -623,8 +634,7 @@ const ProductGroupModal = (props: Props) => {
           masterPlanFieldId,
           value: map[key] ?? "",
         };
-      })
-      .filter((x) => String(x.value ?? "").trim() !== "");
+      });
   };
 
   const computeMissing = (mpIds: number[], fieldIds: number[]) => {
@@ -655,7 +665,30 @@ const ProductGroupModal = (props: Props) => {
     setMissingByMasterPlan(missing);
   }, [props.isOpen, masterPlanIds, allFields, requiredFieldIdsUnion]);
 
-  const activeFieldIds = requiredFieldIdsUnion;
+  const activeFieldIds =
+    activeProductId !== null
+      ? (requiredFieldIdsByProduct[activeProductId] ?? [])
+      : [];
+
+  const missingByMasterPlanForActiveProduct = (() => {
+    if (masterPlanIds.length === 0) return {};
+    if (activeFieldIds.length === 0) return {};
+    return computeMissing(masterPlanIds, activeFieldIds);
+  })();
+
+  const hasMissingFieldsForActiveProduct = (() => {
+    if (masterPlanIds.length === 0) return false;
+    if (productIds.length === 0) return false;
+    if (activeProductId === null) return false;
+
+    if (activeFieldIds.length === 0) return true;
+
+    const missingEntries = Object.entries(
+      missingByMasterPlanForActiveProduct,
+    ).filter(([, ids]) => Array.isArray(ids) && ids.length > 0);
+
+    return missingEntries.length > 0;
+  })();
 
   const validationError = (() => {
     if (masterPlanIds.length === 0) return null;
@@ -976,144 +1009,146 @@ const ProductGroupModal = (props: Props) => {
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
 
-              {productIds.length === 0 ||
-              activeProductId === null ||
-              activeFieldIds.length === 0 ? (
-                <div className="mt-2 text-sm text-(--text-secondary)">-</div>
+              {productIds.length === 0 || activeProductId === null ? (
+                <div className="-mt-4 text-sm">
+                  {t("ProductGroupModal/Choose a product")}
+                </div>
               ) : (
                 <div className="flex flex-col gap-6 rounded-2xl bg-(--bg-main) p-8">
                   <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                     {t("ProductGroupModal/Override values")}
                   </h3>
 
-                  {activeFieldIds.length > 0 && allFields.length === 0 ? (
-                    <div className="mt-2 text-sm text-(--text-secondary)">
-                      <Message content="loading" icon="loading" sideMessage />
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {productIds.map((id) => {
+                      const label =
+                        productOptions.find((p) => p.id === id)?.name ??
+                        `#${id}`;
+                      const isActive = id === activeProductId;
+
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          className={`${roundedButtonClass} ${isActive ? "!bg-(--accent-color)" : "!bg-(--bg-modal-link)"} w-fit min-w-[40px] px-4`}
+                          onClick={() => setActiveProductId(id)}
+                          title={label}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {activeFieldIds.length === 0 ? (
+                    <div className="-mt-4 text-sm">
+                      {t("ProductGroupModal/Missing fields")}
+                    </div>
+                  ) : hasMissingFieldsForActiveProduct ? (
+                    <div className="-mt-4 text-sm">
+                      {t("ProductGroupModal/Missing fields")}
                     </div>
                   ) : (
-                    <>
-                      <div className="flex flex-wrap gap-2">
-                        {productIds.map((id) => {
-                          const label =
-                            productOptions.find((p) => p.id === id)?.name ??
-                            `#${id}`;
+                    <div className="grid grid-cols-1 gap-6">
+                      {activeFieldIds
+                        .map((id) => ({
+                          id,
+                          f: allFields.find((x) => x.id === id),
+                        }))
+                        .filter(
+                          (x): x is { id: number; f: MasterPlanField } => !!x.f,
+                        )
+                        .sort((a, b) => a.f.name.localeCompare(b.f.name))
+                        .map(({ id, f }) => {
+                          const dt = String(f.dataType).toLowerCase();
+                          const inputType =
+                            dt === "date"
+                              ? "date"
+                              : dt === "number"
+                                ? "number"
+                                : dt === "boolean"
+                                  ? "checkbox"
+                                  : "text";
 
-                          const isActive = id === activeProductId;
-
-                          return (
-                            <button
-                              key={id}
-                              type="button"
-                              className={`${roundedButtonClass} ${isActive ? "!bg-(--accent-color) text-white" : "!bg-(--bg-modal-link)"} px-4`}
-                              onClick={() => setActiveProductId(id)}
-                            >
-                              <span className="truncate font-semibold">
-                                {label}
-                              </span>
-                            </button>
+                          const current = getFieldValue(activeProductId, id);
+                          const isTouched = touchedKeys.includes(
+                            makeKey(activeProductId, id),
                           );
-                        })}
-                      </div>
 
-                      <div className="grid grid-cols-1 gap-6">
-                        {activeFieldIds
-                          .map((id) => ({
-                            id,
-                            f: allFields.find((x) => x.id === id),
-                          }))
-                          .filter(
-                            (x): x is { id: number; f: MasterPlanField } =>
-                              !!x.f,
-                          )
-                          .sort((a, b) => a.f.name.localeCompare(b.f.name))
-                          .map(({ id, f }) => {
-                            const dt = String(f.dataType).toLowerCase();
-                            const inputType =
-                              dt === "date"
-                                ? "date"
-                                : dt === "number"
-                                  ? "number"
-                                  : dt === "boolean"
-                                    ? "checkbox"
-                                    : "text";
-
-                            const current = getFieldValue(activeProductId, id);
-                            const isTouched = touchedKeys.includes(
-                              makeKey(activeProductId, id),
-                            );
-
-                            if (inputType === "checkbox") {
-                              const checked = current === "true";
-                              return (
-                                <div key={id}>
-                                  <div className="flex items-center gap-4">
-                                    <button
-                                      type="button"
-                                      role="switch"
-                                      aria-checked={checked}
-                                      className={switchClass(checked)}
-                                      onClick={() =>
-                                        updateFieldValue(
-                                          activeProductId,
-                                          id,
-                                          checked ? "false" : "true",
-                                        )
-                                      }
-                                    >
-                                      <div
-                                        className={switchKnobClass(checked)}
-                                      />
-                                    </button>
-
-                                    <span>{f.name}</span>
-                                  </div>
-
-                                  {isTouched && (
-                                    <button
-                                      type="button"
-                                      className="mt-2 text-sm text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
-                                      onClick={() =>
-                                        clearFieldOverride(activeProductId, id)
-                                      }
-                                    >
-                                      {t("ProductGroupModal/Clear override")}
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            }
-
+                          if (inputType === "checkbox") {
+                            const checked = current === "true";
                             return (
                               <div key={id}>
-                                <Input
-                                  label={f.name}
-                                  value={current}
-                                  onChange={(val) =>
-                                    updateFieldValue(
-                                      activeProductId,
-                                      id,
-                                      String(val),
-                                    )
-                                  }
-                                  type={inputType as any}
-                                />
+                                <div className="flex items-center gap-4">
+                                  <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={checked}
+                                    className={switchClass(checked)}
+                                    onClick={() =>
+                                      updateFieldValue(
+                                        activeProductId,
+                                        id,
+                                        checked ? "false" : "true",
+                                      )
+                                    }
+                                  >
+                                    <div className={switchKnobClass(checked)} />
+                                  </button>
+
+                                  <span>{f.name}</span>
+                                </div>
 
                                 {isTouched && (
                                   <button
                                     type="button"
-                                    className="mt-2 text-sm text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
+                                    className="group mt-2 text-sm text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
                                     onClick={() =>
                                       clearFieldOverride(activeProductId, id)
                                     }
                                   >
-                                    {t("ProductGroupModal/Clear override")}
+                                    <span className="text-(--text-main)">
+                                      {f.name}
+                                    </span>
                                   </button>
                                 )}
                               </div>
                             );
-                          })}
-                      </div>
-                    </>
+                          }
+
+                          return (
+                            <div key={id}>
+                              <Input
+                                label={f.name}
+                                value={current}
+                                onChange={(val) =>
+                                  updateFieldValue(
+                                    activeProductId,
+                                    id,
+                                    String(val),
+                                  )
+                                }
+                                type={inputType as any}
+                              />
+
+                              {isTouched && (
+                                <button
+                                  type="button"
+                                  className="mt-2 text-sm text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
+                                  onClick={() =>
+                                    clearFieldOverride(activeProductId, id)
+                                  }
+                                >
+                                  {t("ProductGroupModal/Clear override")}{" "}
+                                  <span className="text-(--text-main)">
+                                    {f.name}
+                                  </span>
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
                   )}
                 </div>
               )}

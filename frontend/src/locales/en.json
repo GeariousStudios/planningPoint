@@ -444,7 +444,9 @@
   "ProductGroupModal/needs to be assigned": "needs to be assigned the following fields:",
   "ProductGroupModal/Hide product group": "Hide product group",
   "ProductGroupModal/Override values": "Prefill fields with custom values",
-  "ProductGroupModal/Clear override": "Clear custom values",
+  "ProductGroupModal/Clear override": "Click to clear custom values for ",
+  "ProductGroupModal/Missing fields": "This product has no fields matching the selected master plans. When imported, it will be added without any prefilled values.",
+  "ProductGroupModal/Choose a product": "Please select at least one product first!",
 
   "Shifts/None": "None",
   "Shifts/Unmanned": "Unmanned",

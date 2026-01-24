@@ -45,9 +45,14 @@ type MasterPlanRevision = {
 };
 
 type ProductListItem = {
-  id: number;
+  id: number | string;
   name: string;
   masterPlanFields: { id: number; value: string | null }[];
+  rows?: {
+    id: number | string;
+    name: string;
+    masterPlanFields: { id: number; value: string | null }[];
+  }[];
 };
 
 type ProductGroupListItemDto = {
@@ -60,7 +65,12 @@ type ProductGroupFetchDto = {
   id: number;
   name: string;
   isHidden: boolean;
-  productGroupFieldValues: { masterPlanFieldId: number; value: string }[];
+  products?: { id: number; name: string }[];
+  productGroupFieldValues: {
+    productId: number;
+    masterPlanFieldId: number;
+    value: string;
+  }[];
 };
 
 export type MasterPlanElementStatus = "NotStarted" | "InProgress" | "Finished";
@@ -793,6 +803,98 @@ export const useMasterPlan = (
 
         const updated = [...p.elements];
         updated.splice(insertIndex, 0, newElement);
+
+        return { ...p, elements: updated };
+      }),
+    );
+  };
+
+  const handleAddFromProductListItem = (
+    planId: number,
+    item: ProductListItem,
+    groupId: number | null = null,
+  ) => {
+    pushHistory();
+
+    const rows =
+      Array.isArray(item.rows) && item.rows.length > 0 ? item.rows : null;
+
+    const toDict = (fields: { id: number; value: string | null }[]) => {
+      const dict: Record<number, string> = {};
+      for (const f of fields) {
+        dict[Number(f.id)] = String(f.value ?? "");
+      }
+      return dict;
+    };
+
+    setMasterPlans((prev) =>
+      prev.map((p) => {
+        if (p.id !== planId) return p;
+
+        let insertIndex = 0;
+        let finalGroupId: number | null = groupId;
+
+        if (finalGroupId == null) {
+          if (selectedId) {
+            const selectedIndex = p.elements.findIndex(
+              (el) => String(el.id) === String(selectedId),
+            );
+
+            if (selectedIndex !== -1) {
+              const selected = p.elements[selectedIndex];
+              const groupIdentifier = selected.groupId ?? null;
+
+              const topIndex = p.elements.findIndex((el) =>
+                groupIdentifier
+                  ? el.groupId === groupIdentifier
+                  : el.id === selected.id,
+              );
+
+              insertIndex = topIndex;
+
+              if (editMode === "group" && selected.groupId != null) {
+                finalGroupId = selected.groupId;
+              } else {
+                finalGroupId =
+                  p.elements.length > 0
+                    ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
+                    : 1;
+              }
+            }
+          }
+
+          if (!selectedId) {
+            finalGroupId =
+              p.elements.length > 0
+                ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
+                : 1;
+          }
+        }
+
+        const itemsToInsert = rows
+          ? rows.map((r) => toDict(r.masterPlanFields))
+          : [toDict(item.masterPlanFields)];
+
+        const newElements: MasterPlanElement[] = itemsToInsert.map((values) => {
+          const newValues = fieldOptions.map((f) => ({
+            masterPlanFieldId: f.id,
+            masterPlanFieldName: f.label,
+            value: values[f.id] ?? "",
+          }));
+
+          return {
+            id: `temp-${Date.now()}-${Math.random()}`,
+            groupId: finalGroupId,
+            values: newValues,
+            currentElement: false,
+            nextElement: false,
+            struckElement: false,
+            isNew: true,
+          };
+        });
+
+        const updated = [...p.elements];
+        updated.splice(insertIndex, 0, ...newElements);
 
         return { ...p, elements: updated };
       }),
@@ -1670,16 +1772,16 @@ export const useMasterPlan = (
       params.append("pageSize", "1000");
       params.append("masterPlanIds", String(planId));
 
-      const [productsRes, groupAsProducts] = await Promise.all([
-        fetch(`${apiUrl}/product?${params.toString()}`, {
+      const productsRes = await fetch(
+        `${apiUrl}/product?${params.toString()}`,
+        {
           headers: {
             "Content-Type": "application/json",
             "X-User-Language": localStorage.getItem("language") || "sv",
             Authorization: `Bearer ${token}`,
           },
-        }),
-        fetchProductGroupsAsProductsForThisMasterPlan(),
-      ]);
+        },
+      );
 
       let products: ProductListItem[] = [];
 
@@ -1702,6 +1804,14 @@ export const useMasterPlan = (
               : [],
           }));
       }
+
+      const productFieldMap = new Map<
+        number,
+        { id: number; value: string | null }[]
+      >(products.map((p) => [Number(p.id), p.masterPlanFields]));
+
+      const groupAsProducts =
+        await fetchProductGroupsAsProductsForThisMasterPlan(productFieldMap);
 
       const merged = [...products, ...groupAsProducts].sort((a, b) =>
         String(a.name ?? "").localeCompare(String(b.name ?? ""), undefined, {
@@ -1726,9 +1836,9 @@ export const useMasterPlan = (
   }, [productList, productSearch]);
 
   // --- PRODUCT GROUPS ---
-  const fetchProductGroupsAsProductsForThisMasterPlan = async (): Promise<
-    ProductListItem[]
-  > => {
+  const fetchProductGroupsAsProductsForThisMasterPlan = async (
+    productFieldMap: Map<number, { id: number; value: string | null }[]>,
+  ): Promise<ProductListItem[]> => {
     const planId = masterPlans?.[0]?.id;
     if (!apiUrl || !token || !planId) {
       return [];
@@ -1758,7 +1868,6 @@ export const useMasterPlan = (
     const items: ProductGroupListItemDto[] = Array.isArray(data?.items)
       ? data.items
       : [];
-
     const visible = items.filter((x) => !x.isHidden);
 
     const detailResults = await Promise.all(
@@ -1780,20 +1889,111 @@ export const useMasterPlan = (
           return null;
         }
 
-        return {
-          id: Number(d.id),
-          name: String(d.name ?? ""),
-          masterPlanFields: Array.isArray(d.productGroupFieldValues)
-            ? d.productGroupFieldValues.map((fv) => ({
-                id: Number(fv.masterPlanFieldId),
-                value: fv.value ?? "",
-              }))
-            : [],
-        } as ProductListItem;
+        const products = Array.isArray(d.products) ? d.products : [];
+
+        const productIdsInGroup = products
+          .map((p) => Number(p.id))
+          .filter((id) => Number.isFinite(id));
+
+        const missingIds = productIdsInGroup.filter(
+          (id) => !productFieldMap.has(id),
+        );
+
+        if (missingIds.length > 0) {
+          const params = new URLSearchParams();
+          for (const id of missingIds) {
+            params.append("productIds", String(id));
+          }
+
+          const fvRes = await fetch(
+            `${apiUrl}/product/field-values?${params.toString()}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                "X-User-Language": localStorage.getItem("language") || "sv",
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          if (fvRes.ok) {
+            const fvData = await fvRes.json();
+            const byProduct = fvData?.byProduct ?? {};
+
+            for (const [pidStr, fields] of Object.entries(byProduct)) {
+              const pid = Number(pidStr);
+              const arr = Array.isArray(fields)
+                ? fields.map((f: any) => ({
+                    id: Number(f.id),
+                    value: f.value ?? "",
+                  }))
+                : [];
+              productFieldMap.set(pid, arr);
+            }
+          }
+        }
+
+        const overridesByProduct = new Map<number, Map<number, string>>();
+        for (const fv of Array.isArray(d.productGroupFieldValues)
+          ? d.productGroupFieldValues
+          : []) {
+          const productId = Number(fv.productId);
+          const fieldId = Number(fv.masterPlanFieldId);
+          const value = String(fv.value ?? "");
+
+          if (!overridesByProduct.has(productId)) {
+            overridesByProduct.set(productId, new Map<number, string>());
+          }
+
+          overridesByProduct.get(productId)!.set(fieldId, value);
+        }
+
+        const rows = products
+          .map((p) => {
+            const productId = Number(p.id);
+
+            const base =
+              productFieldMap.get(productId) ??
+              fieldOptions.map((f) => ({ id: f.id, value: "" }));
+
+            const overrides =
+              overridesByProduct.get(productId) ?? new Map<number, string>();
+
+            const mergedMap = new Map<number, string | null>();
+            for (const bf of base) mergedMap.set(Number(bf.id), bf.value ?? "");
+
+            for (const [fieldId, val] of overrides.entries()) {
+              mergedMap.set(Number(fieldId), val);
+            }
+
+            const mergedFields = Array.from(mergedMap.entries())
+              .map(([id, value]) => ({ id, value }))
+              .sort((a, b) => a.id - b.id);
+
+            return {
+              id: `pg-${d.id}-${productId}`,
+              name: String(p.name ?? `#${productId}`),
+              masterPlanFields: mergedFields,
+            };
+          })
+          .filter((x): x is NonNullable<typeof x> => !!x);
+
+        if (rows.length === 0) {
+          return null;
+        }
+
+        const groupItem: ProductListItem = {
+          id: `pg-${d.id}`,
+          name: d.name,
+          masterPlanFields: [],
+          rows,
+        };
+
+        return groupItem;
       }),
     );
 
-    return detailResults.filter((x): x is ProductListItem => x !== null);
+    return detailResults.filter((x): x is ProductListItem => !!x);
   };
 
   // --- HELPERS ---
@@ -2079,6 +2279,7 @@ export const useMasterPlan = (
     handleSearch,
     handleReset,
     handleAddElement,
+    handleAddFromProductListItem,
     handleCellChange,
     toggleStrikeThrough,
     handleSave,

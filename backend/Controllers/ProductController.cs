@@ -815,5 +815,32 @@ namespace backend.Controllers
 
             return messages;
         }
+
+        [HttpGet("field-values")]
+        public async Task<IActionResult> GetFieldValues([FromQuery] int[] productIds)
+        {
+            if (productIds == null || productIds.Length == 0)
+            {
+                return Ok(new { byProduct = new Dictionary<int, object[]>() });
+            }
+
+            var rows = await _context
+                .ProductToMasterPlanFields.Where(x => productIds.Contains(x.ProductId))
+                .Select(x => new
+                {
+                    ProductId = x.ProductId,
+                    MasterPlanFieldId = x.MasterPlanFieldId,
+                    Value = x.Value,
+                })
+                .ToListAsync();
+
+            var byProduct = rows.GroupBy(x => x.ProductId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => new { id = x.MasterPlanFieldId, value = x.Value }).ToArray()
+                );
+
+            return Ok(new { byProduct });
+        }
     }
 }
