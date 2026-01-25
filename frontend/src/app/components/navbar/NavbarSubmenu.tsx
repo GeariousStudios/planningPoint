@@ -307,13 +307,13 @@ const NavbarSubmenu = (props: Props) => {
                   )}
                 </div>
                 <div
-                  className={`grid gap-2 ${
+                  className={`grid gap-x-2 gap-y-8 ${
                     cols === 1
                       ? "grid-cols-1"
                       : cols === 2
                         ? "sm:grid-cols-2"
                         : "sm:grid-cols-3"
-                  }`}
+                  } `}
                 >
                   {props.menus.map((menu, index) => (
                     <div key={index}>

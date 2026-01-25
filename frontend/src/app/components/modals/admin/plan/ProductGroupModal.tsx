@@ -1025,15 +1025,31 @@ const ProductGroupModal = (props: Props) => {
                         productOptions.find((p) => p.id === id)?.name ??
                         `#${id}`;
                       const isActive = id === activeProductId;
+                      const relevantFieldIds =
+                        requiredFieldIdsByProduct[id] ?? [];
+                      const relevantFieldIdSet = new Set(relevantFieldIds);
+
+                      const hasOverride = touchedKeys.some((k) => {
+                        const [p, f] = k.split(":");
+                        return (
+                          Number(p) === id && relevantFieldIdSet.has(Number(f))
+                        );
+                      });
 
                       return (
                         <button
                           key={id}
                           type="button"
-                          className={`${roundedButtonClass} ${isActive ? "!bg-(--accent-color)" : "!bg-(--bg-modal-link)"} w-fit min-w-[40px] px-4`}
+                          className={`${roundedButtonClass} ${isActive ? "!bg-(--accent-color) text-(--text-main-reverse)" : ""} relative w-fit min-w-[40px] px-4`}
                           onClick={() => setActiveProductId(id)}
                           title={label}
                         >
+                          {hasOverride && (
+                            <span
+                              className={`${isActive ? "bg-(--note-info)" : "bg-(--accent-color)"} absolute top-1 right-1 h-2 w-2 rounded-full`}
+                              aria-hidden="true"
+                            />
+                          )}
                           {label}
                         </button>
                       );
