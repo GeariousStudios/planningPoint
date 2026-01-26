@@ -573,6 +573,8 @@ namespace backend.Controllers
 
             productGroup.IsHidden = dto.IsHidden;
 
+            _context.ProductGroupFieldValues.RemoveRange(productGroup.ProductGroupFieldValues);
+
             productGroup.ProductGroupFieldValues = (
                 dto.ProductGroupFieldValues ?? new List<ProductGroupFieldValueDto>()
             )

@@ -182,6 +182,8 @@ const MasterPlanClient = (props: Props) => {
     productSearch,
     setProductSearch,
     filteredProductList,
+    productTab,
+    setProductTab,
     undo,
     redo,
     canUndo,
@@ -654,13 +656,77 @@ const MasterPlanClient = (props: Props) => {
                           triggerRef={productListTriggerRef}
                           center
                           maxHeight="50svh"
+                          autoWidth
                         >
                           {isProductListLoading ? (
                             <span>{t("Message/Loading")}</span>
                           ) : filteredProductList.length === 0 ? (
                             <div className="flex flex-col gap-4">
+                              <div className="flex items-center gap-2 truncate">
+                                <button
+                                  type="button"
+                                  className={
+                                    productTab === "all"
+                                      ? `${textPrimaryButtonClass} underline`
+                                      : `${textSecondaryButtonClass}`
+                                  }
+                                  onClick={() => {
+                                    setProductSearch("");
+                                    setProductTab("all");
+                                  }}
+                                >
+                                  {t("Common/All")}
+                                </button>
+
+                                <span className="opacity-40">|</span>
+
+                                <button
+                                  type="button"
+                                  className={
+                                    productTab === "products"
+                                      ? `${textPrimaryButtonClass} underline`
+                                      : `${textSecondaryButtonClass}`
+                                  }
+                                  onClick={() => {
+                                    setProductSearch("");
+                                    setProductTab("products");
+                                  }}
+                                >
+                                  {t("Common/Products")}
+                                </button>
+
+                                <span className="opacity-40">|</span>
+
+                                <button
+                                  type="button"
+                                  className={
+                                    productTab === "product-groups"
+                                      ? `${textPrimaryButtonClass} underline`
+                                      : `${textSecondaryButtonClass}`
+                                  }
+                                  onClick={() => {
+                                    setProductSearch("");
+                                    setProductTab("product-groups");
+                                  }}
+                                >
+                                  {t("Common/Product groups")}
+                                </button>
+                              </div>
+
                               <Input
-                                placeholder={`${t("Common/Search")}...`}
+                                placeholder={`${
+                                  productTab === "products"
+                                    ? t("Common/Search") +
+                                      " " +
+                                      t("Common/products") +
+                                      "..."
+                                    : productTab === "product-groups"
+                                      ? t("Common/Search") +
+                                        " " +
+                                        t("Common/product groups") +
+                                        "..."
+                                      : t("Common/Search") + "..."
+                                }`}
                                 value={productSearch}
                                 onChange={(val) =>
                                   setProductSearch(String(val))
@@ -670,8 +736,71 @@ const MasterPlanClient = (props: Props) => {
                             </div>
                           ) : (
                             <div className="flex flex-col gap-4">
+                              <div className="flex items-center gap-2 truncate">
+                                <button
+                                  type="button"
+                                  className={
+                                    productTab === "all"
+                                      ? `${textPrimaryButtonClass} underline`
+                                      : `${textSecondaryButtonClass}`
+                                  }
+                                  onClick={() => {
+                                    setProductSearch("");
+                                    setProductTab("all");
+                                  }}
+                                >
+                                  {t("Common/All")}
+                                </button>
+
+                                <span className="opacity-40">|</span>
+
+                                <button
+                                  type="button"
+                                  className={
+                                    productTab === "products"
+                                      ? `${textPrimaryButtonClass} underline`
+                                      : `${textSecondaryButtonClass}`
+                                  }
+                                  onClick={() => {
+                                    setProductSearch("");
+                                    setProductTab("products");
+                                  }}
+                                >
+                                  {t("Common/Products")}
+                                </button>
+
+                                <span className="opacity-40">|</span>
+
+                                <button
+                                  type="button"
+                                  className={
+                                    productTab === "product-groups"
+                                      ? `${textPrimaryButtonClass} underline`
+                                      : `${textSecondaryButtonClass}`
+                                  }
+                                  onClick={() => {
+                                    setProductSearch("");
+                                    setProductTab("product-groups");
+                                  }}
+                                >
+                                  {t("Common/Product groups")}
+                                </button>
+                              </div>
+
                               <Input
-                                placeholder={`${t("Common/Search")}...`}
+                                placeholder={`${
+                                  productTab === "products"
+                                    ? t("Common/Search") +
+                                      " " +
+                                      t("Common/products") +
+                                      "..."
+                                    : productTab === "product-groups"
+                                      ? t("Common/Search") +
+                                        " " +
+                                        t("Common/product groups") +
+                                        "..."
+                                      : t("Common/Search") + "..."
+                                }`}
                                 value={productSearch}
                                 onChange={(val) =>
                                   setProductSearch(String(val))
@@ -682,7 +811,7 @@ const MasterPlanClient = (props: Props) => {
                                   <button
                                     key={p.id}
                                     type="button"
-                                    className={`${badgeClass} w-fit cursor-pointer justify-start bg-(--badge-main) text-(--text-main-reverse) transition-colors duration-(--fast) hover:bg-(--badge-main-reverse) hover:text-(--text-main)`}
+                                    className={`${badgeClass} w-fit cursor-pointer justify-start bg-(--badge-main) text-(--text-main-reverse) transition-colors duration-(--fast) hover:bg-(--note-info-reverse) hover:text-(--text-main)`}
                                     onClick={() => {
                                       const topGroup =
                                         editMode === "group"
@@ -1304,12 +1433,15 @@ const MasterPlanClient = (props: Props) => {
                                           <Input
                                             type={
                                               f.dataType?.toLowerCase() ===
-                                              "number"
-                                                ? "number"
+                                              "decimal"
+                                                ? "decimal"
                                                 : f.dataType?.toLowerCase() ===
-                                                    "date"
-                                                  ? "date"
-                                                  : "text"
+                                                    "number"
+                                                  ? "number"
+                                                  : f.dataType?.toLowerCase() ===
+                                                      "date"
+                                                    ? "date"
+                                                    : "text"
                                             }
                                             value={val || ""}
                                             onChange={(newValue) => {

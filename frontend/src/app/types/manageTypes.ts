@@ -50,15 +50,23 @@ export type CategoryFilters = {
 };
 
 // --- admin/manage/units/unit-columns/UnitColumnsClient.tsx ---
-export type UnitColumnDataType = "Number" | "Text" | "Boolean";
+export type UnitColumnDataType = "Number" | "Decimal" | "Text" | "TextField" | "Boolean";
 export const getUnitColumnDataTypeOptions = (t: (key: string) => string) => [
   {
     label: t("Common/Number"),
     value: "Number" as UnitColumnDataType,
   },
   {
+    label: t("Common/Decimal"),
+    value: "Decimal" as UnitColumnDataType,
+  },
+  {
     label: t("Common/Text"),
     value: "Text" as UnitColumnDataType,
+  },
+  {
+    label: t("Common/TextField"),
+    value: "TextField" as UnitColumnDataType,
   },
   // {
   //   label: t("Common/Boolean"),
@@ -324,13 +332,17 @@ export type MasterPlanFieldFilters = {
   isHidden?: boolean;
 };
 
-export type MasterPlanFieldDataType = "Number" | "Text" | "Boolean" | "Date";
+export type MasterPlanFieldDataType = "Number" | "Decimal" | "Text" | "Boolean" | "Date";
 export const getMasterPlanFieldDataTypeOptions = (
   t: (key: string) => string,
 ) => [
   {
     label: t("Common/Number"),
     value: "Number" as MasterPlanFieldDataType,
+  },
+  {
+    label: t("Common/Decimal"),
+    value: "Decimal" as MasterPlanFieldDataType,
   },
   {
     label: t("Common/Text"),

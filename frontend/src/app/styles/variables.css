@@ -140,6 +140,9 @@
   --note-info: #f0f0f0;
   --note-info-hover: #f0f0f0bf;
   --note-info-active: #f0f0f0bf;
+  --note-info-reverse: #1a1a1a;
+  --note-info-reverse-hover: #1a1a1abf;
+  --note-info-reverse-active: #1a1a1abf;
   --note-success: #6faa7f;
   --note-success-hover: #6faa7fbf;
   --note-success-active: #6faa7f;
@@ -241,7 +244,10 @@
   --note-error-active: #814b4b;
   --note-info: #1a1a1a;
   --note-info-hover: #1a1a1abf;
-  --note-info-active: #1a1a1a;
+  --note-info-active: #1a1a1abf;
+  --note-info-reverse: #f0f0f0;
+  --note-info-reverse-hover: #f0f0f0bf;
+  --note-info-reverse-active: #f0f0f0bf;
   --note-success: #406d4e;
   --note-success-hover: #406d4ebf;
   --note-success-active: #406d4ebf;

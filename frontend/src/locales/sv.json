@@ -65,7 +65,9 @@
   "Common/Status": "Status",
   "Common/Status and other": "Status och annat",
   "Common/Number": "Nummer",
+  "Common/Decimal": "Decimal",
   "Common/Text": "Text",
+  "Common/TextField": "Textfält",
   "Common/Boolean": "Boolean",
   "Common/Shifts": "Skift",
   "Common/shifts": "skift",
@@ -446,6 +448,7 @@
   "ProductGroupModal/Clear override": "Klicka för att rensa egna värden för ",
   "ProductGroupModal/Missing fields": "Denna produkt saknar fält som matchar de valda huvudplanerna. Vid import kommer den att läggas till utan förifyllda värden.",
   "ProductGroupModal/Choose a product": "Välj minst en produkt först!",
+  "ProductGroupModal/Has overrides": "Har egna värden",
 
   "Shifts/None": "Inget",
   "Shifts/Unmanned": "Obemannad",

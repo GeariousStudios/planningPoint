@@ -20,6 +20,7 @@ import MultiDropdown from "@/app/components/common/MultiDropdown";
 import React from "react";
 import DragDrop from "@/app/components/common/DragDrop";
 import Message from "@/app/components/common/Message";
+import CustomTooltip from "@/app/components/common/CustomTooltip";
 
 type Props = {
   isOpen: boolean;
@@ -184,6 +185,7 @@ const ProductGroupModal = (props: Props) => {
           productGroupFieldValues: buildProductGroupFieldValues(
             touchedKeys,
             fieldValueByKey,
+            productIds,
           ),
           isHidden,
         }),
@@ -516,6 +518,7 @@ const ProductGroupModal = (props: Props) => {
             productGroupFieldValues: buildProductGroupFieldValues(
               touchedKeys,
               fieldValueByKey,
+              productIds,
             ),
             isHidden,
           }),
@@ -620,10 +623,17 @@ const ProductGroupModal = (props: Props) => {
   const buildProductGroupFieldValues = (
     keys: string[],
     map: Record<string, string>,
+    allowedProductIds: number[],
   ): ProductGroupFieldValue[] => {
+    const allowed = new Set(allowedProductIds);
+
     return keys
       .slice()
       .sort()
+      .filter((key) => {
+        const [p] = key.split(":");
+        return allowed.has(Number(p));
+      })
       .map((key) => {
         const [p, f] = key.split(":");
         const productId = Number(p);
@@ -816,10 +826,12 @@ const ProductGroupModal = (props: Props) => {
     const currValues = buildProductGroupFieldValues(
       currTouched,
       fieldValueByKey,
+      productIds,
     );
     const origValues = buildProductGroupFieldValues(
       origTouched,
       originalFieldValueByKey,
+      originalProductIds,
     );
 
     const fieldsDirty =
@@ -1045,10 +1057,14 @@ const ProductGroupModal = (props: Props) => {
                           title={label}
                         >
                           {hasOverride && (
-                            <span
-                              className={`${isActive ? "bg-(--note-info)" : "bg-(--accent-color)"} absolute top-1 right-1 h-2 w-2 rounded-full`}
-                              aria-hidden="true"
-                            />
+                            <CustomTooltip
+                              content={t("ProductGroupModal/Has overrides")}
+                            >
+                              <span
+                                className={`${isActive ? "bg-(--note-info)" : "bg-(--accent-color)"} absolute top-1 right-1 h-2 w-2 rounded-full`}
+                                aria-hidden="true"
+                              />
+                            </CustomTooltip>
                           )}
                           {label}
                         </button>

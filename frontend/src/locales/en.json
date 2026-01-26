@@ -65,7 +65,9 @@
   "Common/Status": "Status",
   "Common/Status and other": "Status and other",
   "Common/Number": "Number",
+  "Common/Decimal": "Decimal",
   "Common/Text": "Text",
+  "Common/TextField": "Text field",
   "Common/Boolean": "Boolean",
   "Common/Shifts": "Shifts",
   "Common/shifts": "shifts",
@@ -447,6 +449,7 @@
   "ProductGroupModal/Clear override": "Click to clear custom values for ",
   "ProductGroupModal/Missing fields": "This product has no fields matching the selected master plans. When imported, it will be added without any prefilled values.",
   "ProductGroupModal/Choose a product": "Please select at least one product first!",
+  "ProductGroupModal/Has overrides": "Has custom values",
 
   "Shifts/None": "None",
   "Shifts/Unmanned": "Unmanned",

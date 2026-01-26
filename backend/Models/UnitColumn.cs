@@ -29,7 +29,9 @@ namespace backend.Models
     public enum UnitColumnDataType
     {
         Number,
+        Decimal,
         Text,
+        TextField,
         Boolean,
     }
 }

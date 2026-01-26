@@ -44,9 +44,12 @@ type MasterPlanRevision = {
   archivedBy: string;
 };
 
+type ProductListTab = "all" | "products" | "product-groups";
+
 type ProductListItem = {
   id: number | string;
   name: string;
+  kind: "product" | "product-group";
   masterPlanFields: { id: number; value: string | null }[];
   rows?: {
     id: number | string;
@@ -93,6 +96,7 @@ export const useMasterPlan = (
   // --- States ---
   const [historyTick, setHistoryTick] = useState(0);
   const [productSearch, setProductSearch] = useState("");
+  const [productTab, setProductTab] = useState<ProductListTab>("all");
   const [productList, setProductList] = useState<ProductListItem[]>([]);
   const [isProductListOpen, setIsProductListOpen] = useState(false);
   const [isProductListLoading, setIsProductListLoading] = useState(false);
@@ -1796,6 +1800,7 @@ export const useMasterPlan = (
           .map((p: any) => ({
             id: Number(p.id),
             name: String(p.name ?? ""),
+            kind: "product" as const,
             masterPlanFields: Array.isArray(p.masterPlanFields)
               ? p.masterPlanFields.map((f: any) => ({
                   id: Number(f.id),
@@ -1827,13 +1832,21 @@ export const useMasterPlan = (
 
   const filteredProductList = useMemo(() => {
     const q = productSearch.trim().toLowerCase();
-    if (!q) return productList;
 
-    return productList.filter((p) => {
-      const name = String(p.name ?? "").toLowerCase();
-      return name.includes(q);
+    const byTab = productList.filter((p) => {
+      if (productTab === "products") return p.kind === "product";
+      if (productTab === "product-groups") return p.kind === "product-group";
+      return true;
     });
-  }, [productList, productSearch]);
+
+    if (!q) return byTab;
+
+    return byTab.filter((p) =>
+      String(p.name ?? "")
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [productList, productSearch, productTab]);
 
   // --- PRODUCT GROUPS ---
   const fetchProductGroupsAsProductsForThisMasterPlan = async (
@@ -1985,6 +1998,7 @@ export const useMasterPlan = (
         const groupItem: ProductListItem = {
           id: `pg-${d.id}`,
           name: d.name,
+          kind: "product-group",
           masterPlanFields: [],
           rows,
         };
@@ -1998,6 +2012,7 @@ export const useMasterPlan = (
 
   // --- HELPERS ---
   const openProductList = async () => {
+    // setProductTab("all");
     setIsProductListOpen(true);
     await fetchProductsForThisMasterPlan();
   };
@@ -2339,6 +2354,8 @@ export const useMasterPlan = (
     productSearch,
     setProductSearch,
     filteredProductList,
+    productTab,
+    setProductTab,
     undo,
     redo,
     canUndo,
