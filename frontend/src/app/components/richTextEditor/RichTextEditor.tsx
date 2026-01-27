@@ -46,6 +46,9 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isEditorReady, setIsEditorReady] = useState(false);
 
+    const lastAppliedValueRef = useRef<string | null>(null);
+    const isInternalChangeRef = useRef(false);
+
     const Size = Quill.import("attributors/style/size") as any;
     Size.whitelist = SIZE_WHITELIST;
     Quill.register(Size, true);
@@ -208,6 +211,29 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
       return () => clearInterval(interval);
     }, [t]);
 
+    useEffect(() => {
+      if (!isEditorReady) return;
+
+      const editor = quillRef.current?.getEditor?.();
+      if (!editor) return;
+
+      const incoming = value ?? "";
+
+      if (isInternalChangeRef.current) {
+        isInternalChangeRef.current = false;
+        return;
+      }
+
+      if (lastAppliedValueRef.current === incoming) return;
+
+      lastAppliedValueRef.current = incoming;
+      editor.clipboard.dangerouslyPasteHTML(incoming, "silent");
+
+      editor.root.setAttribute("dir", "ltr");
+      editor.root.style.direction = "ltr";
+      editor.root.style.textAlign = "left";
+    }, [isEditorReady, value]);
+
     const modules = {
       toolbar: [
         [{ size: [false, ...Size.whitelist] }],
@@ -225,7 +251,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     };
 
     return (
-      <div className="focus-within:z-[calc(var(--z-base)+1)] relative w-full rounded border border-(--border-tertiary) focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--accent-color)">
+      <div className="relative w-full rounded border border-(--border-tertiary) focus-within:z-[calc(var(--z-base)+1)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--accent-color)">
         <QuillWrapper
           ref={quillRef}
           id="quill-editor"
@@ -234,6 +260,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           modules={modules}
           shouldAutoFocus={shouldAutoFocus ?? false}
           onChange={(val) => {
+            isInternalChangeRef.current = true;
             onChange?.(val);
           }}
         />
