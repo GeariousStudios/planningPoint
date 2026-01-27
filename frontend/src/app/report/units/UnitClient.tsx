@@ -32,6 +32,9 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import ReportModal from "@/app/components/modals/report/ReportModal";
 import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
 import { useHandbook } from "@/app/context/HandbookContext";
+import RichTextEditor, {
+  RichTextEditorRef,
+} from "@/app/components/richTextEditor/RichTextEditor";
 
 type ShiftChange = {
   id: number;
@@ -417,10 +420,12 @@ const UnitClient = (props: any) => {
                       <React.Fragment key={`head-${i}`}>
                         <th
                           className={`${thClass} ${
-                            c.unitColumnDataTypes[i] === "Text" &&
-                            c.unitColumnLargeColumnFlags[i]
-                              ? "min-w-[64ch]"
-                              : "min-w-[10ch]"
+                            c.unitColumnDataTypes[i] === "TextField"
+                              ? "min-w-[48ch]"
+                              : c.unitColumnDataTypes[i] === "Text" &&
+                                  c.unitColumnLargeColumnFlags[i]
+                                ? "min-w-[64ch]"
+                                : "min-w-[10ch]"
                           } whitespace-nowrap`}
                         >
                           {col}
@@ -663,7 +668,8 @@ const UnitClient = (props: any) => {
                             {c.unitColumnNames.map((_, colIdx) => {
                               const columnId = c.unitColumnIds[colIdx];
                               const columnName = c.unitColumnNames[colIdx];
-                              const dataType = c.unitColumnDataTypes[colIdx];
+                              const dataType =
+                                c.getColumnDataTypeById(columnId);
                               const hasCompare =
                                 c.unitColumnCompareFlags[colIdx];
                               const compareLabel =
@@ -722,10 +728,13 @@ const UnitClient = (props: any) => {
                                           : ""
                                     } ${
                                       c.unitColumnDataTypes[colIdx] ===
-                                        "Text" &&
-                                      c.unitColumnLargeColumnFlags[colIdx]
-                                        ? "min-w-[28ch]"
-                                        : "min-w-[10ch]"
+                                      "TextField"
+                                        ? "min-w-[64ch]"
+                                        : c.unitColumnDataTypes[colIdx] ===
+                                              "Text" &&
+                                            c.unitColumnLargeColumnFlags[colIdx]
+                                          ? "min-w-[28ch]"
+                                          : "min-w-[10ch]"
                                     } group/cell break-normal!`}
                                   >
                                     <div className="flex gap-4">
@@ -813,60 +822,109 @@ const UnitClient = (props: any) => {
 
                                       {c.editingCell?.hour === hour &&
                                       c.editingCell?.columnId === columnId ? (
-                                        <div className="relative inline-flex w-full align-middle">
-                                          <span className="invisible whitespace-pre">
-                                            {String(
-                                              c.editingValue ??
-                                                displayValue ??
-                                                "",
-                                            ) || " "}
-                                          </span>
-
-                                          <div className="absolute inset-0 -mx-2 flex items-center">
-                                            <Input
-                                              compact
-                                              focusOnMount
-                                              type={
-                                                dataType === "Number"
-                                                  ? "number"
-                                                  : "text"
+                                        dataType === "TextField" ? (
+                                          <div
+                                            className="-mx-2 w-full"
+                                            tabIndex={-1}
+                                            onBlurCapture={
+                                              c.handleTextFieldFocusOut
+                                            }
+                                            onKeyDownCapture={(
+                                              e: React.KeyboardEvent<HTMLDivElement>,
+                                            ) => {
+                                              if (e.key === "Escape") {
+                                                e.stopPropagation();
+                                                c.setEditingCell(null);
                                               }
+
+                                              if (
+                                                e.key === "Enter" &&
+                                                (e.ctrlKey || e.metaKey)
+                                              ) {
+                                                e.preventDefault();
+                                                c.saveInlineEdit();
+                                              }
+                                            }}
+                                          >
+                                            <RichTextEditor
                                               value={String(
                                                 c.editingValue ?? "",
                                               )}
-                                              onChange={(val) =>
-                                                c.setEditingValue(
-                                                  dataType === "Number"
-                                                    ? val === ""
-                                                      ? ""
-                                                      : isNaN(Number(val))
-                                                        ? ""
-                                                        : Number(val)
-                                                    : val,
-                                                )
+                                              onChange={(html) =>
+                                                c.setEditingValue(html)
                                               }
-                                              onBlur={() =>
-                                                c.setEditingCell(null)
-                                              }
-                                              onKeyDown={(e) => {
-                                                if (e.key === "Escape") {
-                                                  e.stopPropagation();
-                                                  c.setEditingCell(null);
-                                                } else if (e.key === "Enter") {
-                                                  e.preventDefault();
-                                                  c.saveInlineEdit();
-                                                }
-                                              }}
-                                              min={0}
-                                              max={999999}
-                                              compactWithBorder
-                                              classNameAddition="!border-(--border-main) bg-(--bg-main) w-full !px-2"
+                                              shouldAutoFocus
                                             />
                                           </div>
-                                        </div>
+                                        ) : (
+                                          <div className="relative inline-flex w-full align-middle">
+                                            <span className="invisible whitespace-pre">
+                                              {String(
+                                                c.editingValue ??
+                                                  displayValue ??
+                                                  "",
+                                              ) || " "}
+                                            </span>
+
+                                            <div className="absolute inset-0 -mx-2 flex items-center">
+                                              <Input
+                                                compact
+                                                focusOnMount
+                                                type={
+                                                  dataType === "Number"
+                                                    ? "number"
+                                                    : "text"
+                                                }
+                                                value={String(
+                                                  c.editingValue ?? "",
+                                                )}
+                                                onChange={(val) =>
+                                                  c.setEditingValue(
+                                                    dataType === "Number"
+                                                      ? val === ""
+                                                        ? ""
+                                                        : isNaN(Number(val))
+                                                          ? ""
+                                                          : Number(val)
+                                                      : val,
+                                                  )
+                                                }
+                                                onBlur={() =>
+                                                  c.setEditingCell(null)
+                                                }
+                                                onKeyDown={(e) => {
+                                                  if (e.key === "Escape") {
+                                                    e.stopPropagation();
+                                                    c.setEditingCell(null);
+                                                  } else if (
+                                                    e.key === "Enter"
+                                                  ) {
+                                                    e.preventDefault();
+                                                    c.saveInlineEdit();
+                                                  }
+                                                }}
+                                                min={0}
+                                                max={999999}
+                                                compactWithBorder
+                                                classNameAddition="!border-(--border-main) bg-(--bg-main) w-full !px-2"
+                                              />
+                                            </div>
+                                          </div>
+                                        )
                                       ) : (
                                         <>
-                                          {displayValue}
+                                          {dataType === "TextField" ? (
+                                            <div
+                                              className="w-full [overflow-wrap:anywhere]"
+                                              dangerouslySetInnerHTML={{
+                                                __html: String(
+                                                  displayValue ?? "",
+                                                ),
+                                              }}
+                                            />
+                                          ) : (
+                                            <>{displayValue}</>
+                                          )}
 
                                           <CustomTooltip
                                             content={`${!props.isReporter ? c.t("Common/No access") : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report this data") + c.t("Unit/Tooltip this hour") : c.t("Unit/No columns")}`}
@@ -881,14 +939,13 @@ const UnitClient = (props: any) => {
                                               className={`${iconButtonPrimaryClass} group invisible ml-auto group-hover/cell:visible`}
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                c.setEditingCell({
+                                                c.beginInlineEdit(
                                                   hour,
                                                   columnId,
-                                                });
+                                                  cell,
+                                                );
                                                 c.setEditingValue(
-                                                  cell?.value ??
-                                                    cell?.intValue ??
-                                                    "",
+                                                  String(cell?.value ?? ""),
                                                 );
                                               }}
                                               disabled={

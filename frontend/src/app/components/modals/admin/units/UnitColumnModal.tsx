@@ -353,8 +353,11 @@ const UnitColumnModal = (props: Props) => {
                   addSpacer={
                     getUnitColumnDataTypeOptions(t).length > 0 &&
                     dataType !== "Number" &&
-                    dataType !== "Text"
+                    // dataType !== "Decimal" &&
+                    dataType !== "Text" //&&
+                    // dataType !== "TextField"
                   }
+                  customSpace={9}
                   scrollContainer={getScrollEl}
                   id="dataType"
                   label={t("Columns/Data type")}

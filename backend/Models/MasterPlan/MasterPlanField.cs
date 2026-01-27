@@ -27,6 +27,7 @@ namespace backend.Models
     public enum MasterPlanFieldDataType
     {
         Number,
+        Decimal,
         Text,
         Boolean,
         Date,

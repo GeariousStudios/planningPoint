@@ -253,7 +253,7 @@ const NavbarSubmenu = (props: Props) => {
               className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-67" : "left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-(--border-main) bg-(--bg-navbar) transition-all duration-(--slow)`}
             >
               <div className="my-4 ml-4">
-                <div className="flex gap-2">
+                <div className="mb-8 flex gap-2">
                   <props.iconHover className="flex max-h-4 min-h-4 max-w-4 min-w-4 text-(--accent-color)" />
                   {props.href ? (
                     <Link
@@ -307,13 +307,13 @@ const NavbarSubmenu = (props: Props) => {
                   )}
                 </div>
                 <div
-                  className={`grid gap-2 ${
+                  className={`grid gap-x-2 gap-y-8 ${
                     cols === 1
                       ? "grid-cols-1"
                       : cols === 2
                         ? "sm:grid-cols-2"
                         : "sm:grid-cols-3"
-                  }`}
+                  } `}
                 >
                   {props.menus.map((menu, index) => (
                     <div key={index}>
@@ -323,12 +323,16 @@ const NavbarSubmenu = (props: Props) => {
                           <ul
                             className={`${isOpen ? "opacity-100" : "opacity-0"} w-34 transition-opacity duration-(--fast)`}
                           >
-                            <li className="truncate border-(--border-main) pt-6 pb-1">
+                            {/* --- Border --- */}
+                            <hr className="rounded-full text-(--border-main)" />
+                            {/* --- /Border --- */}
+
+                            <li className="my-1.5 flex border-(--border-main) text-sm [overflow-wrap:anywhere] uppercase">
                               {menu.label}
                             </li>
 
                             {/* --- Border --- */}
-                            <hr className="text-(--border-main)" />
+                            <hr className="rounded-full text-(--border-main)" />
                             {/* --- /Border --- */}
 
                             {menu.items.map((item, index) => {
@@ -350,7 +354,7 @@ const NavbarSubmenu = (props: Props) => {
                                     (!item.requiresDev || isDev) && (
                                       <div>
                                         <li
-                                          className={`${item.title ? "pt-4 pb-1 text-xs font-semibold [overflow-wrap:anywhere] uppercase" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
+                                          className={`${item.title ? "text-xs font-semibold [overflow-wrap:anywhere] uppercase" + (index === 0 ? " mt-4 mb-1" : " mt-8 mb-1") : ""} ${!item.title && index === 0 ? "mt-2" : ""}`}
                                         >
                                           {item.title ?? ""}
                                         </li>
