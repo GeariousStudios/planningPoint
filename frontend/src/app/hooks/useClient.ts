@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useToast } from "../components/toast/ToastProvider";
 import { toLocalDateString } from "../helpers/timeUtils";
 import useTheme from "./useTheme";
+import { RichTextEditorRef } from "../components/richTextEditor/RichTextEditor";
 
 // --- CLASSES ---
 export const thClass =
   "px-4 py-2 h-[40px] text-left border-b-1 border-b-(--border-main) border-r-1 border-r-(--border-secondary) flex-inline items-center justify-center";
 
 export const tdClass =
-  "px-4 py-2 h-[40px] text-left [overflow-wrap:anywhere] border border-(--border-secondary) flex-inline items-center justify-center";
+  "px-4 py-2 h-[40px] text-left [overflow-wrap:anywhere] border border-(--border-secondary) flex-inline items-center justify-center align-top";
 
 export const tdClassSpecial =
   "px-4 py-2 h-[40px] text-left [overflow-wrap:anywhere] flex-inline items-center justify-center";
@@ -79,6 +80,7 @@ const useClient = (props: Props) => {
   // --- Refs ---
   const shiftsRef = useRef<HTMLButtonElement | null>(null);
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const inlineRteRef = useRef<RichTextEditorRef>(null);
 
   // --- States: Shift ---
   const [shiftsOpen, setShiftsOpen] = useState(false);
@@ -201,7 +203,6 @@ const useClient = (props: Props) => {
         return;
       }
 
-      saveInlineEdit();
       setEditingCell(null);
     }, 0);
   };
@@ -229,6 +230,12 @@ const useClient = (props: Props) => {
       return;
     }
 
+    if (dataType === "Decimal") {
+      const v = cell?.value ?? cell?.intValue ?? "";
+      setEditingValue(v == null ? "" : String(v));
+      return;
+    }
+
     if (dataType === "Boolean") {
       const v = cell?.value;
       setEditingValue(v === true || v === "true");
@@ -236,7 +243,7 @@ const useClient = (props: Props) => {
     }
 
     if (dataType === "TextField") {
-      setEditingValue(String(cell?.value ?? ""));
+      setEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
       return;
     }
 
@@ -385,23 +392,27 @@ const useClient = (props: Props) => {
     return date === unitCreationDate && toMinutes(time) === 0;
   };
 
-  const getNumericCellValue = (cell: any) => {
-    if (cell == null) {
-      return undefined;
+  const getNumericCellValue = (cell: any, dataType?: string) => {
+    if (cell == null) return undefined;
+
+    if (dataType === "Number") {
+      if (typeof cell.intValue === "number") return cell.intValue;
+      const n = Number(cell.value);
+      return Number.isFinite(n) ? n : undefined;
     }
 
-    if (typeof cell.intValue === "number") {
-      return cell.intValue;
-    }
-
-    const n = Number(cell.value);
+    const raw = String(cell.value ?? cell.intValue ?? "").replace(/,/g, ".");
+    const n = Number(raw);
     return Number.isFinite(n) ? n : undefined;
   };
 
   const compareColsCount = unitColumnNames.reduce((acc, _, i) => {
+    const dt = unitColumnDataTypes[i];
     return (
       acc +
-      (unitColumnDataTypes[i] === "Number" && unitColumnCompareFlags[i] ? 1 : 0)
+      ((dt === "Number" || dt === "Decimal") && unitColumnCompareFlags[i]
+        ? 1
+        : 0)
     );
   }, 0);
 
@@ -842,16 +853,20 @@ const useClient = (props: Props) => {
 
   // --- Save unit cell ---
   const saveInlineEdit = async () => {
-    if (!editingCell) {
-      return;
-    }
+    if (!editingCell) return;
 
     try {
       const { hour, columnId } = editingCell;
       const dataType = unitColumnDataTypes[unitColumnIds.indexOf(columnId)];
 
-      const isEmpty =
-        dataType === "Number" && (editingValue === "" || editingValue === null);
+      const isEmptyNumeric =
+        (dataType === "Number" || dataType === "Decimal") &&
+        (editingValue === "" || editingValue === null);
+
+      const normalizedDecimal =
+        dataType === "Decimal"
+          ? String(editingValue ?? "").replace(/,/g, ".")
+          : String(editingValue ?? "");
 
       const valueToSend =
         dataType === "Boolean"
@@ -859,10 +874,14 @@ const useClient = (props: Props) => {
             ? "true"
             : "false"
           : dataType === "Number"
-            ? isEmpty
+            ? isEmptyNumeric
               ? ""
               : String(editingValue)
-            : String(editingValue ?? "");
+            : dataType === "Decimal"
+              ? isEmptyNumeric
+                ? ""
+                : normalizedDecimal
+              : String(editingValue ?? "");
 
       const body = {
         unitId: parsedUnitId,
@@ -873,7 +892,7 @@ const useClient = (props: Props) => {
             columnId,
             value: valueToSend,
             intValue:
-              dataType === "Number" && !isEmpty
+              dataType === "Number" && !isEmptyNumeric
                 ? Number(editingValue)
                 : undefined,
           },
@@ -1323,6 +1342,7 @@ const useClient = (props: Props) => {
     isEditingTextField,
     beginInlineEdit,
     handleTextFieldFocusOut,
+    inlineRteRef,
   };
 };
 

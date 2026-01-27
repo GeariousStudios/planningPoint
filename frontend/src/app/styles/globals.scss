@@ -332,6 +332,10 @@ th:focus-visible {
   }
 }
 
+.rte-single-line .ql-editor {
+  min-height: 2.5rem !important;
+}
+
 .ql-toolbar.ql-snow {
   padding: 0.425rem !important;
 }
@@ -385,7 +389,7 @@ li.ql-indent-3 {
     .ql-picker-options {
       box-shadow: unset;
       font-size: 0.8rem;
-      
+
       .ql-picker-item {
         color: var(--text-main-reverse);
         position: relative;

@@ -32,9 +32,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import ReportModal from "@/app/components/modals/report/ReportModal";
 import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
 import { useHandbook } from "@/app/context/HandbookContext";
-import RichTextEditor, {
-  RichTextEditorRef,
-} from "@/app/components/richTextEditor/RichTextEditor";
+import RichTextEditor from "@/app/components/richTextEditor/RichTextEditor";
 
 type ShiftChange = {
   id: number;
@@ -431,7 +429,8 @@ const UnitClient = (props: any) => {
                           {col}
                         </th>
 
-                        {c.unitColumnDataTypes[i] === "Number" &&
+                        {(c.unitColumnDataTypes[i] === "Number" ||
+                          c.unitColumnDataTypes[i] === "Decimal") &&
                           c.unitColumnCompareFlags[i] && (
                             <th
                               className={`${thClass} w-0 min-w-[10ch] whitespace-nowrap`}
@@ -523,7 +522,7 @@ const UnitClient = (props: any) => {
 
                               c.toggleRow(hour);
                             }}
-                            aria-label="Öppna/stäng"
+                            aria-label={c.t("Unit/Open or close")}
                             className={`${hour % 2 === 0 ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} group/row cursor-pointer transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)`}
                           >
                             {/* --- Standard <td>s --- */}
@@ -681,6 +680,9 @@ const UnitClient = (props: any) => {
                                   c.columnName === columnName,
                               );
 
+                              const isNumeric =
+                                dataType === "Number" || dataType === "Decimal";
+
                               const displayValue =
                                 dataType === "Boolean"
                                   ? cell?.value === true
@@ -688,26 +690,25 @@ const UnitClient = (props: any) => {
                                     : cell?.value === "false"
                                       ? c.t("Common/No")
                                       : ""
-                                  : (cell?.intValue ?? cell?.value ?? "");
+                                  : dataType === "Number"
+                                    ? (cell?.intValue ?? cell?.value ?? "")
+                                    : (cell?.value ?? cell?.intValue ?? "");
 
-                              const numericCurrent =
-                                dataType === "Number"
-                                  ? c.getNumericCellValue(cell)
-                                  : undefined;
+                              const numericCurrent = isNumeric
+                                ? c.getNumericCellValue(cell, dataType)
+                                : undefined;
 
-                              const prevCell =
-                                dataType === "Number"
-                                  ? c.unitCells.find(
-                                      (uc) =>
-                                        uc.hour === hour - 1 &&
-                                        uc.columnName === columnName,
-                                    )
-                                  : undefined;
+                              const prevCell = isNumeric
+                                ? c.unitCells.find(
+                                    (uc) =>
+                                      uc.hour === hour - 1 &&
+                                      uc.columnName === columnName,
+                                  )
+                                : undefined;
 
-                              const numericPrev =
-                                dataType === "Number"
-                                  ? c.getNumericCellValue(prevCell)
-                                  : undefined;
+                              const numericPrev = isNumeric
+                                ? c.getNumericCellValue(prevCell, dataType)
+                                : undefined;
 
                               const diff =
                                 numericCurrent != null && numericPrev != null
@@ -824,7 +825,7 @@ const UnitClient = (props: any) => {
                                       c.editingCell?.columnId === columnId ? (
                                         dataType === "TextField" ? (
                                           <div
-                                            className="-mx-2 w-full"
+                                            className="flex w-full cursor-default flex-col gap-4 py-2"
                                             tabIndex={-1}
                                             onBlurCapture={
                                               c.handleTextFieldFocusOut
@@ -846,15 +847,30 @@ const UnitClient = (props: any) => {
                                               }
                                             }}
                                           >
-                                            <RichTextEditor
-                                              value={String(
-                                                c.editingValue ?? "",
-                                              )}
-                                              onChange={(html) =>
-                                                c.setEditingValue(html)
-                                              }
-                                              shouldAutoFocus
-                                            />
+                                            <div className="bg-(--bg-grid) rounded">
+                                              <RichTextEditor
+                                                ref={c.inlineRteRef}
+                                                singleLine
+                                                onReady={() => {
+                                                  c.inlineRteRef.current?.setContent(
+                                                    String(
+                                                      c.editingValue ?? "",
+                                                    ),
+                                                  );
+                                                }}
+                                                onChange={(html) =>
+                                                  c.setEditingValue(html)
+                                                }
+                                                shouldAutoFocus
+                                              />
+                                            </div>
+
+                                            <button
+                                              className={`${buttonPrimaryClass}`}
+                                              onClick={c.saveInlineEdit}
+                                            >
+                                              {c.t("Modal/Save")}
+                                            </button>
                                           </div>
                                         ) : (
                                           <div className="relative inline-flex w-full align-middle">
@@ -873,7 +889,9 @@ const UnitClient = (props: any) => {
                                                 type={
                                                   dataType === "Number"
                                                     ? "number"
-                                                    : "text"
+                                                    : dataType === "Decimal"
+                                                      ? "decimal"
+                                                      : "text"
                                                 }
                                                 value={String(
                                                   c.editingValue ?? "",
@@ -944,9 +962,9 @@ const UnitClient = (props: any) => {
                                                   columnId,
                                                   cell,
                                                 );
-                                                c.setEditingValue(
-                                                  String(cell?.value ?? ""),
-                                                );
+                                                // c.setEditingValue(
+                                                //   String(cell?.value ?? ""),
+                                                // );
                                               }}
                                               disabled={
                                                 !props.isReporter ||
@@ -965,17 +983,19 @@ const UnitClient = (props: any) => {
                                     </div>
                                   </td>
 
-                                  {dataType === "Number" && hasCompare && (
-                                    <td
-                                      className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === c.unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
-                                    >
-                                      {numericPrev == null
-                                        ? "0"
-                                        : diff! >= 0
-                                          ? `${diff}`
-                                          : `0`}
-                                    </td>
-                                  )}
+                                  {(dataType === "Number" ||
+                                    dataType === "Decimal") &&
+                                    hasCompare && (
+                                      <td
+                                        className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === c.unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
+                                      >
+                                        {numericPrev == null
+                                          ? "0"
+                                          : diff! >= 0
+                                            ? `${diff}`
+                                            : `0`}
+                                      </td>
+                                    )}
                                 </React.Fragment>
                               );
                             })}

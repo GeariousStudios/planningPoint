@@ -35,12 +35,16 @@ type Props = {
   onReady?: () => void;
   onChange?: (val: string) => void;
   shouldAutoFocus?: boolean;
+  singleLine?: boolean;
 };
 
 const SIZE_WHITELIST = ["12px", "16px", "20px", "24px"];
 
 const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
-  ({ value, name, required, onReady, onChange, shouldAutoFocus }, ref) => {
+  (
+    { value, name, required, onReady, onChange, shouldAutoFocus, singleLine },
+    ref,
+  ) => {
     const t = useTranslations();
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -68,13 +72,26 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           return "";
         }
       },
+      // setContent: (value: string) => {
+      //   const editor = quillRef.current?.getEditor();
+      //   if (editor) {
+      //     editor.clipboard.dangerouslyPasteHTML(value, "silent");
+      //     editor.root.blur();
+      //   }
+      // },
       setContent: (value: string) => {
         const editor = quillRef.current?.getEditor();
-        if (editor) {
-          editor.clipboard.dangerouslyPasteHTML(value, "silent");
-          editor.root.blur();
-        }
+        if (!editor) return;
+
+        editor.clipboard.dangerouslyPasteHTML(value, "silent");
+
+        const length = editor.getLength();
+        editor.setSelection(length, 0, "silent");
+
+        editor.update("silent");
+        editor.root.getBoundingClientRect();
       },
+
       getTextarea: () => {
         return textareaRef.current;
       },
@@ -228,10 +245,6 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
 
       lastAppliedValueRef.current = incoming;
       editor.clipboard.dangerouslyPasteHTML(incoming, "silent");
-
-      editor.root.setAttribute("dir", "ltr");
-      editor.root.style.direction = "ltr";
-      editor.root.style.textAlign = "left";
     }, [isEditorReady, value]);
 
     const modules = {
@@ -251,7 +264,11 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     };
 
     return (
-      <div className="relative w-full rounded border border-(--border-tertiary) focus-within:z-[calc(var(--z-base)+1)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--accent-color)">
+      <div
+        className={`relative w-full rounded border border-(--border-tertiary) focus-within:z-[calc(var(--z-base)+1)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--accent-color) ${
+          singleLine ? "rte-single-line" : ""
+        }`}
+      >
         <QuillWrapper
           ref={quillRef}
           id="quill-editor"
