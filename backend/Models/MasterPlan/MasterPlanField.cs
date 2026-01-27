@@ -13,6 +13,8 @@ namespace backend.Models
         public MasterPlanFieldDataType DataType { get; set; }
         public MasterPlanFieldAlignment Alignment { get; set; }
         public List<MasterPlanFieldMapping> FieldMappings { get; set; } = new();
+        public bool LocalIncremental { get; set; }
+        public bool GlobalIncremental { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }

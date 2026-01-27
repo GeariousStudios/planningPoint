@@ -105,7 +105,10 @@ const Topbar = (props: Props) => {
   // --- SCROLL HORIZONTALLY ---
   useEffect(() => {
     const el = breadcrumbsRef.current;
-    if (!el) return;
+    
+    if (!el) {
+      return;
+    }
 
     const update = () => {
       const maxScrollLeft = el.scrollWidth - el.clientWidth;
@@ -128,7 +131,7 @@ const Topbar = (props: Props) => {
       ro.disconnect();
       window.removeEventListener("resize", update);
     };
-  }, [breadcrumbs.length, props.breadcrumbsLoading]);
+  }, [breadcrumbs.length, props.breadcrumbsLoading, isAuthReady]);
 
   // --- HIDE TOPBAR ON SCROLL ---
   useEffect(() => {

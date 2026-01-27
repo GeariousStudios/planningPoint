@@ -15,6 +15,8 @@ namespace backend.Dtos.MasterPlan
         [Required(ErrorMessage = "[3|MasterPlanField/a data type] Validation/Please select")]
         public MasterPlanFieldDataType DataType { get; set; }
         public MasterPlanFieldAlignment Alignment { get; set; }
+        public bool LocalIncremental { get; set; }
+        public bool GlobalIncremental { get; set; }
         public bool IsHidden { get; set; }
         // public int[]? MasterPlanIds { get; set; }
     }

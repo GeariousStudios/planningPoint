@@ -82,6 +82,9 @@ const useClient = (props: Props) => {
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const inlineRteRef = useRef<RichTextEditorRef>(null);
 
+  const shouldRestoreFocusRef = useRef(false);
+  const wasCancelOpenRef = useRef(false);
+
   // --- States: Shift ---
   const [shiftsOpen, setShiftsOpen] = useState(false);
   const [shiftNames, setShiftNames] = useState<Shift[]>([]);
@@ -138,6 +141,9 @@ const useClient = (props: Props) => {
   const [editingValue, setEditingValue] = useState<string | number | boolean>(
     "",
   );
+  const [originalEditingValue, setOriginalEditingValue] = useState<
+    string | number | boolean
+  >("");
 
   // --- States: This ---
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
@@ -155,6 +161,10 @@ const useClient = (props: Props) => {
   const [deletingItemId, setDeletingItemId] = useState<string | undefined>();
 
   const [refetchData, setRefetchData] = useState(true);
+
+  // --- States: Cancel Value ---
+  const [cancelValueModalOpen, setCancelValueModalOpen] = useState(false);
+  const [lastInput, setLastInput] = useState<HTMLElement | null>(null);
 
   // --- States: Other ---
   const [isLoadingUnits, setIsLoadingUnits] = useState(true);
@@ -203,7 +213,7 @@ const useClient = (props: Props) => {
         return;
       }
 
-      setEditingCell(null);
+      cancelEdit();
     }, 0);
   };
 
@@ -215,10 +225,6 @@ const useClient = (props: Props) => {
     return idx >= 0 ? unitColumnDataTypes[idx] : undefined;
   };
 
-  const isEditingTextField =
-    editingCell != null &&
-    getColumnDataTypeById(editingCell.columnId) === "TextField";
-
   const beginInlineEdit = (hour: number, columnId: number, cell?: any) => {
     const dataType = getColumnDataTypeById(columnId);
 
@@ -227,27 +233,32 @@ const useClient = (props: Props) => {
     if (dataType === "Number") {
       const v = cell?.intValue ?? cell?.value ?? "";
       setEditingValue(v === "" || v == null ? "" : Number(v));
+      setOriginalEditingValue(v === "" || v == null ? "" : Number(v));
       return;
     }
 
     if (dataType === "Decimal") {
       const v = cell?.value ?? cell?.intValue ?? "";
       setEditingValue(v == null ? "" : String(v));
+      setOriginalEditingValue(v == null ? "" : String(v));
       return;
     }
 
     if (dataType === "Boolean") {
       const v = cell?.value;
       setEditingValue(v === true || v === "true");
+      setOriginalEditingValue(v === true || v === "true");
       return;
     }
 
     if (dataType === "TextField") {
       setEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
+      setOriginalEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
       return;
     }
 
     setEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
+    setOriginalEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
   };
 
   const handleDateChange = (val: string) => {
@@ -416,6 +427,84 @@ const useClient = (props: Props) => {
     );
   }, 0);
 
+  const resolveFocusable = (el: HTMLElement | null) => {
+    if (!el) return null;
+
+    const direct = el.closest?.(
+      'input,textarea,select,button,[contenteditable="true"],[tabindex]:not([tabindex="-1"])',
+    ) as HTMLElement | null;
+
+    if (direct) return direct;
+
+    const inner = el.querySelector?.(
+      'input,textarea,select,button,[contenteditable="true"],[tabindex]:not([tabindex="-1"])',
+    ) as HTMLElement | null;
+
+    return inner ?? null;
+  };
+
+  const rememberLastFocused = (el?: HTMLElement | null) => {
+    const active =
+      el ??
+      (document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null);
+    const focusable = resolveFocusable(active);
+    if (focusable) setLastInput(focusable);
+  };
+
+  const focusToLastInput = () => {
+    const el = lastInput;
+    if (!el) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          el.scrollIntoView({ block: "nearest" });
+          el.focus();
+        } catch {}
+      });
+    });
+  };
+
+  useEffect(() => {
+    if (wasCancelOpenRef.current && !cancelValueModalOpen) {
+      if (shouldRestoreFocusRef.current) {
+        focusToLastInput();
+      }
+      shouldRestoreFocusRef.current = true;
+    }
+    wasCancelOpenRef.current = cancelValueModalOpen;
+  }, [cancelValueModalOpen, lastInput]);
+
+  const openCancelValueModal = () => {
+    shouldRestoreFocusRef.current = true;
+    setCancelValueModalOpen(true);
+  };
+
+  const closeCancelValueModal = () => {
+    setCancelValueModalOpen(false);
+  };
+
+  const confirmCancelValueModal = () => {
+    shouldRestoreFocusRef.current = false;
+    setCancelValueModalOpen(false);
+  };
+
+  const cancelEdit = () => {
+    const isDirty = editingValue !== originalEditingValue;
+
+    if (isDirty) {
+      openCancelValueModal();
+      return;
+    }
+
+    setEditingCellToNull();
+  };
+
+  const setEditingCellToNull = () => {
+    setEditingCell(null);
+  };
   // --- BACKEND ---
   // --- Fetch unit ---
   useEffect(() => {
@@ -1265,6 +1354,7 @@ const useClient = (props: Props) => {
     setEditingCell,
     editingValue,
     setEditingValue,
+    setOriginalEditingValue,
     expandedRows,
     setExpandedRows,
     allExpanded,
@@ -1339,10 +1429,16 @@ const useClient = (props: Props) => {
     refreshUnitActive,
     tdClassSpecial,
     getColumnDataTypeById,
-    isEditingTextField,
     beginInlineEdit,
     handleTextFieldFocusOut,
     inlineRteRef,
+    cancelValueModalOpen,
+    openCancelValueModal,
+    closeCancelValueModal,
+    cancelEdit,
+    setEditingCellToNull,
+    confirmCancelValueModal,
+    rememberLastFocused,
   };
 };
 

@@ -19,6 +19,11 @@ import { useTranslations } from "next-intl";
 import { masterPlanFieldConstraints } from "@/app/helpers/inputConstraints";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
+import CustomTooltip from "@/app/components/common/CustomTooltip";
+import HoverIcon from "@/app/components/common/HoverIcon";
+import * as Outline from "@heroicons/react/24/outline";
+import * as Solid from "@heroicons/react/24/solid";
+import { setGlobal } from "next/dist/trace";
 
 type Props = {
   isOpen: boolean;
@@ -53,6 +58,8 @@ const MasterPlanFieldModal = (props: Props) => {
   const [alignment, setAlignment] = useState<"Left" | "Center" | "Right">(
     "Left",
   );
+  const [localIncremental, setLocalIncremental] = useState(false);
+  const [globalIncremental, setGlobalIncremental] = useState(false);
 
   const [originalName, setOriginalName] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
@@ -61,6 +68,10 @@ const MasterPlanFieldModal = (props: Props) => {
   const [originalAlignment, setOriginalAlignment] = useState<
     "Left" | "Center" | "Right"
   >("Left");
+  const [originalLocalIncremental, setOriginalLocalIncremental] =
+    useState(false);
+  const [originalGlobalIncremental, setOriginalGlobalIncremental] =
+    useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   const [isAnyDragging, setIsAnyDragging] = useState(false);
@@ -91,6 +102,12 @@ const MasterPlanFieldModal = (props: Props) => {
 
       setAlignment("Left");
       setOriginalAlignment("Left");
+
+      setLocalIncremental(false);
+      setOriginalLocalIncremental(false);
+
+      setGlobalIncremental(false);
+      setOriginalGlobalIncremental(false);
     }
   }, [props.isOpen, props.itemId]);
 
@@ -113,6 +130,8 @@ const MasterPlanFieldModal = (props: Props) => {
           isHidden,
           dataType,
           alignment,
+          localIncremental,
+          globalIncremental,
         }),
       });
 
@@ -218,6 +237,9 @@ const MasterPlanFieldModal = (props: Props) => {
 
     setAlignment(result.alignment ?? "Left");
     setOriginalAlignment(result.alignment ?? "Left");
+
+    setLocalIncremental(result.localIncremental ?? false);
+    setOriginalLocalIncremental(result.localIncremental ?? false);
   };
 
   // --- Update master plan field ---
@@ -240,6 +262,8 @@ const MasterPlanFieldModal = (props: Props) => {
             isHidden,
             dataType,
             alignment,
+            localIncremental,
+            globalIncremental,
           }),
         },
       );
@@ -319,7 +343,9 @@ const MasterPlanFieldModal = (props: Props) => {
         name !== "" ||
         isHidden !== false ||
         dataType !== "Text" ||
-        alignment !== "Left";
+        alignment !== "Left" ||
+        localIncremental !== false ||
+        globalIncremental !== false;
 
       setIsDirty(dirty);
       return;
@@ -329,7 +355,9 @@ const MasterPlanFieldModal = (props: Props) => {
       name !== originalName ||
       isHidden !== originalIsHidden ||
       dataType !== originalDataType ||
-      alignment !== originalAlignment;
+      alignment !== originalAlignment ||
+      localIncremental !== originalLocalIncremental ||
+      globalIncremental !== originalGlobalIncremental;
 
     setIsDirty(dirty);
   }, [
@@ -338,10 +366,14 @@ const MasterPlanFieldModal = (props: Props) => {
     isHidden,
     dataType,
     alignment,
+    localIncremental,
+    globalIncremental,
     originalName,
     originalIsHidden,
     originalDataType,
     originalAlignment,
+    originalLocalIncremental,
+    originalGlobalIncremental,
   ]);
 
   return (
@@ -428,6 +460,86 @@ const MasterPlanFieldModal = (props: Props) => {
                   onModal
                 />
               </div>
+
+              {dataType === "Number" ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <hr className="w-12 text-(--border-tertiary)" />
+                    <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
+                      {t("MasterPlanFieldModal/Info3")}
+                    </h3>
+                    <hr className="w-full text-(--border-tertiary)" />
+                  </div>
+
+                  <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
+                    <div className="flex items-center gap-2 truncate">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={localIncremental}
+                        className={switchClass(localIncremental)}
+                        onClick={() => {
+                          setLocalIncremental((prev) => !prev);
+                          setGlobalIncremental(false);
+                        }}
+                      >
+                        <div className={switchKnobClass(localIncremental)} />
+                      </button>
+                      <span className="mb-0.5">
+                        {t("MasterPlanFieldModal/Local incremental")}
+                      </span>
+
+                      <CustomTooltip
+                        content={t(
+                          "MasterPlanFieldModal/Tooltip local incremental",
+                        )}
+                        showOnTouch
+                      >
+                        <span className="group min-h-4 min-w-4 cursor-help">
+                          <HoverIcon
+                            outline={Outline.InformationCircleIcon}
+                            solid={Solid.InformationCircleIcon}
+                            className="flex"
+                          />
+                        </span>
+                      </CustomTooltip>
+                    </div>
+                    <div className="flex items-center gap-2 truncate">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={globalIncremental}
+                        className={switchClass(globalIncremental)}
+                        onClick={() => {
+                          setGlobalIncremental((prev) => !prev);
+                          setLocalIncremental(false);
+                        }}
+                      >
+                        <div className={switchKnobClass(globalIncremental)} />
+                      </button>
+                      <span className="mb-0.5">
+                        {t("MasterPlanFieldModal/Global incremental")}
+                      </span>
+                      <CustomTooltip
+                        content={t(
+                          "MasterPlanFieldModal/Tooltip global incremental",
+                        )}
+                        showOnTouch
+                      >
+                        <span className="group min-h-4 min-w-4 cursor-help">
+                          <HoverIcon
+                            outline={Outline.InformationCircleIcon}
+                            solid={Solid.InformationCircleIcon}
+                            className="flex"
+                          />
+                        </span>
+                      </CustomTooltip>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                ""
+              )}
 
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />

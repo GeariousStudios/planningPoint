@@ -385,6 +385,17 @@ namespace backend.Controllers
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            if (dto.DataType != UnitColumnDataType.Number)
+            {
+                dto.Compare = false;
+                dto.ComparisonText = "";
+            }
+
+            if (dto.DataType != UnitColumnDataType.Text)
+            {
+                dto.LargeColumn = false;
+            }
+
             var column = new UnitColumn
             {
                 Name = dto.Name,
@@ -507,6 +518,17 @@ namespace backend.Controllers
 
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
+
+            if (dto.DataType != UnitColumnDataType.Number)
+            {
+                dto.Compare = false;
+                dto.ComparisonText = "";
+            }
+
+            if (dto.DataType != UnitColumnDataType.Text)
+            {
+                dto.LargeColumn = false;
+            }
 
             var oldValues = new Dictionary<string, object?>
             {

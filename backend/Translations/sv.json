@@ -129,6 +129,7 @@
   "MasterPlanField/SomeNotFound": "Ett eller flera fält kunde inte hittas",
   "MasterPlanField/NameTaken": "Ett fält med samma namn finns redan",
   "MasterPlanField/InUse": "Kan inte ta bort ett fält som används",
+  "MasterPlanField/IncrementalConflict": "Fältet kan inte vara både lokalt och globalt inkrementell!",
 
   "MasterPlanElement/NotFound": "Element kunde inte hittas i databasen",
   "MasterPlanElement/Updated": "Element uppdaterat!",
@@ -286,6 +287,8 @@
   "AuditTrail/Product": "Produkt",
   "AuditTrail/Products": "Produkter",
   "AuditTrail/ProductGroup": "Produktgrupp",
+  "AuditTRail/LocalIncremental": "Lokalt inkrementell",
+  "AuditTrail/GlobalIncremental": "Globalt inkrementell",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

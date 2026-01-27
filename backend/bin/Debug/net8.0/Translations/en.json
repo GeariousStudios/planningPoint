@@ -129,6 +129,7 @@
   "MasterPlanField/SomeNotFound": "One or more fields could not be found",
   "MasterPlanField/NameTaken": "A field with the same name already exists!",
   "MasterPlanField/InUse": "Cannot delete a field that is in use",
+  "MasterPlanField/IncrementalConflict": "Field cannot be both locally and globally incremental!",
 
   "MasterPlanElement/NotFound": "Element could not be found in the database",
   "MasterPlanElement/Updated": "Element updated!",
@@ -285,6 +286,8 @@
   "AuditTrail/Product": "Product",
   "AuditTrail/Products": "Products",
   "AuditTrail/ProductGroup": "Product group",
+  "AuditTrail/LocalIncremental": "Locally incremental",
+  "AuditTrail/GlobalIncremental": "Globally incremental",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

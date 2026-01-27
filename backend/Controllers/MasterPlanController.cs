@@ -466,6 +466,8 @@ namespace backend.Controllers
                         DataType = mpf.MasterPlanField.DataType,
                         Alignment = mpf.MasterPlanField.Alignment,
                         IsHidden = mpf.MasterPlanField.IsHidden,
+                        LocalIncremental = mpf.MasterPlanField.LocalIncremental,
+                        GlobalIncremental = mpf.MasterPlanField.GlobalIncremental,
                     })
                     .ToList(),
                 Elements = masterPlan
@@ -727,6 +729,8 @@ namespace backend.Controllers
                         DataType = x.MasterPlanField.DataType,
                         Alignment = x.MasterPlanField.Alignment,
                         IsHidden = x.MasterPlanField.IsHidden,
+                        LocalIncremental = x.MasterPlanField.LocalIncremental,
+                        GlobalIncremental = x.MasterPlanField.GlobalIncremental,
                     })
                     .ToList(),
 
@@ -919,6 +923,8 @@ namespace backend.Controllers
                         DataType = x.MasterPlanField.DataType,
                         Alignment = x.MasterPlanField.Alignment,
                         IsHidden = x.MasterPlanField.IsHidden,
+                        LocalIncremental = x.MasterPlanField.LocalIncremental,
+                        GlobalIncremental = x.MasterPlanField.GlobalIncremental,
                     })
                     .ToList(),
 

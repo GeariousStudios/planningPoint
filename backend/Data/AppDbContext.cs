@@ -34,6 +34,7 @@ namespace backend.Data
         public DbSet<MasterPlanField> MasterPlanFields { get; set; }
         public DbSet<MasterPlanFieldMapping> MasterPlanFieldMappings { get; set; }
         public DbSet<MasterPlanRevision> MasterPlanRevisions { get; set; }
+        public DbSet<MasterPlanIncrementalCounter> MasterPlanIncrementalCounters { get; set; }
         public DbSet<OperationalPlan> OperationalPlans { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductFieldValue> ProductFieldValues { get; set; }

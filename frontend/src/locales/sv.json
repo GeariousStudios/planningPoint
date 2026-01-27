@@ -141,6 +141,7 @@
   "Common/Activities": "Aktiviteter",
   "Common/Undo": "Ångra",
   "Common/Redo": "Gör om",
+  "Common/Cancel": "Avbryt",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -325,6 +326,10 @@
   "DeleteModal/Delete anyway": "Ta bort ändå",
   "DeleteModal/Confirm": "De objekt du vill ta bort används. Vill du ta bort ändå?",
 
+  "CancelValueModal/Label": "Du har ett värde under redigering",
+  "CancelValueModal/Message": "Avbryter du förlorar du dina ändringar.",
+  "CancelValueModal/Continue": "Fortsätt redigering",
+
   "NewsModal/News item": "Nyhet",
   "NewsModal/news item": "nyhet",
   "NewsModal/Unknown type": "Okänd typ",
@@ -420,11 +425,16 @@
 
   "MasterPlanFieldModal/Info1": "Uppgifter om fältet",
   "MasterPlanFieldModal/Info2": "Inställningar",
+  "MasterPlanFieldModal/Info3": "Datatyp: Nummer",
   "MasterPlanFieldModal/Data type": "Datatyp",
   "MasterPlanFieldModal/data type": "datatyp",
   "MasterPlanFieldModal/Alignment": "Justering",
   "MasterPlanFieldModal/alignment": "justering",
   "MasterPlanFieldModal/Hide master plan field": "Dölj fält",
+  "MasterPlanFieldModal/Local incremental": "Lokalt inkrementell",
+  "MasterPlanFieldModal/Tooltip local incremental": "Om aktiv så kommer värdet att öka för varje ny grupp med element i huvudplanen. Värdet återställs för varje ny huvudplan. Används ofta för sekventiella nummer.",
+  "MasterPlanFieldModal/Global incremental": "Globalt inkrementell",
+  "MasterPlanFieldModal/Tooltip global incremental": "Om aktiv så kommer värdet att öka för varje ny grupp med element i huvudplanen. Värdet ökar kontinuerligt över alla huvudplaner. Används ofta för sekventiella nummer.",
 
   "OperationalPlanModal/Info1": "Uppgifter om den operativa planen",
   "OperationalPlanModal/Info2": "Status",
@@ -514,7 +524,6 @@
   "TrendingPanel/Hide unit": "Dölj",
   "TrendingPanel/Edit layout": "Redigera layout",
   "TrendingPanel/Save layout": "Spara layout",
-  "TrendingPanel/Cancel": "Avbryt",
   "TrendingPanel/Layout saved": "Layout sparades!",
   "TrendingPanel/No changes": "Inga ändringar sparades!",
   "TrendingPanel/Autoinfo on": "Klicka för att dölja information automatiskt",

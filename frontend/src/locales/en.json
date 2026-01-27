@@ -140,6 +140,7 @@
   "Common/Activities": "Activities",
   "Common/Undo": "Undo",
   "Common/Redo": "Redo",
+  "Common/Cancel": "Cancel",
 
   "Message/Loading": "Loading...",
   "Message/Auth": "Authenticating...",
@@ -325,6 +326,10 @@
   "DeleteModal/Delete anyway": "Delete anyway",
   "DeleteModal/Confirm": "The items you want to delete is being used. Do you still want to delete?",
 
+  "CancelValueModal/Label": "You have a value being edited",
+  "CancelValueModal/Message": "If you cancel, you will lose your changes.",
+  "CancelValueModal/Continue": "Continue editing",
+
   "NewsModal/News item": "News item",
   "NewsModal/news item": "news item",
   "NewsModal/Unknown type": "Unknown type",
@@ -421,11 +426,16 @@
 
   "MasterPlanFieldModal/Info1": "Details about the field",
   "MasterPlanFieldModal/Info2": "Settings",
+  "MasterPlanFieldModal/Info3": "Data type: Number",
   "MasterPlanFieldModal/Data type": "Data type",
   "MasterPlanFieldModal/data type": "data type",
   "MasterPlanFieldModal/Alignment": "Alignment",
   "MasterPlanFieldModal/alignment": "alignment",
   "MasterPlanFieldModal/Hide master plan field": "Hide field",
+  "MasterPlanFieldModal/Local incremental": "Locally incremental",
+  "MasterPlanFieldModal/Tooltip local incremental": "If enabled, the value will increase for each new group of items in the master plan. The value resets for each new master plan. Often used for sequential numbers.",
+  "MasterPlanFieldModal/Global incremental": "Globally incremental",
+  "MasterPlanFieldModal/Tooltip global incremental": "If enabled, the value will increase for each new group of items in the master plan. The value increases continuously across all master plans. Often used for sequential numbers.",
 
   "OperationalPlanModal/Info1": "Details about the operational plan",
   "OperationalPlanModal/Info2": "Status",
@@ -515,7 +525,6 @@
   "TrendingPanel/Hide unit": "Hide",
   "TrendingPanel/Edit layout": "Edit layout",
   "TrendingPanel/Save layout": "Save layout",
-  "TrendingPanel/Cancel": "Cancel",
   "TrendingPanel/Layout saved": "Layout has been saved!",
   "TrendingPanel/No changes": "No changes were saved!",
   "TrendingPanel/Autoinfo on": "Click to hide information automatically",

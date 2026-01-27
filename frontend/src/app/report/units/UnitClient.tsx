@@ -30,6 +30,7 @@ import MenuDropdownAnchor from "@/app/components/common/MenuDropdown/MenuDropdow
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import ReportModal from "@/app/components/modals/report/ReportModal";
+import CancelValueModal from "@/app/components/modals/report/CancelValueModal";
 import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
 import { useHandbook } from "@/app/context/HandbookContext";
 import RichTextEditor from "@/app/components/richTextEditor/RichTextEditor";
@@ -118,6 +119,15 @@ const UnitClient = (props: any) => {
               ? c.t("Unit/Remove post message")
               : undefined
           }
+        />
+
+        <CancelValueModal
+          isOpen={c.cancelValueModalOpen}
+          onClose={() => c.closeCancelValueModal()}
+          onConfirm={() => {
+            c.setEditingCellToNull();
+            c.confirmCancelValueModal();
+          }}
         />
 
         {/* --- CONTENT --- */}
@@ -739,88 +749,6 @@ const UnitClient = (props: any) => {
                                     } group/cell break-normal!`}
                                   >
                                     <div className="flex gap-4">
-                                      {/* {c.editingCell?.hour === hour &&
-                                      c.editingCell?.columnId === columnId ? (
-                                        <div className="-mx-2">
-                                          <Input
-                                            compact
-                                            focusOnMount
-                                            type={
-                                              dataType === "Number"
-                                                ? "number"
-                                                : "text"
-                                            }
-                                            value={String(c.editingValue ?? "")}
-                                            onChange={(val) =>
-                                              c.setEditingValue(
-                                                dataType === "Number"
-                                                  ? val === ""
-                                                    ? ""
-                                                    : isNaN(Number(val))
-                                                      ? ""
-                                                      : Number(val)
-                                                  : val,
-                                              )
-                                            }
-                                            onBlur={() =>
-                                              c.setEditingCell(null)
-                                            }
-                                            onKeyDown={(e) => {
-                                              if (e.key === "Escape") {
-                                                e.stopPropagation();
-                                                c.setEditingCell(null);
-                                              } else if (e.key === "Enter") {
-                                                e.preventDefault();
-                                                c.saveInlineEdit();
-                                              }
-                                            }}
-                                            min={0}
-                                            max={999999}
-                                          />
-                                        </div>
-                                      ) : (
-                                        <>
-                                          {displayValue}
-
-                                          <CustomTooltip
-                                            content={`${!props.isReporter ? c.t("Common/No access") : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report this data") + c.t("Unit/Tooltip this hour") : c.t("Unit/No columns")}`}
-                                            veryLongDelay={
-                                              props.isReporter == true &&
-                                              c.unitColumnNames.length > 0
-                                            }
-                                            showOnTouch
-                                          >
-                                            <button
-                                              type="button"
-                                              className={`${iconButtonPrimaryClass} group invisible ml-auto group-hover/cell:visible`}
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                // toggleUnitCellModal(hour);
-                                                c.setEditingCell({
-                                                  hour,
-                                                  columnId,
-                                                });
-                                                c.setEditingValue(
-                                                  cell?.value ??
-                                                    cell?.intValue ??
-                                                    "",
-                                                );
-                                              }}
-                                              disabled={
-                                                !props.isReporter ||
-                                                c.unitColumnNames.length === 0
-                                              }
-                                            >
-                                              <HoverIcon
-                                                outline={Outline.PencilIcon}
-                                                solid={Solid.PencilIcon}
-                                                className="h-6 min-h-6 w-6 min-w-6"
-                                              />
-                                            </button>
-                                          </CustomTooltip>
-                                        </>
-                                      )} */}
-
                                       {c.editingCell?.hour === hour &&
                                       c.editingCell?.columnId === columnId ? (
                                         dataType === "TextField" ? (
@@ -835,7 +763,7 @@ const UnitClient = (props: any) => {
                                             ) => {
                                               if (e.key === "Escape") {
                                                 e.stopPropagation();
-                                                c.setEditingCell(null);
+                                                c.cancelEdit();
                                               }
 
                                               if (
@@ -847,7 +775,19 @@ const UnitClient = (props: any) => {
                                               }
                                             }}
                                           >
-                                            <div className="bg-(--bg-grid) rounded">
+                                            <div
+                                              className="rounded bg-(--bg-grid)"
+                                              onFocusCapture={(e) =>
+                                                c.rememberLastFocused(
+                                                  e.target as HTMLElement,
+                                                )
+                                              }
+                                              onMouseDownCapture={(e) =>
+                                                c.rememberLastFocused(
+                                                  e.target as HTMLElement,
+                                                )
+                                              }
+                                            >
                                               <RichTextEditor
                                                 ref={c.inlineRteRef}
                                                 singleLine
@@ -857,10 +797,15 @@ const UnitClient = (props: any) => {
                                                       c.editingValue ?? "",
                                                     ),
                                                   );
+                                                  c.setOriginalEditingValue(
+                                                    String(
+                                                      c.editingValue ?? "",
+                                                    ),
+                                                  );
                                                 }}
-                                                onChange={(html) =>
-                                                  c.setEditingValue(html)
-                                                }
+                                                onChange={(html) => {
+                                                  c.setEditingValue(html);
+                                                }}
                                                 shouldAutoFocus
                                               />
                                             </div>
@@ -882,8 +827,13 @@ const UnitClient = (props: any) => {
                                               ) || " "}
                                             </span>
 
-                                            <div className="absolute inset-0 -mx-2 flex items-center">
+                                            <div className="absolute inset-0 mt-1.25 flex items-center">
                                               <Input
+                                                onFocus={(e) =>
+                                                  c.rememberLastFocused(
+                                                    e.currentTarget as unknown as HTMLElement,
+                                                  )
+                                                }
                                                 compact
                                                 focusOnMount
                                                 type={
@@ -907,13 +857,11 @@ const UnitClient = (props: any) => {
                                                       : val,
                                                   )
                                                 }
-                                                onBlur={() =>
-                                                  c.setEditingCell(null)
-                                                }
+                                                onBlur={() => c.cancelEdit()}
                                                 onKeyDown={(e) => {
                                                   if (e.key === "Escape") {
                                                     e.stopPropagation();
-                                                    c.setEditingCell(null);
+                                                    c.cancelEdit();
                                                   } else if (
                                                     e.key === "Enter"
                                                   ) {
@@ -962,9 +910,6 @@ const UnitClient = (props: any) => {
                                                   columnId,
                                                   cell,
                                                 );
-                                                // c.setEditingValue(
-                                                //   String(cell?.value ?? ""),
-                                                // );
                                               }}
                                               disabled={
                                                 !props.isReporter ||

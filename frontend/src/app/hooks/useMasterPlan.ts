@@ -118,6 +118,8 @@ export const useMasterPlan = (
       label: string;
       value: string;
       dataType?: string;
+      localIncremental?: boolean;
+      globalIncremental?: boolean;
       alignment?: "Left" | "Center" | "Right";
       isHidden?: boolean;
     }[]
@@ -272,6 +274,8 @@ export const useMasterPlan = (
             label: f.name,
             value: f.id.toString(),
             dataType: f.dataType,
+            localIncremental: f.localIncremental ?? false,
+            globalIncremental: f.globalIncremental ?? false,
             alignment: f.alignment,
             isHidden: f.isHidden ?? false,
             id: f.id,
@@ -640,6 +644,8 @@ export const useMasterPlan = (
         label: f.name,
         value: f.id.toString(),
         dataType: f.dataType,
+        localIncremental: f.localIncremental ?? false,
+        globalIncremental: f.globalIncremental ?? false,
         alignment: f.alignment,
         isHidden: f.isHidden ?? false,
         id: f.id,
@@ -750,12 +756,6 @@ export const useMasterPlan = (
       prev.map((p) => {
         if (p.id !== planId) return p;
 
-        const newValues = fieldOptions.map((f) => ({
-          masterPlanFieldId: f.id,
-          masterPlanFieldName: f.label,
-          value: values[f.id] ?? "",
-        }));
-
         let insertIndex = 0;
         let finalGroupId: number | null = groupId;
 
@@ -795,8 +795,28 @@ export const useMasterPlan = (
           }
         }
 
+        const alloc = createIncrementalAllocator(p.elements);
+
+        const tempId = `temp-${Date.now()}-${Math.random()}`;
+
+        const newValues = fieldOptions.map((f) => {
+          const raw = String(values[f.id] ?? "");
+          const isInc = !!f.localIncremental || !!f.globalIncremental;
+
+          const value =
+            isInc && raw.trim() === ""
+              ? alloc(f.id, finalGroupId, tempId)
+              : raw;
+
+          return {
+            masterPlanFieldId: f.id,
+            masterPlanFieldName: f.label,
+            value,
+          };
+        });
+
         const newElement: MasterPlanElement = {
-          id: `temp-${Date.now()}-${Math.random()}`,
+          id: tempId,
           groupId: finalGroupId,
           values: newValues,
           currentElement: false,
@@ -875,19 +895,33 @@ export const useMasterPlan = (
           }
         }
 
+        const alloc = createIncrementalAllocator(p.elements);
+
         const itemsToInsert = rows
           ? rows.map((r) => toDict(r.masterPlanFields))
           : [toDict(item.masterPlanFields)];
 
         const newElements: MasterPlanElement[] = itemsToInsert.map((values) => {
-          const newValues = fieldOptions.map((f) => ({
-            masterPlanFieldId: f.id,
-            masterPlanFieldName: f.label,
-            value: values[f.id] ?? "",
-          }));
+          const tempId = `temp-${Date.now()}-${Math.random()}`;
+
+          const newValues = fieldOptions.map((f) => {
+            const raw = String(values[f.id] ?? "");
+            const isInc = !!f.localIncremental || !!f.globalIncremental;
+
+            const value =
+              isInc && raw.trim() === ""
+                ? alloc(f.id, finalGroupId, tempId)
+                : raw;
+
+            return {
+              masterPlanFieldId: f.id,
+              masterPlanFieldName: f.label,
+              value,
+            };
+          });
 
           return {
-            id: `temp-${Date.now()}-${Math.random()}`,
+            id: tempId,
             groupId: finalGroupId,
             values: newValues,
             currentElement: false,
@@ -2246,6 +2280,206 @@ export const useMasterPlan = (
   const totalGroups = groupedElements.length;
   const totalPages = Math.max(1, Math.ceil(totalGroups / itemsPerPage));
 
+  const incrementalValueMap = useMemo(() => {
+    const incFields = fieldOptions.filter(
+      (f) => !f.isHidden && (!!f.localIncremental || !!f.globalIncremental),
+    );
+
+    if (incFields.length === 0) return new Map<string, string>();
+
+    const base = elements.filter((el) => !removedElementIds.includes(el.id));
+    const map = new Map<string, string>();
+
+    const getStored = (el: MasterPlanElement, fieldId: number) => {
+      const raw =
+        el.values?.find((v) => v.masterPlanFieldId === fieldId)?.value ?? "";
+      return String(raw ?? "").trim();
+    };
+
+    const toInt = (s: string) => {
+      const n = Number(String(s).trim());
+      return Number.isFinite(n) ? n : null;
+    };
+
+    for (const f of incFields) {
+      if (f.globalIncremental) {
+        let maxExisting = 0;
+        const needsNumber: MasterPlanElement[] = [];
+
+        for (const el of base) {
+          const stored = getStored(el, f.id);
+          if (stored !== "") {
+            map.set(`${el.id}:${f.id}`, stored);
+            const n = toInt(stored);
+            if (n != null) maxExisting = Math.max(maxExisting, n);
+          } else {
+            needsNumber.push(el);
+          }
+        }
+
+        let n = maxExisting + 1;
+        for (const el of needsNumber) {
+          map.set(`${el.id}:${f.id}`, String(n));
+          n++;
+        }
+      }
+
+      if (f.localIncremental) {
+        const byGroup = new Map<string, MasterPlanElement[]>();
+
+        for (const el of base) {
+          const k =
+            el.groupId && el.groupId !== 0
+              ? String(el.groupId)
+              : `nogroup-${el.id}`;
+          const arr = byGroup.get(k);
+          if (arr) arr.push(el);
+          else byGroup.set(k, [el]);
+        }
+
+        let maxExisting = 0;
+
+        const groupStored = new Map<string, string>();
+
+        for (const [gk, els] of byGroup) {
+          const firstNonEmpty = els
+            .map((el) => getStored(el, f.id))
+            .find((s) => s !== "");
+
+          if (firstNonEmpty) {
+            groupStored.set(gk, firstNonEmpty);
+            const n = toInt(firstNonEmpty);
+            if (n != null) maxExisting = Math.max(maxExisting, n);
+          }
+        }
+
+        let next = maxExisting + 1;
+
+        for (const [gk, els] of byGroup) {
+          const value = groupStored.get(gk) ?? String(next++);
+          for (const el of els) {
+            map.set(`${el.id}:${f.id}`, value);
+          }
+        }
+      }
+    }
+
+    return map;
+  }, [elements, fieldOptions, removedElementIds]);
+
+  const createIncrementalAllocator = (planElements: MasterPlanElement[]) => {
+    const base = planElements;
+
+    const incFields = fieldOptions.filter(
+      (f) => !f.isHidden && (!!f.localIncremental || !!f.globalIncremental),
+    );
+
+    const getStored = (el: MasterPlanElement, fieldId: number) => {
+      const raw =
+        el.values?.find((v) => v.masterPlanFieldId === fieldId)?.value ?? "";
+      return String(raw ?? "").trim();
+    };
+
+    const toInt = (s: string) => {
+      const n = Number(String(s).trim());
+      if (!Number.isFinite(n)) return null;
+      const i = Math.floor(n);
+      return i >= 0 ? i : null;
+    };
+
+    const globalNext = new Map<number, number>();
+    const localValueByGroup = new Map<string, number>();
+    const localNextByField = new Map<number, number>();
+
+    for (const f of incFields) {
+      if (f.globalIncremental) {
+        let max = 0;
+
+        for (const el of base) {
+          const parsed = toInt(getStored(el, f.id));
+          if (parsed != null) max = Math.max(max, parsed);
+        }
+
+        globalNext.set(f.id, max + 1);
+      }
+
+      if (f.localIncremental) {
+        const byGroup = new Map<string, MasterPlanElement[]>();
+
+        for (const el of base) {
+          const k =
+            el.groupId && el.groupId !== 0
+              ? String(el.groupId)
+              : `nogroup-${el.id}`;
+          const arr = byGroup.get(k);
+          if (arr) arr.push(el);
+          else byGroup.set(k, [el]);
+        }
+
+        let max = 0;
+
+        for (const [gk, els] of byGroup) {
+          const firstNonEmpty = els
+            .map((el) => getStored(el, f.id))
+            .find((s) => s !== "");
+
+          const parsed = firstNonEmpty ? toInt(firstNonEmpty) : null;
+          if (parsed != null) {
+            localValueByGroup.set(`${f.id}:${gk}`, parsed);
+            max = Math.max(max, parsed);
+          }
+        }
+
+        localNextByField.set(f.id, max + 1);
+      }
+    }
+
+    return (fieldId: number, groupId: number | null, fallbackKey?: string) => {
+      const fo = fieldOptions.find((x) => x.id === fieldId);
+      if (!fo) return "";
+
+      if (fo.globalIncremental) {
+        const next = globalNext.get(fieldId) ?? 1;
+        globalNext.set(fieldId, next + 1);
+        return String(next);
+      }
+
+      if (fo.localIncremental) {
+        const gk =
+          groupId && groupId !== 0
+            ? String(groupId)
+            : fallbackKey
+              ? `nogroup-${fallbackKey}`
+              : "nogroup";
+
+        const key = `${fieldId}:${gk}`;
+        const existing = localValueByGroup.get(key);
+        if (existing != null) return String(existing);
+
+        const next = localNextByField.get(fieldId) ?? 1;
+        localNextByField.set(fieldId, next + 1);
+        localValueByGroup.set(key, next);
+        return String(next);
+      }
+
+      return "";
+    };
+  };
+
+  const getDisplayValue = (el: any, f: any) => {
+    const isIncremental = !!f.localIncremental || !!f.globalIncremental;
+
+    if (isIncremental) {
+      const computed = incrementalValueMap.get(`${el.id}:${f.id}`);
+      if (computed != null) return computed;
+    }
+
+    const stored =
+      el.values?.find((v: any) => v.masterPlanFieldId === f.id)?.value ?? "";
+
+    return stored;
+  };
+
   const requestRefetch = () => setRefetchTick((x) => x + 1);
 
   const isBootstrapping = firstFetch;
@@ -2360,5 +2594,6 @@ export const useMasterPlan = (
     redo,
     canUndo,
     canRedo,
+    getDisplayValue,
   };
 };

@@ -567,7 +567,7 @@ const HomeClient = (props: Props) => {
                         className="h-6 min-h-6 w-6 min-w-6"
                       />
                       <span className="hidden md:block">
-                        {t("TrendingPanel/Cancel")}
+                        {t("Common/Cancel")}
                       </span>
                     </div>
                   </button>

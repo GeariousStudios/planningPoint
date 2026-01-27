@@ -111,90 +111,11 @@ const MasterPlanClient = (props: Props) => {
     return null;
   }
 
-  const {
-    setIsCheckingOut,
-    setIsCheckingIn,
-    isCheckingOut,
-    isCheckingIn,
-    isLoading,
-    isManualRefresh,
-    requestRefetch,
-    masterPlans,
-    fieldOptions,
-    totalGroups,
-    currentPage,
-    itemsPerPage,
-    isEditing,
-    isStrikeMode,
-    handleAddElement,
-    handleAddFromProductListItem,
-    handleCellChange,
-    toggleStrikeThrough,
-    handleSave,
-    handleAbortChanges,
-    handleCheck,
-    setIsManualRefresh,
-    setCurrentPage,
-    setItemsPerPage,
-    visibleElements,
-    checkedOutBy,
-    checkedOutByMe,
-    toggleRemoveElement,
-    removedElementIds,
-    constraintsRef,
-    dragControls,
-    selectedId,
-    setSelectedId,
-    editMode,
-    setEditMode,
-    isKeepSeparate,
-    setIsKeepSeparate,
-    showForceColor,
-    isSelectedStruck,
-    handleHoldStart,
-    handleHoldEnd,
-    duplicateSelected,
-    handleImport,
-    importing,
-    handleExport,
-    exporting,
-    revisions,
-    selectedRevisionId,
-    isViewingRevision,
-    selectRevision,
-    getStatusBadge,
-    updateStatus, // TEMP!
-    searchTerm,
-    setSearchTerm,
-    statusFilters,
-    setStatusFilters,
-    statusCounts,
-    filters,
-    filterChips,
-    clearFilters,
-    filterAllOpen,
-    setFilterAllOpen,
-    productList,
-    isProductListOpen,
-    isProductListLoading,
-    openProductList,
-    closeProductList,
-    productSearch,
-    setProductSearch,
-    filteredProductList,
-    productTab,
-    setProductTab,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-  } = c;
-
-  ensureRefs(filters.length);
+  ensureRefs(c.filters.length);
 
   return (
     <FocusTrap
-      active={!!isEditing}
+      active={!!c.isEditing}
       focusTrapOptions={{
         escapeDeactivates: false,
         clickOutsideDeactivates: false,
@@ -204,7 +125,7 @@ const MasterPlanClient = (props: Props) => {
       }}
     >
       <div id="edit-focus-root" tabIndex={-1}>
-        {isEditing && (
+        {c.isEditing && (
           <>
             <div className="fixed inset-0 z-[calc(var(--z-edit)-2)] bg-(--bg-main) opacity-90" />
             <div className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)] border-6 border-(--edit-mode)" />
@@ -215,7 +136,7 @@ const MasterPlanClient = (props: Props) => {
         )}
 
         <div
-          className={`grid gap-4 ${isEditing ? "relative z-[calc(var(--z-edit)-1)]" : ""}`}
+          className={`grid gap-4 ${c.isEditing ? "relative z-[calc(var(--z-edit)-1)]" : ""}`}
         >
           {/* --- CHECKING BAR --- */}
           {props.isMasterPlanner && (
@@ -223,61 +144,61 @@ const MasterPlanClient = (props: Props) => {
               <div className="flex w-full flex-wrap items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-4">
                   <CustomTooltip
-                    content={`${isViewingRevision ? t("MasterPlan/Viewing revision tooltip") : ""}`}
+                    content={`${c.isViewingRevision ? t("MasterPlan/Viewing revision tooltip") : ""}`}
                     showOnTouch
                     shortDelay
                   >
                     <button
                       className={` ${buttonPrimaryClass} group lg:w-max lg:px-4 ${
-                        isEditing
+                        c.isEditing
                           ? "!bg-(--note-success) text-(--text-main-reverse) hover:!bg-(--note-success-hover)"
-                          : showForceColor
+                          : c.showForceColor
                             ? "!bg-(--note-error) text-(--text-main-reverse) hover:!bg-(--note-error-hover)"
                             : ""
                       } `}
                       disabled={
-                        isCheckingOut ||
-                        isCheckingIn ||
-                        isLoading ||
-                        isViewingRevision ||
-                        importing
+                        c.isCheckingOut ||
+                        c.isCheckingIn ||
+                        c.isLoading ||
+                        c.isViewingRevision ||
+                        c.importing
                       }
                       onClick={() => {
-                        setStatusFilters([]);
+                        c.setStatusFilters([]);
 
-                        if (!isEditing) {
-                          if (checkedOutBy && !checkedOutByMe) {
-                            setIsCheckingOut(true);
-                            handleCheck(true);
+                        if (!c.isEditing) {
+                          if (c.checkedOutBy && !c.checkedOutByMe) {
+                            c.setIsCheckingOut(true);
+                            c.handleCheck(true);
                           } else {
-                            setIsCheckingOut(true);
-                            handleCheck(false);
+                            c.setIsCheckingOut(true);
+                            c.handleCheck(false);
                           }
                         } else {
-                          setIsCheckingIn(true);
-                          setIsKeepSeparate(false);
-                          handleSave();
+                          c.setIsCheckingIn(true);
+                          c.setIsKeepSeparate(false);
+                          c.handleSave();
                         }
                       }}
                     >
                       <div className="flex items-center justify-center gap-2 truncate">
-                        {(isCheckingOut || isCheckingIn) && (
+                        {(c.isCheckingOut || c.isCheckingIn) && (
                           <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />
                         )}
 
-                        {!isCheckingOut && !isCheckingIn && (
+                        {!c.isCheckingOut && !c.isCheckingIn && (
                           <HoverIcon
                             outline={
-                              isEditing
+                              c.isEditing
                                 ? Outline.CheckIcon
-                                : showForceColor
+                                : c.showForceColor
                                   ? Outline.ExclamationTriangleIcon
                                   : Outline.PencilIcon
                             }
                             solid={
-                              isEditing
+                              c.isEditing
                                 ? Solid.CheckIcon
-                                : showForceColor
+                                : c.showForceColor
                                   ? Solid.ExclamationTriangleIcon
                                   : Solid.PencilIcon
                             }
@@ -286,15 +207,15 @@ const MasterPlanClient = (props: Props) => {
                         )}
 
                         <span className="hidden lg:block">
-                          {isCheckingOut || isCheckingIn
-                            ? isEditing && isCheckingIn
+                          {c.isCheckingOut || c.isCheckingIn
+                            ? c.isEditing && c.isCheckingIn
                               ? t("MasterPlan/Checking in")
-                              : isCheckingOut
+                              : c.isCheckingOut
                                 ? t("MasterPlan/Checking out")
                                 : t("MasterPlan/Checking in")
-                            : showForceColor
+                            : c.showForceColor
                               ? t("MasterPlan/Force checkout")
-                              : isEditing
+                              : c.isEditing
                                 ? t("MasterPlan/Save and push")
                                 : t("MasterPlan/Edit master plan")}
                         </span>
@@ -303,18 +224,18 @@ const MasterPlanClient = (props: Props) => {
                   </CustomTooltip>
 
                   {/* --- Abort --- */}
-                  {isEditing && !isCheckingIn && (
+                  {c.isEditing && !c.isCheckingIn && (
                     <button
                       className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
-                      disabled={isCheckingIn}
+                      disabled={c.isCheckingIn}
                       onClick={() => {
-                        setIsCheckingIn(true);
-                        setIsKeepSeparate(false);
-                        handleAbortChanges();
+                        c.setIsCheckingIn(true);
+                        c.setIsKeepSeparate(false);
+                        c.handleAbortChanges();
                       }}
                     >
                       <div className="flex items-center justify-center gap-2 truncate">
-                        {isCheckingIn ? (
+                        {c.isCheckingIn ? (
                           <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />
                         ) : (
                           <HoverIcon
@@ -324,7 +245,7 @@ const MasterPlanClient = (props: Props) => {
                           />
                         )}
                         <span className="hidden lg:block">
-                          {isCheckingIn
+                          {c.isCheckingIn
                             ? t("MasterPlan/Checking in")
                             : t("MasterPlan/Abort changes")}
                         </span>
@@ -333,16 +254,16 @@ const MasterPlanClient = (props: Props) => {
                   )}
                 </div>
 
-                {!isEditing && !isCheckingOut && !isCheckingIn && (
+                {!c.isEditing && !c.isCheckingOut && !c.isCheckingIn && (
                   <div className="ml-auto flex flex-wrap gap-4">
                     <button
                       className={`${buttonSecondaryClass} lg:w-max lg:px-4`}
                       onClick={() => {
-                        handleExport();
+                        c.handleExport();
                       }}
-                      disabled={exporting || isLoading}
+                      disabled={c.exporting || c.isLoading}
                     >
-                      {exporting ? (
+                      {c.exporting ? (
                         <div className="flex items-center justify-center gap-2 truncate">
                           <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
                           {t("MasterPlan/Exporting master plan")}
@@ -368,20 +289,20 @@ const MasterPlanClient = (props: Props) => {
                             label: t("MasterPlan/Latest revision"),
                             value: "latest",
                           },
-                          ...revisions.map((r) => ({
+                          ...c.revisions.map((r) => ({
                             label: `${r.label} (${new Date(r.archivedAt).toLocaleString()})`,
                             value: String(r.id),
                           })),
                         ]}
-                        value={selectedRevisionId}
-                        onChange={(val) => selectRevision(String(val))}
+                        value={c.selectedRevisionId}
+                        onChange={(val) => c.selectRevision(String(val))}
                       />
                     </div>
                   </div>
                 )}
 
                 {/* --- Import --- */}
-                {isEditing && !isCheckingIn && masterPlans[0]?.allowImport && (
+                {c.isEditing && !c.isCheckingIn && c.masterPlans[0]?.allowImport && (
                   <div className="flex gap-4">
                     <input
                       id="excel-import-input"
@@ -394,7 +315,7 @@ const MasterPlanClient = (props: Props) => {
                           return;
                         }
 
-                        handleImport(file);
+                        c.handleImport(file);
                         e.currentTarget.value = "";
                       }}
                     />
@@ -404,9 +325,9 @@ const MasterPlanClient = (props: Props) => {
                       onClick={() => {
                         document.getElementById("excel-import-input")?.click();
                       }}
-                      disabled={importing}
+                      disabled={c.importing}
                     >
-                      {importing ? (
+                      {c.importing ? (
                         <div className="flex items-center justify-center gap-2 truncate">
                           <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
                           {t("MasterPlan/Importing master plan")}
@@ -429,29 +350,29 @@ const MasterPlanClient = (props: Props) => {
               </div>
 
               {/* --- Checked out by text --- */}
-              {checkedOutBy &&
-                !isEditing &&
-                !isCheckingOut &&
-                !isCheckingIn && (
+              {c.checkedOutBy &&
+                !c.isEditing &&
+                !c.isCheckingOut &&
+                !c.isCheckingIn && (
                   <p className="text-sm text-(--text-secondary)">
                     {t("MasterPlan/Checked out by")}:{" "}
-                    <span className="font-medium">{checkedOutBy}</span>
+                    <span className="font-medium">{c.checkedOutBy}</span>
                   </p>
                 )}
 
               {/* --- ACTION BAR --- */}
-              {isEditing && (
+              {c.isEditing && (
                 <div
-                  ref={constraintsRef}
+                  ref={c.constraintsRef}
                   className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)]"
                 >
                   <motion.div
                     drag
-                    dragControls={dragControls}
+                    dragControls={c.dragControls}
                     dragListener={false}
                     dragMomentum={false}
                     dragElastic={0}
-                    dragConstraints={constraintsRef}
+                    dragConstraints={c.constraintsRef}
                     className="pointer-events-auto absolute bottom-4 mx-4 flex w-fit flex-col gap-4 rounded-2xl bg-(--bg-modal) p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] lg:left-1/2 lg:-translate-x-1/2"
                     style={{ touchAction: "none" }}
                   >
@@ -459,7 +380,7 @@ const MasterPlanClient = (props: Props) => {
                       className="flex cursor-move items-center justify-between gap-4"
                       onPointerDown={(e) => {
                         document.body.style.userSelect = "none";
-                        dragControls.start(e);
+                        c.dragControls.start(e);
                         const handleUp = () => {
                           document.body.style.userSelect = "";
                           window.removeEventListener("pointerup", handleUp);
@@ -486,8 +407,8 @@ const MasterPlanClient = (props: Props) => {
                           <button
                             type="button"
                             className={`${buttonSecondaryClass} group flex items-center justify-center gap-2 whitespace-nowrap 2xl:w-full 2xl:px-4`}
-                            onClick={() => undo()}
-                            disabled={!canUndo}
+                            onClick={() => c.undo()}
+                            disabled={!c.canUndo}
                           >
                             <HoverIcon
                               outline={Outline.ArrowUturnLeftIcon}
@@ -508,8 +429,8 @@ const MasterPlanClient = (props: Props) => {
                           <button
                             type="button"
                             className={`${buttonSecondaryClass} group flex items-center justify-center gap-2 whitespace-nowrap 2xl:w-full 2xl:px-4`}
-                            onClick={() => redo()}
-                            disabled={!canRedo}
+                            onClick={() => c.redo()}
+                            disabled={!c.canRedo}
                           >
                             <HoverIcon
                               outline={Outline.ArrowUturnRightIcon}
@@ -525,10 +446,10 @@ const MasterPlanClient = (props: Props) => {
 
                       {/* --- Don't join groups --- */}
                       <div
-                        className={`${editMode === "group" ? "cursor-not-allowed opacity-25" : ""}`}
+                        className={`${c.editMode === "group" ? "cursor-not-allowed opacity-25" : ""}`}
                       >
                         <CustomTooltip
-                          content={`${editMode === "element" ? t("MasterPlan/Do not join groups tooltip") : ""}`}
+                          content={`${c.editMode === "element" ? t("MasterPlan/Do not join groups tooltip") : ""}`}
                           showOnTouch
                           longDelay
                         >
@@ -536,13 +457,13 @@ const MasterPlanClient = (props: Props) => {
                             <button
                               type="button"
                               role="switch"
-                              aria-checked={isKeepSeparate}
-                              className={`${switchClass(isKeepSeparate)} `}
-                              onClick={() => setIsKeepSeparate((prev) => !prev)}
-                              disabled={editMode === "group"}
+                              aria-checked={c.isKeepSeparate}
+                              className={`${switchClass(c.isKeepSeparate)} `}
+                              onClick={() => c.setIsKeepSeparate((prev) => !prev)}
+                              disabled={c.editMode === "group"}
                             >
                               <div
-                                className={switchKnobClass(isKeepSeparate)}
+                                className={switchKnobClass(c.isKeepSeparate)}
                               />
                             </button>
                             <span className="mb-0.5">
@@ -560,8 +481,8 @@ const MasterPlanClient = (props: Props) => {
                           longDelay
                         >
                           <button
-                            className={`${editMode === "element" ? `${textPrimaryButtonClass} underline` : `${textSecondaryButtonClass}`}`}
-                            onClick={() => setEditMode("element")}
+                            className={`${c.editMode === "element" ? `${textPrimaryButtonClass} underline` : `${textSecondaryButtonClass}`}`}
+                            onClick={() => c.setEditMode("element")}
                           >
                             {t("MasterPlan/Element mode")}
                           </button>
@@ -573,10 +494,10 @@ const MasterPlanClient = (props: Props) => {
                           longDelay
                         >
                           <button
-                            className={`${editMode === "group" ? `${textPrimaryButtonClass} underline` : `${textSecondaryButtonClass}`}`}
+                            className={`${c.editMode === "group" ? `${textPrimaryButtonClass} underline` : `${textSecondaryButtonClass}`}`}
                             onClick={() => {
-                              setEditMode("group");
-                              setIsKeepSeparate(false);
+                              c.setEditMode("group");
+                              c.setIsKeepSeparate(false);
                             }}
                           >
                             {t("MasterPlan/Group mode")}
@@ -600,12 +521,12 @@ const MasterPlanClient = (props: Props) => {
                               className={`${buttonPrimaryClass} group flex w-full items-center justify-center gap-2 px-4`}
                               onClick={() => {
                                 const topGroup =
-                                  editMode === "group"
-                                    ? (masterPlans[0]?.elements?.[0]?.groupId ??
+                                  c.editMode === "group"
+                                    ? (c.masterPlans[0]?.elements?.[0]?.groupId ??
                                       null)
                                     : null;
-                                handleAddElement(
-                                  masterPlans[0]?.id as number,
+                                c.handleAddElement(
+                                  c.masterPlans[0]?.id as number,
                                   topGroup,
                                 );
                               }}
@@ -637,8 +558,8 @@ const MasterPlanClient = (props: Props) => {
                               className={`${buttonPrimaryClass} group flex w-full flex-1 items-center justify-center gap-2 lg:px-4`}
                               type="button"
                               onClick={() => {
-                                setProductSearch("");
-                                openProductList();
+                                c.setProductSearch("");
+                                c.openProductList();
                               }}
                             >
                               <HoverIcon
@@ -651,28 +572,28 @@ const MasterPlanClient = (props: Props) => {
                         </div>
 
                         <MenuDropdown
-                          isOpen={isProductListOpen}
-                          onClose={closeProductList}
+                          isOpen={c.isProductListOpen}
+                          onClose={c.closeProductList}
                           triggerRef={productListTriggerRef}
                           center
                           maxHeight="50svh"
                           autoWidth
                         >
-                          {isProductListLoading ? (
+                          {c.isProductListLoading ? (
                             <span>{t("Message/Loading")}</span>
-                          ) : filteredProductList.length === 0 ? (
+                          ) : c.filteredProductList.length === 0 ? (
                             <div className="flex flex-col gap-4">
                               <div className="flex items-center gap-2 truncate">
                                 <button
                                   type="button"
                                   className={
-                                    productTab === "all"
+                                    c.productTab === "all"
                                       ? `${textPrimaryButtonClass} underline`
                                       : `${textSecondaryButtonClass}`
                                   }
                                   onClick={() => {
-                                    setProductSearch("");
-                                    setProductTab("all");
+                                    c.setProductSearch("");
+                                    c.setProductTab("all");
                                   }}
                                 >
                                   {t("Common/All")}
@@ -683,13 +604,13 @@ const MasterPlanClient = (props: Props) => {
                                 <button
                                   type="button"
                                   className={
-                                    productTab === "products"
+                                    c.productTab === "products"
                                       ? `${textPrimaryButtonClass} underline`
                                       : `${textSecondaryButtonClass}`
                                   }
                                   onClick={() => {
-                                    setProductSearch("");
-                                    setProductTab("products");
+                                    c.setProductSearch("");
+                                    c.setProductTab("products");
                                   }}
                                 >
                                   {t("Common/Products")}
@@ -700,13 +621,13 @@ const MasterPlanClient = (props: Props) => {
                                 <button
                                   type="button"
                                   className={
-                                    productTab === "product-groups"
+                                    c.productTab === "product-groups"
                                       ? `${textPrimaryButtonClass} underline`
                                       : `${textSecondaryButtonClass}`
                                   }
                                   onClick={() => {
-                                    setProductSearch("");
-                                    setProductTab("product-groups");
+                                    c.setProductSearch("");
+                                    c.setProductTab("product-groups");
                                   }}
                                 >
                                   {t("Common/Product groups")}
@@ -715,21 +636,21 @@ const MasterPlanClient = (props: Props) => {
 
                               <Input
                                 placeholder={`${
-                                  productTab === "products"
+                                  c.productTab === "products"
                                     ? t("Common/Search") +
                                       " " +
                                       t("Common/products") +
                                       "..."
-                                    : productTab === "product-groups"
+                                    : c.productTab === "product-groups"
                                       ? t("Common/Search") +
                                         " " +
                                         t("Common/product groups") +
                                         "..."
                                       : t("Common/Search") + "..."
                                 }`}
-                                value={productSearch}
+                                value={c.productSearch}
                                 onChange={(val) =>
-                                  setProductSearch(String(val))
+                                  c.setProductSearch(String(val))
                                 }
                               />
                               <span>{t("Manage/No content")}</span>
@@ -740,13 +661,13 @@ const MasterPlanClient = (props: Props) => {
                                 <button
                                   type="button"
                                   className={
-                                    productTab === "all"
+                                    c.productTab === "all"
                                       ? `${textPrimaryButtonClass} underline`
                                       : `${textSecondaryButtonClass}`
                                   }
                                   onClick={() => {
-                                    setProductSearch("");
-                                    setProductTab("all");
+                                    c.setProductSearch("");
+                                    c.setProductTab("all");
                                   }}
                                 >
                                   {t("Common/All")}
@@ -757,13 +678,13 @@ const MasterPlanClient = (props: Props) => {
                                 <button
                                   type="button"
                                   className={
-                                    productTab === "products"
+                                    c.productTab === "products"
                                       ? `${textPrimaryButtonClass} underline`
                                       : `${textSecondaryButtonClass}`
                                   }
                                   onClick={() => {
-                                    setProductSearch("");
-                                    setProductTab("products");
+                                    c.setProductSearch("");
+                                    c.setProductTab("products");
                                   }}
                                 >
                                   {t("Common/Products")}
@@ -774,13 +695,13 @@ const MasterPlanClient = (props: Props) => {
                                 <button
                                   type="button"
                                   className={
-                                    productTab === "product-groups"
+                                    c.productTab === "product-groups"
                                       ? `${textPrimaryButtonClass} underline`
                                       : `${textSecondaryButtonClass}`
                                   }
                                   onClick={() => {
-                                    setProductSearch("");
-                                    setProductTab("product-groups");
+                                    c.setProductSearch("");
+                                    c.setProductTab("product-groups");
                                   }}
                                 >
                                   {t("Common/Product groups")}
@@ -789,38 +710,38 @@ const MasterPlanClient = (props: Props) => {
 
                               <Input
                                 placeholder={`${
-                                  productTab === "products"
+                                  c.productTab === "products"
                                     ? t("Common/Search") +
                                       " " +
                                       t("Common/products") +
                                       "..."
-                                    : productTab === "product-groups"
+                                    : c.productTab === "product-groups"
                                       ? t("Common/Search") +
                                         " " +
                                         t("Common/product groups") +
                                         "..."
                                       : t("Common/Search") + "..."
                                 }`}
-                                value={productSearch}
+                                value={c.productSearch}
                                 onChange={(val) =>
-                                  setProductSearch(String(val))
+                                  c.setProductSearch(String(val))
                                 }
                               />
                               <div className="mt-2 flex flex-col gap-2">
-                                {filteredProductList.map((p) => (
+                                {c.filteredProductList.map((p) => (
                                   <button
                                     key={p.id}
                                     type="button"
                                     className={`${badgeClass} w-fit cursor-pointer justify-start bg-(--badge-main) text-(--text-main-reverse) transition-colors duration-(--fast) hover:bg-(--note-info-reverse) hover:text-(--text-main)`}
                                     onClick={() => {
                                       const topGroup =
-                                        editMode === "group"
-                                          ? (masterPlans[0]?.elements?.[0]
+                                        c.editMode === "group"
+                                          ? (c.masterPlans[0]?.elements?.[0]
                                               ?.groupId ?? null)
                                           : null;
 
-                                      handleAddFromProductListItem(
-                                        masterPlans[0]?.id as number,
+                                      c.handleAddFromProductListItem(
+                                        c.masterPlans[0]?.id as number,
                                         p,
                                         topGroup,
                                       );
@@ -843,15 +764,15 @@ const MasterPlanClient = (props: Props) => {
                           <button
                             className={`${buttonSecondaryClass} group col-span-1 flex items-center justify-center gap-2 lg:w-full lg:px-4`}
                             onClick={() => {
-                              if (selectedId !== null) {
-                                duplicateSelected(
-                                  String(masterPlans[0]?.id),
-                                  selectedId,
-                                  editMode,
+                              if (c.selectedId !== null) {
+                                c.duplicateSelected(
+                                  String(c.masterPlans[0]?.id),
+                                  c.selectedId,
+                                  c.editMode,
                                 );
                               }
                             }}
-                            disabled={selectedId === null}
+                            disabled={c.selectedId === null}
                           >
                             <HoverIcon
                               outline={Outline.SquaresPlusIcon}
@@ -876,10 +797,10 @@ const MasterPlanClient = (props: Props) => {
                         >
                           <button
                             className={`${buttonSecondaryClass} group flex w-full items-center justify-center gap-2 px-4`}
-                            onMouseDown={() => handleHoldStart("up")}
-                            onMouseUp={handleHoldEnd}
-                            onMouseLeave={handleHoldEnd}
-                            disabled={selectedId === null}
+                            onMouseDown={() => c.handleHoldStart("up")}
+                            onMouseUp={c.handleHoldEnd}
+                            onMouseLeave={c.handleHoldEnd}
+                            disabled={c.selectedId === null}
                           >
                             <HoverIcon
                               outline={Outline.ArrowUpIcon}
@@ -898,10 +819,10 @@ const MasterPlanClient = (props: Props) => {
                         >
                           <button
                             className={`${buttonSecondaryClass} group flex w-full items-center justify-center gap-2 px-4`}
-                            onMouseDown={() => handleHoldStart("down")}
-                            onMouseUp={handleHoldEnd}
-                            onMouseLeave={handleHoldEnd}
-                            disabled={selectedId === null}
+                            onMouseDown={() => c.handleHoldStart("down")}
+                            onMouseUp={c.handleHoldEnd}
+                            onMouseLeave={c.handleHoldEnd}
+                            disabled={c.selectedId === null}
                           >
                             <HoverIcon
                               outline={Outline.ArrowDownIcon}
@@ -916,7 +837,7 @@ const MasterPlanClient = (props: Props) => {
                       <hr className="-mr-4 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
 
                       <div
-                        className={`${masterPlans[0]?.allowRemovingElements ? "lg:grid-cols-3" : ""} flex gap-4 lg:grid`}
+                        className={`${c.masterPlans[0]?.allowRemovingElements ? "lg:grid-cols-3" : ""} flex gap-4 lg:grid`}
                       >
                         {/* --- Strike mode --- */}
                         <CustomTooltip
@@ -926,19 +847,19 @@ const MasterPlanClient = (props: Props) => {
                         >
                           <button
                             className={`${
-                              isSelectedStruck
+                              c.isSelectedStruck
                                 ? buttonPrimaryClass
                                 : buttonSecondaryClass
-                            } ${masterPlans[0]?.allowRemovingElements ? "lg:w-full" : "w-full"} group col-span-1 flex items-center justify-center gap-2 lg:px-4`}
+                            } ${c.masterPlans[0]?.allowRemovingElements ? "lg:w-full" : "w-full"} group col-span-1 flex items-center justify-center gap-2 lg:px-4`}
                             onClick={() => {
-                              if (selectedId !== null) {
-                                toggleStrikeThrough(
-                                  String(selectedId),
-                                  editMode,
+                              if (c.selectedId !== null) {
+                                c.toggleStrikeThrough(
+                                  String(c.selectedId),
+                                  c.editMode,
                                 );
                               }
                             }}
-                            disabled={selectedId === null}
+                            disabled={c.selectedId === null}
                           >
                             <HoverIcon
                               outline={Outline.NoSymbolIcon}
@@ -946,7 +867,7 @@ const MasterPlanClient = (props: Props) => {
                               className="h-6 w-6"
                             />
                             <span
-                              className={`${masterPlans[0]?.allowRemovingElements ? "hidden lg:block" : ""}`}
+                              className={`${c.masterPlans[0]?.allowRemovingElements ? "hidden lg:block" : ""}`}
                             >
                               {t("MasterPlan/Strike")}
                             </span>
@@ -954,7 +875,7 @@ const MasterPlanClient = (props: Props) => {
                         </CustomTooltip>
 
                         {/* --- Delete element --- */}
-                        {masterPlans[0]?.allowRemovingElements && (
+                        {c.masterPlans[0]?.allowRemovingElements && (
                           <CustomTooltip
                             content={t("MasterPlan/Mark for deletion tooltip")}
                             showOnTouch
@@ -962,31 +883,31 @@ const MasterPlanClient = (props: Props) => {
                           >
                             <button
                               className={`${
-                                selectedId !== null &&
-                                removedElementIds.some(
-                                  (id) => String(id) === String(selectedId),
+                                c.selectedId !== null &&
+                                c.removedElementIds.some(
+                                  (id) => String(id) === String(c.selectedId),
                                 )
                                   ? buttonDeletePrimaryClass
                                   : buttonDeleteSecondaryClass
                               } group col-span-2 flex w-full items-center justify-center gap-2 px-4`}
                               onClick={() => {
-                                if (selectedId !== null) {
-                                  toggleRemoveElement(
-                                    String(selectedId),
-                                    editMode,
+                                if (c.selectedId !== null) {
+                                  c.toggleRemoveElement(
+                                    String(c.selectedId),
+                                    c.editMode,
                                   );
                                 }
                               }}
-                              disabled={selectedId === null}
+                              disabled={c.selectedId === null}
                             >
                               <HoverIcon
                                 outline={Outline.TrashIcon}
                                 solid={Solid.TrashIcon}
                                 className="h-6 w-6"
                               />
-                              {selectedId !== null &&
-                              removedElementIds.some(
-                                (id) => String(id) === String(selectedId),
+                              {c.selectedId !== null &&
+                              c.removedElementIds.some(
+                                (id) => String(id) === String(c.selectedId),
                               )
                                 ? t("MasterPlan/Undo mark for deletion")
                                 : t("MasterPlan/Mark for deletion")}
@@ -1002,18 +923,18 @@ const MasterPlanClient = (props: Props) => {
           )}
 
           {/* --- Revisions --- */}
-          {!isEditing && !isCheckingOut && !isCheckingIn && (
+          {!c.isEditing && !c.isCheckingOut && !c.isCheckingIn && (
             <div className="flex flex-col flex-wrap gap-4">
               {!props.isMasterPlanner && (
                 <div className="ml-auto flex flex-wrap gap-4">
                   <button
                     className={`${buttonSecondaryClass} lg:w-max lg:px-4`}
                     onClick={() => {
-                      handleExport();
+                      c.handleExport();
                     }}
-                    disabled={exporting || isLoading}
+                    disabled={c.exporting || c.isLoading}
                   >
-                    {exporting ? (
+                    {c.exporting ? (
                       <div className="flex items-center justify-center gap-2 truncate">
                         <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
                         {t("MasterPlan/Exporting master plan")}
@@ -1039,13 +960,13 @@ const MasterPlanClient = (props: Props) => {
                           label: t("MasterPlan/Latest revision"),
                           value: "latest",
                         },
-                        ...revisions.map((r) => ({
+                        ...c.revisions.map((r) => ({
                           label: `${r.label} (${new Date(r.archivedAt).toLocaleString()})`,
                           value: String(r.id),
                         })),
                       ]}
-                      value={selectedRevisionId}
-                      onChange={(val) => selectRevision(String(val))}
+                      value={c.selectedRevisionId}
+                      onChange={(val) => c.selectRevision(String(val))}
                     />
                   </div>
                 </div>
@@ -1057,15 +978,15 @@ const MasterPlanClient = (props: Props) => {
                     <Input
                       icon={<SmallerSolid.MagnifyingGlassIcon />}
                       placeholder={`${t("Common/Search")}...`}
-                      value={searchTerm}
-                      onChange={(val) => setSearchTerm(String(val))}
+                      value={c.searchTerm}
+                      onChange={(val) => c.setSearchTerm(String(val))}
                     />
                   </div>
                 </div>
 
                 <div className="2xs:flex hidden flex-wrap gap-4">
                   <div className="flex gap-4">
-                    {filters.map((group, i) => (
+                    {c.filters.map((group, i) => (
                       <Filter
                         key={i}
                         filterRef={smallFilterRefs.current[i]}
@@ -1082,7 +1003,7 @@ const MasterPlanClient = (props: Props) => {
                   </div>
                 </div>
 
-                {filters.length > 0 && (
+                {c.filters.length > 0 && (
                   <div className="relative">
                     <CustomTooltip
                       content={t("Manage/All filters")}
@@ -1092,7 +1013,7 @@ const MasterPlanClient = (props: Props) => {
                     >
                       <button
                         className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
-                        onClick={() => setFilterAllOpen(true)}
+                        onClick={() => c.setFilterAllOpen(true)}
                       >
                         <span className={`${filterClass} xs:flex hidden`}>
                           {t("Manage/All filters")}
@@ -1105,13 +1026,13 @@ const MasterPlanClient = (props: Props) => {
 
                     <SideMenu
                       triggerRef={smallFilterRefs.current[0]}
-                      isOpen={filterAllOpen}
-                      onClose={() => setFilterAllOpen(false)}
+                      isOpen={c.filterAllOpen}
+                      onClose={() => c.setFilterAllOpen(false)}
                       label={t("Manage/All filters")}
                     >
                       <div className="flex h-full flex-col justify-between">
                         <div className="flex flex-col">
-                          {filters.map((group, i) => (
+                          {c.filters.map((group, i) => (
                             <AllFilter
                               key={i}
                               filterRef={bigFilterRefs.current[i]}
@@ -1128,19 +1049,19 @@ const MasterPlanClient = (props: Props) => {
 
                         <div className="flex flex-col gap-4 py-4 sm:flex-row">
                           <button
-                            onClick={() => setFilterAllOpen(false)}
+                            onClick={() => c.setFilterAllOpen(false)}
                             className={`${buttonPrimaryClass} w-full`}
                           >
                             {t("Manage/View")}{" "}
                             <span className="font-normal">
-                              {totalGroups ?? 0}
+                              {c.totalGroups ?? 0}
                             </span>
                           </button>
                           <button
-                            onClick={() => clearFilters()}
+                            onClick={() => c.clearFilters()}
                             className={`${buttonSecondaryClass} w-full`}
                             disabled={
-                              !filters.some((g) =>
+                              !c.filters.some((g) =>
                                 g.options.some((o) => o.isSelected),
                               )
                             }
@@ -1154,13 +1075,13 @@ const MasterPlanClient = (props: Props) => {
                 )}
               </div>
 
-              {filterChips.length > 0 && (
+              {c.filterChips.length > 0 && (
                 <div className="flex flex-wrap gap-4">
                   <span className="flex items-center font-semibold text-(--text-secondary)">
                     {t("Manage/Active filters")}:
                   </span>
 
-                  {filterChips.map((chip, idx) => (
+                  {c.filterChips.map((chip, idx) => (
                     <FilterChip
                       key={idx}
                       onClickEvent={chip.onClear}
@@ -1170,7 +1091,7 @@ const MasterPlanClient = (props: Props) => {
 
                   <button
                     className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-(--fast) hover:bg-(--bg-navbar-link)"
-                    onClick={() => clearFilters()}
+                    onClick={() => c.clearFilters()}
                   >
                     <span className="font-semibold text-(--accent-color)">
                       {t("Manage/Clear all")}
@@ -1186,7 +1107,7 @@ const MasterPlanClient = (props: Props) => {
             <table className="table w-full min-w-6xl table-auto border-collapse">
               <thead className="bg-(--bg-grid-header)">
                 <tr>
-                  {isEditing && (
+                  {c.isEditing && (
                     <th
                       className={`${thClass} pointer-events-none !w-[40px] !min-w-[40px] !border-l-0`}
                     />
@@ -1216,7 +1137,7 @@ const MasterPlanClient = (props: Props) => {
                     classNameAddition="min-w-fit px-4 whitespace-nowrap"
                   />
 
-                  {fieldOptions
+                  {c.fieldOptions
                     .filter((f) => !f.isHidden)
                     .map((f, i) => (
                       <ThCell
@@ -1224,7 +1145,7 @@ const MasterPlanClient = (props: Props) => {
                         label={f.label}
                         sortable={false}
                         classNameAddition={`${
-                          i === fieldOptions.length - 1
+                          i === c.fieldOptions.length - 1
                             ? "w-full min-w-fit"
                             : "min-w-fit whitespace-nowrap"
                         } px-4`}
@@ -1234,11 +1155,11 @@ const MasterPlanClient = (props: Props) => {
               </thead>
 
               <tbody>
-                {isLoading || importing ? (
-                  isEditing ? (
+                {c.isLoading || c.importing ? (
+                  c.isEditing ? (
                     <tr>
                       <td
-                        colSpan={fieldOptions.length + 2 || 1}
+                        colSpan={c.fieldOptions.length + 2 || 1}
                         className="h-57 text-center text-(--text-secondary)"
                       >
                         <Message
@@ -1250,7 +1171,7 @@ const MasterPlanClient = (props: Props) => {
                   ) : (
                     <tr>
                       <td
-                        colSpan={fieldOptions.length + 1 || 1}
+                        colSpan={c.fieldOptions.length + 1 || 1}
                         className="h-57 text-center text-(--text-secondary)"
                       >
                         <Message
@@ -1260,10 +1181,10 @@ const MasterPlanClient = (props: Props) => {
                       </td>
                     </tr>
                   )
-                ) : visibleElements.length === 0 && !isEditing ? (
+                ) : c.visibleElements.length === 0 && !c.isEditing ? (
                   <tr>
                     <td
-                      colSpan={fieldOptions.length + 1 || 1}
+                      colSpan={c.fieldOptions.length + 1 || 1}
                       className="h-57 text-center text-(--text-secondary)"
                     >
                       <Message icon="search" content={t("Manage/No content")} />
@@ -1274,8 +1195,8 @@ const MasterPlanClient = (props: Props) => {
                     let currentIsEven = false;
                     let lastGroupId: number | string | null = null;
 
-                    return visibleElements.map((el, index) => {
-                      const planId = masterPlans[0]?.id;
+                    return c.visibleElements.map((el, index) => {
+                      const planId = c.masterPlans[0]?.id;
 
                       const groupKey =
                         el.groupId && el.groupId !== 0
@@ -1302,7 +1223,7 @@ const MasterPlanClient = (props: Props) => {
                             : "bg-(--bg-grid-zebra)";
 
                       const hoverBg =
-                        selectedId === el.id
+                        c.selectedId === el.id
                           ? ""
                           : el.status === "InProgress"
                             ? "hover:bg-(--bg-grid-inProgress-header-hover)"
@@ -1314,21 +1235,21 @@ const MasterPlanClient = (props: Props) => {
                         <tr
                           key={`${planId}-${el.id}`}
                           className={`${baseBg} ${hoverBg} ${
-                            removedElementIds.includes(el.id)
+                            c.removedElementIds.includes(el.id)
                               ? "!bg-(--button-delete) text-(--text-main-reverse)"
                               : ""
-                          } ${isStrikeMode ? "cursor-pointer" : ""} transition-[background] duration-(--fast)`}
+                          } ${c.isStrikeMode ? "cursor-pointer" : ""} transition-[background] duration-(--fast)`}
                         >
                           {/* <TdCell classNameAddition="min-w-fit whitespace-nowrap px-4 text-(--text-secondary)">
                         {String(el.id)}
                       </TdCell> */}
 
-                          {isEditing && (
+                          {c.isEditing && (
                             <td
                               className={`${tdClass} ${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0`}
                               onClick={() => {
                                 const id = el.id ? String(el.id) : null;
-                                setSelectedId((prev) =>
+                                c.setSelectedId((prev) =>
                                   prev === id ? null : id,
                                 );
                               }}
@@ -1336,7 +1257,7 @@ const MasterPlanClient = (props: Props) => {
                                 if (e.key === "Enter" || e.key === " ") {
                                   e.preventDefault();
                                   const id = el.id ? String(el.id) : null;
-                                  setSelectedId((prev) =>
+                                  c.setSelectedId((prev) =>
                                     prev === id ? null : id,
                                   );
                                 }
@@ -1347,7 +1268,7 @@ const MasterPlanClient = (props: Props) => {
                                 <Input
                                   type="radio"
                                   name="row-selector"
-                                  checked={selectedId === String(el.id)}
+                                  checked={c.selectedId === String(el.id)}
                                   readOnly
                                 />
                               </div>
@@ -1358,7 +1279,7 @@ const MasterPlanClient = (props: Props) => {
                             classNameAddition={`${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""} min-w-fit whitespace-nowrap`}
                           >
                             {(() => {
-                              const badge = getStatusBadge(el.status);
+                              const badge = c.getStatusBadge(el.status);
 
                               const nextStatus: MasterPlanElementStatus =
                                 el.status === "InProgress"
@@ -1372,10 +1293,10 @@ const MasterPlanClient = (props: Props) => {
                                 <button
                                   className={`${badgeClass} ${badge.className} cursor-pointer`}
                                   onClick={() => {
-                                    updateStatus(String(el.id), nextStatus);
+                                    c.updateStatus(String(el.id), nextStatus);
                                   }}
                                   onTouchEnd={() => {
-                                    updateStatus(String(el.id), nextStatus);
+                                    c.updateStatus(String(el.id), nextStatus);
                                   }}
                                 >
                                   {badge.label}
@@ -1391,21 +1312,18 @@ const MasterPlanClient = (props: Props) => {
                             })()}
                           </TdCell>
 
-                          {fieldOptions
+                          {c.fieldOptions
                             .filter((f) => !f.isHidden)
                             .map((f, i) => {
-                              const val =
-                                el.values?.find(
-                                  (v: any) => v.masterPlanFieldId === f.id,
-                                )?.value ?? "";
+                              const val = c.getDisplayValue(el, f);
                               return (
                                 <TdCell
                                   key={`${el.id}-${f.value}`}
                                   classNameAddition={`${
-                                    i === fieldOptions.length - 1
+                                    i === c.fieldOptions.length - 1
                                       ? "w-full min-w-fit"
                                       : "min-w-fit whitespace-nowrap"
-                                  } ${f.dataType?.toLowerCase() === "date" && isEditing ? "!min-w-[11rem]" : ""} ${isEditing ? "px-2!" : ""}  ${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""} `}
+                                  } ${f.dataType?.toLowerCase() === "date" && c.isEditing ? "!min-w-[11rem]" : ""} ${c.isEditing ? "px-2!" : ""}  ${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""} `}
                                 >
                                   <div
                                     className={`flex w-full ${
@@ -1418,7 +1336,7 @@ const MasterPlanClient = (props: Props) => {
                                             : "justify-start"
                                     }`}
                                   >
-                                    {isEditing ? (
+                                    {c.isEditing ? (
                                       <div
                                         className={`relative inline-flex w-full align-middle ${
                                           el.struckElement
@@ -1430,41 +1348,57 @@ const MasterPlanClient = (props: Props) => {
                                           {val || " "}
                                         </span>
                                         <div className="absolute w-full">
-                                          <Input
-                                            type={
-                                              f.dataType?.toLowerCase() ===
-                                              "decimal"
-                                                ? "decimal"
-                                                : f.dataType?.toLowerCase() ===
-                                                    "number"
-                                                  ? "number"
-                                                  : f.dataType?.toLowerCase() ===
-                                                      "date"
-                                                    ? "date"
-                                                    : "text"
-                                            }
-                                            value={val || ""}
-                                            onChange={(newValue) => {
-                                              handleCellChange(
-                                                String(planId),
-                                                String(el.id),
-                                                f.id,
-                                                newValue as string,
-                                              );
-                                            }}
-                                            compactWithBorder
-                                            classNameAddition={`${
-                                              el.struckElement
-                                                ? "line-through opacity-60 "
-                                                : ""
-                                            } ${
-                                              el.status === "InProgress"
-                                                ? "!border-(--border-main)"
-                                                : el.status === "Finished"
-                                                  ? "!border-(--border-main)"
-                                                  : "!border-(--border-main)"
-                                            } bg-(--bg-main)`}
-                                          />
+                                          {(() => {
+                                            const isIncremental =
+                                              !!f.localIncremental ||
+                                              !!f.globalIncremental;
+
+                                            return (
+                                              <Input
+                                                type={
+                                                  f.dataType?.toLowerCase() ===
+                                                  "decimal"
+                                                    ? "decimal"
+                                                    : f.dataType?.toLowerCase() ===
+                                                        "number"
+                                                      ? "number"
+                                                      : f.dataType?.toLowerCase() ===
+                                                          "date"
+                                                        ? "date"
+                                                        : "text"
+                                                }
+                                                value={val || ""}
+                                                readOnly={isIncremental}
+                                                tabIndex={
+                                                  isIncremental ? -1 : 0
+                                                }
+                                                onChange={(newValue) => {
+                                                  if (isIncremental) {
+                                                    return;
+                                                  }
+
+                                                  c.handleCellChange(
+                                                    String(planId),
+                                                    String(el.id),
+                                                    f.id,
+                                                    newValue as string,
+                                                  );
+                                                }}
+                                                compactWithBorder
+                                                classNameAddition={`${
+                                                  el.struckElement
+                                                    ? "line-through opacity-60 "
+                                                    : ""
+                                                } ${isIncremental ? "pointer-events-none opacity-70 " : ""}${
+                                                  el.status === "InProgress"
+                                                    ? "!border-(--border-main)"
+                                                    : el.status === "Finished"
+                                                      ? "!border-(--border-main)"
+                                                      : "!border-(--border-main)"
+                                                } bg-(--bg-main)`}
+                                              />
+                                            );
+                                          })()}
                                         </div>
                                       </div>
                                     ) : (
@@ -1494,16 +1428,16 @@ const MasterPlanClient = (props: Props) => {
           {/* --- PAGINATION --- */}
           <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
             <span className="flex w-[175.23px] text-(--text-secondary)">
-              {t("Manage/Viewing")} {(currentPage - 1) * itemsPerPage + 1}-
-              {Math.min(currentPage * itemsPerPage, totalGroups)}{" "}
-              {t("Manage/out of")} {totalGroups}
+              {t("Manage/Viewing")} {(c.currentPage - 1) * c.itemsPerPage + 1}-
+              {Math.min(c.currentPage * c.itemsPerPage, c.totalGroups)}{" "}
+              {t("Manage/out of")} {c.totalGroups}
             </span>
 
             <div className="xs:w-auto flex w-full items-center">
               <button
                 type="button"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
+                onClick={() => c.setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={c.currentPage === 1}
                 className={iconButtonPrimaryClass}
               >
                 <SmallerSolid.ChevronLeftIcon className="min-h-full min-w-full" />
@@ -1513,15 +1447,15 @@ const MasterPlanClient = (props: Props) => {
                 {(() => {
                   const totalPages = Math.max(
                     1,
-                    Math.ceil(totalGroups / itemsPerPage),
+                    Math.ceil(c.totalGroups / c.itemsPerPage),
                   );
                   const pages: (number | string)[] = [];
 
                   if (totalPages <= 7) {
                     for (let i = 1; i <= totalPages; i++) pages.push(i);
-                  } else if (currentPage <= 3) {
+                  } else if (c.currentPage <= 3) {
                     pages.push(1, 2, 3, 4, "...", totalPages);
-                  } else if (currentPage >= totalPages - 2) {
+                  } else if (c.currentPage >= totalPages - 2) {
                     pages.push(
                       1,
                       "...",
@@ -1534,9 +1468,9 @@ const MasterPlanClient = (props: Props) => {
                     pages.push(
                       1,
                       "...",
-                      currentPage - 1,
-                      currentPage,
-                      currentPage + 1,
+                      c.currentPage - 1,
+                      c.currentPage,
+                      c.currentPage + 1,
                       "...",
                       totalPages,
                     );
@@ -1550,9 +1484,9 @@ const MasterPlanClient = (props: Props) => {
                     ) : (
                       <button
                         key={index}
-                        onClick={() => setCurrentPage(Number(page))}
+                        onClick={() => c.setCurrentPage(Number(page))}
                         className={`${
-                          currentPage === page
+                          c.currentPage === page
                             ? "bg-(--accent-color) text-(--text-main-reverse)"
                             : "hover:text-(--accent-color)"
                         } flex min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-(--fast)`}
@@ -1567,11 +1501,11 @@ const MasterPlanClient = (props: Props) => {
               <button
                 type="button"
                 onClick={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(prev + 1, Math.ceil(totalGroups / itemsPerPage)),
+                  c.setCurrentPage((prev) =>
+                    Math.min(prev + 1, Math.ceil(c.totalGroups / c.itemsPerPage)),
                   )
                 }
-                disabled={currentPage >= Math.ceil(totalGroups / itemsPerPage)}
+                disabled={c.currentPage >= Math.ceil(c.totalGroups / c.itemsPerPage)}
                 className={iconButtonPrimaryClass}
               >
                 <SmallerSolid.ChevronRightIcon className="min-h-full min-w-full" />
@@ -1588,11 +1522,11 @@ const MasterPlanClient = (props: Props) => {
                     { label: "16", value: "16" },
                     { label: "32", value: "32" },
                   ]}
-                  value={String(itemsPerPage)}
+                  value={String(c.itemsPerPage)}
                   onChange={(val) => {
                     const newPageSize = Number(val);
-                    setItemsPerPage(newPageSize);
-                    setCurrentPage(1);
+                    c.setItemsPerPage(newPageSize);
+                    c.setCurrentPage(1);
                   }}
                   showAbove
                 />
