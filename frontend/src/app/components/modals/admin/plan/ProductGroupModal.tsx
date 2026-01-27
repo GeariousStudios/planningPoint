@@ -1007,7 +1007,7 @@ const ProductGroupModal = (props: Props) => {
 
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
-                      t("Common/column") +
+                      t("Common/product") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </div>

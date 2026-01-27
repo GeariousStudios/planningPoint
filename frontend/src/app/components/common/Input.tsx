@@ -26,6 +26,7 @@ type InputProps = {
   minLength?: number;
   pattern?: string;
   inChip?: boolean;
+  inGrid?: boolean;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   min?: string | number;
   max?: string | number;
@@ -63,6 +64,7 @@ const Input = ({
   maxLength,
   pattern,
   inChip = false,
+  inGrid = false,
   inputMode,
   min,
   max,
@@ -306,7 +308,7 @@ const Input = ({
           (!isCheckbox && !isRadio ? (
             <label
               htmlFor={id}
-              className={`${isDate || isTime || isDateTime ? "top-0" : "top-[60%]"} ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : "bg-(--bg-main)"} pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-(--slow) select-none`}
+              className={`${isDate || isTime || isDateTime ? "top-0" : "top-[60%]"} ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : inGrid ? "bg-(--bg-grid)" : "bg-(--bg-main)"} pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-(--slow) select-none`}
             >
               {label}
               {(required || showAsterix) && <span className="pr-2" />}

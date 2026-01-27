@@ -186,6 +186,63 @@ const useClient = (props: Props) => {
   const { currentTheme } = useTheme();
 
   // --- HELPERS ---
+  const handleTextFieldFocusOut = (
+    e: React.FocusEvent<HTMLDivElement, Element>,
+  ) => {
+    const root = e.currentTarget;
+
+    window.setTimeout(() => {
+      if (!root) {
+        return;
+      }
+
+      const active = document.activeElement;
+      if (active && root.contains(active)) {
+        return;
+      }
+
+      saveInlineEdit();
+      setEditingCell(null);
+    }, 0);
+  };
+
+  const getColumnIndexById = (columnId: number) =>
+    unitColumnIds.indexOf(columnId);
+
+  const getColumnDataTypeById = (columnId: number) => {
+    const idx = getColumnIndexById(columnId);
+    return idx >= 0 ? unitColumnDataTypes[idx] : undefined;
+  };
+
+  const isEditingTextField =
+    editingCell != null &&
+    getColumnDataTypeById(editingCell.columnId) === "TextField";
+
+  const beginInlineEdit = (hour: number, columnId: number, cell?: any) => {
+    const dataType = getColumnDataTypeById(columnId);
+
+    setEditingCell({ hour, columnId });
+
+    if (dataType === "Number") {
+      const v = cell?.intValue ?? cell?.value ?? "";
+      setEditingValue(v === "" || v == null ? "" : Number(v));
+      return;
+    }
+
+    if (dataType === "Boolean") {
+      const v = cell?.value;
+      setEditingValue(v === true || v === "true");
+      return;
+    }
+
+    if (dataType === "TextField") {
+      setEditingValue(String(cell?.value ?? ""));
+      return;
+    }
+
+    setEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
+  };
+
   const handleDateChange = (val: string) => {
     if (!val || val === selectedDate) {
       setTempDate(selectedDate);
@@ -796,6 +853,17 @@ const useClient = (props: Props) => {
       const isEmpty =
         dataType === "Number" && (editingValue === "" || editingValue === null);
 
+      const valueToSend =
+        dataType === "Boolean"
+          ? editingValue
+            ? "true"
+            : "false"
+          : dataType === "Number"
+            ? isEmpty
+              ? ""
+              : String(editingValue)
+            : String(editingValue ?? "");
+
       const body = {
         unitId: parsedUnitId,
         date: selectedDate,
@@ -803,14 +871,7 @@ const useClient = (props: Props) => {
         values: [
           {
             columnId,
-            value:
-              dataType === "Boolean"
-                ? editingValue
-                  ? "true"
-                  : "false"
-                : isEmpty
-                  ? ""
-                  : String(editingValue),
+            value: valueToSend,
             intValue:
               dataType === "Number" && !isEmpty
                 ? Number(editingValue)
@@ -1258,6 +1319,10 @@ const useClient = (props: Props) => {
     changeShift,
     refreshUnitActive,
     tdClassSpecial,
+    getColumnDataTypeById,
+    isEditingTextField,
+    beginInlineEdit,
+    handleTextFieldFocusOut,
   };
 };
 

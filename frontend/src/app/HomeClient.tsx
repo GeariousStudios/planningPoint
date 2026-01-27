@@ -666,6 +666,7 @@ const HomeClient = (props: Props) => {
                       type="text"
                       label={t("Common/Username")}
                       onChange={(val) => setUsername(String(val))}
+                      inGrid
                       required
                     />
                     <Input
@@ -673,6 +674,7 @@ const HomeClient = (props: Props) => {
                       type="password"
                       label={t("Common/Password")}
                       onChange={(val) => setPassword(String(val))}
+                      inGrid
                       required
                     />
                     <button
