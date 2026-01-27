@@ -4,16 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { useToast } from "../components/toast/ToastProvider";
 import { toLocalDateString } from "../helpers/timeUtils";
 import useTheme from "./useTheme";
+import { RichTextEditorRef } from "../components/richTextEditor/RichTextEditor";
 
 // --- CLASSES ---
 export const thClass =
   "px-4 py-2 h-[40px] text-left border-b-1 border-b-(--border-main) border-r-1 border-r-(--border-secondary) flex-inline items-center justify-center";
 
 export const tdClass =
-  "px-4 py-2 h-[40px] text-left break-all border border-(--border-secondary) flex-inline items-center justify-center";
+  "px-4 py-2 h-[40px] text-left [overflow-wrap:anywhere] border border-(--border-secondary) flex-inline items-center justify-center align-top";
 
 export const tdClassSpecial =
-  "px-4 py-2 h-[40px] text-left break-all flex-inline items-center justify-center";
+  "px-4 py-2 h-[40px] text-left [overflow-wrap:anywhere] flex-inline items-center justify-center";
 
 export const shiftsClass =
   "truncate font-semibold transition-colors duration-(--fast) group-hover:text-(--accent-color)";
@@ -79,6 +80,10 @@ const useClient = (props: Props) => {
   // --- Refs ---
   const shiftsRef = useRef<HTMLButtonElement | null>(null);
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const inlineRteRef = useRef<RichTextEditorRef>(null);
+
+  const shouldRestoreFocusRef = useRef(false);
+  const wasCancelOpenRef = useRef(false);
 
   // --- States: Shift ---
   const [shiftsOpen, setShiftsOpen] = useState(false);
@@ -136,6 +141,9 @@ const useClient = (props: Props) => {
   const [editingValue, setEditingValue] = useState<string | number | boolean>(
     "",
   );
+  const [originalEditingValue, setOriginalEditingValue] = useState<
+    string | number | boolean
+  >("");
 
   // --- States: This ---
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
@@ -153,6 +161,10 @@ const useClient = (props: Props) => {
   const [deletingItemId, setDeletingItemId] = useState<string | undefined>();
 
   const [refetchData, setRefetchData] = useState(true);
+
+  // --- States: Cancel Value ---
+  const [cancelValueModalOpen, setCancelValueModalOpen] = useState(false);
+  const [lastInput, setLastInput] = useState<HTMLElement | null>(null);
 
   // --- States: Other ---
   const [isLoadingUnits, setIsLoadingUnits] = useState(true);
@@ -178,14 +190,77 @@ const useClient = (props: Props) => {
   const [nowTs, setNowTs] = useState<number>(() => Date.now());
 
   const isBootstrapping = isLoadingUnits || isLoadingColumns || isLoadingShifts;
-  const canShowLock = !isBootstrapping && isHidden && !isInvalid;
-  const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
+  const canShowLock = isHidden && !isInvalid;
+  const canShowInvalid = isInvalid && !isHidden;
   const isReady = !isHidden && !isInvalid;
 
   // --- Other ---
   const { currentTheme } = useTheme();
 
   // --- HELPERS ---
+  const handleTextFieldFocusOut = (
+    e: React.FocusEvent<HTMLDivElement, Element>,
+  ) => {
+    const root = e.currentTarget;
+
+    window.setTimeout(() => {
+      if (!root) {
+        return;
+      }
+
+      const active = document.activeElement;
+      if (active && root.contains(active)) {
+        return;
+      }
+
+      cancelEdit();
+    }, 0);
+  };
+
+  const getColumnIndexById = (columnId: number) =>
+    unitColumnIds.indexOf(columnId);
+
+  const getColumnDataTypeById = (columnId: number) => {
+    const idx = getColumnIndexById(columnId);
+    return idx >= 0 ? unitColumnDataTypes[idx] : undefined;
+  };
+
+  const beginInlineEdit = (hour: number, columnId: number, cell?: any) => {
+    const dataType = getColumnDataTypeById(columnId);
+
+    setEditingCell({ hour, columnId });
+
+    if (dataType === "Number") {
+      const v = cell?.intValue ?? cell?.value ?? "";
+      setEditingValue(v === "" || v == null ? "" : Number(v));
+      setOriginalEditingValue(v === "" || v == null ? "" : Number(v));
+      return;
+    }
+
+    if (dataType === "Decimal") {
+      const v = cell?.value ?? cell?.intValue ?? "";
+      setEditingValue(v == null ? "" : String(v));
+      setOriginalEditingValue(v == null ? "" : String(v));
+      return;
+    }
+
+    if (dataType === "Boolean") {
+      const v = cell?.value;
+      setEditingValue(v === true || v === "true");
+      setOriginalEditingValue(v === true || v === "true");
+      return;
+    }
+
+    if (dataType === "TextField") {
+      setEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
+      setOriginalEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
+      return;
+    }
+
+    setEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
+    setOriginalEditingValue(String(cell?.value ?? cell?.intValue ?? ""));
+  };
+
   const handleDateChange = (val: string) => {
     if (!val || val === selectedDate) {
       setTempDate(selectedDate);
@@ -328,26 +403,108 @@ const useClient = (props: Props) => {
     return date === unitCreationDate && toMinutes(time) === 0;
   };
 
-  const getNumericCellValue = (cell: any) => {
-    if (cell == null) {
-      return undefined;
+  const getNumericCellValue = (cell: any, dataType?: string) => {
+    if (cell == null) return undefined;
+
+    if (dataType === "Number") {
+      if (typeof cell.intValue === "number") return cell.intValue;
+      const n = Number(cell.value);
+      return Number.isFinite(n) ? n : undefined;
     }
 
-    if (typeof cell.intValue === "number") {
-      return cell.intValue;
-    }
-
-    const n = Number(cell.value);
+    const raw = String(cell.value ?? cell.intValue ?? "").replace(/,/g, ".");
+    const n = Number(raw);
     return Number.isFinite(n) ? n : undefined;
   };
 
   const compareColsCount = unitColumnNames.reduce((acc, _, i) => {
+    const dt = unitColumnDataTypes[i];
     return (
       acc +
-      (unitColumnDataTypes[i] === "Number" && unitColumnCompareFlags[i] ? 1 : 0)
+      ((dt === "Number" || dt === "Decimal") && unitColumnCompareFlags[i]
+        ? 1
+        : 0)
     );
   }, 0);
 
+  const resolveFocusable = (el: HTMLElement | null) => {
+    if (!el) return null;
+
+    const direct = el.closest?.(
+      'input,textarea,select,button,[contenteditable="true"],[tabindex]:not([tabindex="-1"])',
+    ) as HTMLElement | null;
+
+    if (direct) return direct;
+
+    const inner = el.querySelector?.(
+      'input,textarea,select,button,[contenteditable="true"],[tabindex]:not([tabindex="-1"])',
+    ) as HTMLElement | null;
+
+    return inner ?? null;
+  };
+
+  const rememberLastFocused = (el?: HTMLElement | null) => {
+    const active =
+      el ??
+      (document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null);
+    const focusable = resolveFocusable(active);
+    if (focusable) setLastInput(focusable);
+  };
+
+  const focusToLastInput = () => {
+    const el = lastInput;
+    if (!el) return;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          el.scrollIntoView({ block: "nearest" });
+          el.focus();
+        } catch {}
+      });
+    });
+  };
+
+  useEffect(() => {
+    if (wasCancelOpenRef.current && !cancelValueModalOpen) {
+      if (shouldRestoreFocusRef.current) {
+        focusToLastInput();
+      }
+      shouldRestoreFocusRef.current = true;
+    }
+    wasCancelOpenRef.current = cancelValueModalOpen;
+  }, [cancelValueModalOpen, lastInput]);
+
+  const openCancelValueModal = () => {
+    shouldRestoreFocusRef.current = true;
+    setCancelValueModalOpen(true);
+  };
+
+  const closeCancelValueModal = () => {
+    setCancelValueModalOpen(false);
+  };
+
+  const confirmCancelValueModal = () => {
+    shouldRestoreFocusRef.current = false;
+    setCancelValueModalOpen(false);
+  };
+
+  const cancelEdit = () => {
+    const isDirty = editingValue !== originalEditingValue;
+
+    if (isDirty) {
+      openCancelValueModal();
+      return;
+    }
+
+    setEditingCellToNull();
+  };
+
+  const setEditingCellToNull = () => {
+    setEditingCell(null);
+  };
   // --- BACKEND ---
   // --- Fetch unit ---
   useEffect(() => {
@@ -373,6 +530,9 @@ const useClient = (props: Props) => {
           result?.unitGroupId !== parsedGroupId
         ) {
           setIsInvalid(true);
+          setIsLoadingUnits(false);
+          setIsLoadingColumns(false);
+          setIsLoadingShifts(false);
           return;
         }
 
@@ -782,16 +942,35 @@ const useClient = (props: Props) => {
 
   // --- Save unit cell ---
   const saveInlineEdit = async () => {
-    if (!editingCell) {
-      return;
-    }
+    if (!editingCell) return;
 
     try {
       const { hour, columnId } = editingCell;
       const dataType = unitColumnDataTypes[unitColumnIds.indexOf(columnId)];
 
-      const isEmpty =
-        dataType === "Number" && (editingValue === "" || editingValue === null);
+      const isEmptyNumeric =
+        (dataType === "Number" || dataType === "Decimal") &&
+        (editingValue === "" || editingValue === null);
+
+      const normalizedDecimal =
+        dataType === "Decimal"
+          ? String(editingValue ?? "").replace(/,/g, ".")
+          : String(editingValue ?? "");
+
+      const valueToSend =
+        dataType === "Boolean"
+          ? editingValue
+            ? "true"
+            : "false"
+          : dataType === "Number"
+            ? isEmptyNumeric
+              ? ""
+              : String(editingValue)
+            : dataType === "Decimal"
+              ? isEmptyNumeric
+                ? ""
+                : normalizedDecimal
+              : String(editingValue ?? "");
 
       const body = {
         unitId: parsedUnitId,
@@ -800,16 +979,9 @@ const useClient = (props: Props) => {
         values: [
           {
             columnId,
-            value:
-              dataType === "Boolean"
-                ? editingValue
-                  ? "true"
-                  : "false"
-                : isEmpty
-                  ? ""
-                  : String(editingValue),
+            value: valueToSend,
             intValue:
-              dataType === "Number" && !isEmpty
+              dataType === "Number" && !isEmptyNumeric
                 ? Number(editingValue)
                 : undefined,
           },
@@ -1182,6 +1354,7 @@ const useClient = (props: Props) => {
     setEditingCell,
     editingValue,
     setEditingValue,
+    setOriginalEditingValue,
     expandedRows,
     setExpandedRows,
     allExpanded,
@@ -1255,6 +1428,17 @@ const useClient = (props: Props) => {
     changeShift,
     refreshUnitActive,
     tdClassSpecial,
+    getColumnDataTypeById,
+    beginInlineEdit,
+    handleTextFieldFocusOut,
+    inlineRteRef,
+    cancelValueModalOpen,
+    openCancelValueModal,
+    closeCancelValueModal,
+    cancelEdit,
+    setEditingCellToNull,
+    confirmCancelValueModal,
+    rememberLastFocused,
   };
 };
 

@@ -157,7 +157,7 @@ const CustomTooltip = ({
             <Tooltip.Content
               side={side}
               sideOffset={3}
-              className={`${lgHidden ? "lg:hidden" : ""} z-(--z-tooltip) bg-(--bg-tooltip) text-(--text-tooltip) pointer-events-none rounded p-[0.4rem_0.6rem] text-[0.8rem] font-semibold`}
+              className={`${lgHidden ? "lg:hidden" : ""} z-(--z-tooltip) bg-(--bg-tooltip) text-(--text-tooltip) pointer-events-none rounded p-[0.4rem_0.6rem] text-[0.8rem] font-semibold max-w-fit`}
             >
               {content}
               <Tooltip.Arrow

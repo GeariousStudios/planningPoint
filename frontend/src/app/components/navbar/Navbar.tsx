@@ -24,6 +24,7 @@ type Props = {
   setHasScrollbar: (value: boolean) => void;
   navbarHidden: boolean;
   setNavbarHidden: (value: boolean) => void;
+  isEditingFavourites: boolean;
 };
 
 // --- UNITS IN SUBMENU ---
@@ -57,6 +58,10 @@ const Navbar = (props: Props) => {
   const [unitItems, setUnitItems] = useState<SubmenuItem[]>([]);
   const [masterPlanItems, setMasterPlanItems] = useState<SubmenuItem[]>([]);
   const [unitsLoaded, setUnitsLoaded] = useState(false);
+  const [operationalPlanItems, setOperationalPlanItems] = useState<
+    SubmenuItem[]
+  >([]);
+  const [operationalPlansLoaded, setOperationalPlansLoaded] = useState(false);
   const [masterPlansLoaded, setMasterPlansLoaded] = useState(false);
   const [isAnyDragging, setIsAnyDragging] = useState(false);
 
@@ -156,7 +161,7 @@ const Navbar = (props: Props) => {
   const fetchMasterPlans = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/master-plan?sortBy=name&sortOrder=asc`,
+        `${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=asc`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -227,6 +232,82 @@ const Navbar = (props: Props) => {
     }
   };
 
+  // --- Fetch operational plans ---
+  const fetchOperationalPlans = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/operational-plan?sortBy=unitGroupName&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      // --- Fail ---
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+        return;
+      }
+
+      const visibleOperationalPlans = result.items;
+
+      // --- Success ---
+      const grouped: Record<string, SubmenuItem[]> =
+        visibleOperationalPlans.reduce(
+          (acc: Record<string, SubmenuItem[]>, operationalPlan: any) => {
+            const groupName = operationalPlan.unitGroupName;
+
+            if (!acc[groupName]) {
+              acc[groupName] = [];
+            }
+
+            acc[groupName].push({
+              label: operationalPlan.name,
+              href: `/plan/operational-plans/${operationalPlan.unitGroupId}/${operationalPlan.id}`,
+              isHidden: operationalPlan.isHidden,
+            });
+
+            return acc;
+          },
+          {},
+        );
+
+      const itemsWithTitles: SubmenuItem[] = Object.entries(grouped).flatMap(
+        ([groupName, items]) => [
+          ...items.map((item, index) => ({
+            ...item,
+            title: index === 0 ? groupName : undefined,
+            icon: "CalendarIcon",
+            onToggleFavourite,
+          })),
+        ],
+      );
+
+      setOperationalPlanItems(itemsWithTitles);
+      setOperationalPlansLoaded(true);
+
+      const isOperationalPlanHref = (href: string) =>
+        href.startsWith("/plan/operational-plans/");
+
+      const stale = favourites.filter((f) => {
+        const match = f.href.match(/\/plan\/operational-plans\/\d+\/(\d+)/);
+        const opId = match ? parseInt(match[1]) : null;
+        const exists = result.items.some((u: any) => u.id === opId);
+        return isOperationalPlanHref(f.href) && !exists;
+      });
+
+      if (stale.length > 0) {
+        stale.forEach((f) => removeUserFavourite(f.href));
+      }
+    } catch (err) {
+    } finally {
+    }
+  };
+
   // --- INITIALLY FETCH UNITS ---
   useEffect(() => {
     if (!isAuthReady) {
@@ -235,6 +316,7 @@ const Navbar = (props: Props) => {
 
     fetchUnits();
     fetchMasterPlans();
+    fetchOperationalPlans();
 
     const handleUnitUpdate = () => fetchUnits();
     window.addEventListener("unit-list-updated", handleUnitUpdate);
@@ -242,11 +324,21 @@ const Navbar = (props: Props) => {
     const handleMasterPlanUpdate = () => fetchMasterPlans();
     window.addEventListener("master-plan-list-updated", handleMasterPlanUpdate);
 
+    const handleOperationalPlanUpdate = () => fetchOperationalPlans();
+    window.addEventListener(
+      "operational-plan-list-updated",
+      handleOperationalPlanUpdate,
+    );
+
     return () => {
       window.removeEventListener("unit-list-updated", handleUnitUpdate);
       window.removeEventListener(
         "master-plan-list-updated",
         handleMasterPlanUpdate,
+      );
+      window.removeEventListener(
+        "operational-plan-list-updated",
+        handleOperationalPlanUpdate,
       );
     };
   }, [isAuthReady]);
@@ -312,80 +404,119 @@ const Navbar = (props: Props) => {
     const staticEntries: SubmenuItem[] = [
       { href: "/", label: t("Navbar/Home"), icon: "HomeIcon" },
       {
+        href: "/developer/manage/",
+        label: t("Common/Developer") + " / " + t("Common/Manage"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/developer/manage/users/",
         label: t("Common/Users"),
         icon: "UserGroupIcon",
       },
       {
+        href: "/admin/manage/",
+        label: t("Common/Admin") + " / " + t("Common/Manage"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/admin/manage/units/categories/",
-        // label: t("Common/Manage") + " / " + t("Common/Categories"),
         label: t("Common/Categories"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/",
-        // label: t("Common/Manage") + " / " + t("Common/Units"),
         label: t("Common/Units"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/unit-groups/",
-        // label: t("Common/Manage") + " / " + t("Common/Groups"),
         label: t("Common/Groups"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/unit-columns/",
-        // label: t("Common/Manage") + " / " + t("Common/Columns"),
         label: t("Common/Columns"),
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/units/master-plans/",
-        // label: t("Common/Manage") + " / " + t("Common/Columns"),
+        href: "/admin/manage/plan/master-plans/",
         label: t("Common/Master plans"),
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/units/master-plans/import-rules/",
-        // label: t("Common/Manage") + " / " + t("Common/Columns"),
+        href: "/admin/manage/plan/master-plans/import-rules/",
         label: t("ImportRules/Import rules"),
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/units/master-plan-fields/",
-        // label: t("Common/Manage") + " / " + t("Common/Columns"),
+        href: "/admin/manage/plan/master-plans/master-plan-fields/",
         label: t("Common/Master plan fields"),
         icon: "WrenchIcon",
       },
       {
+        href: "/admin/manage/plan/planned-stops/",
+        label: t("Common/Planned stops"),
+        icon: "WrenchIcon",
+      },
+      {
+        href: "/admin/manage/plan/products/",
+        label: t("Common/Products"),
+        icon: "WrenchIcon",
+      },
+      {
+        href: "/admin/manage/plan/products/product-groups/",
+        label: t("Common/Product groups"),
+        icon: "WrenchIcon",
+      },
+      {
+        href: "/admin/manage/plan/operational-plans/",
+        label: t("Common/Operational plans"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/admin/manage/news/news-types/",
-        // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/News types"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/shifts/",
-        // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/Shifts"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/shifts/shift-teams/",
-        // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/Shift teams"),
-        icon: "WrenchIcon",
-      },
-      {
-        href: "/admin/manage/planned-stops/stop-types/",
-        // label: t("Common/Manage") + " / " + t("Common/Types"),
-        label: t("Common/Stop types"),
         icon: "WrenchIcon",
       },
       {
         href: "/audit-trail/",
         label: t("Navbar/Audit trail"),
         icon: "BookOpenIcon",
+      },
+      {
+        href: "/plan/",
+        label: t("Navbar/Plan"),
+        icon: "CalendarIcon",
+      },
+      {
+        href: "/plan/master-plans/",
+        label: t("Common/Master plans"),
+        icon: "CalendarIcon",
+      },
+      {
+        href: "/plan/operational-plans/",
+        label: t("Common/Operational plans"),
+        icon: "CalendarIcon",
+      },
+      {
+        href: "/report/",
+        label: t("Navbar/Report"),
+        icon: "ChatBubbleBottomCenterTextIcon",
+      },
+      {
+        href: "/report/units/",
+        label: t("Common/Units"),
+        icon: "ChatBubbleBottomCenterTextIcon",
       },
     ];
 
@@ -401,7 +532,18 @@ const Navbar = (props: Props) => {
       icon: u.icon ?? "CalendarIcon",
     }));
 
-    const all = [...staticEntries, ...dynamicUnits, ...dynamicMasterPlans];
+    const dynamicOperationalPlans = operationalPlanItems.map((u) => ({
+      href: u.href,
+      label: u.overrideLabel ?? u.label,
+      icon: u.icon ?? "CalendarIcon",
+    }));
+
+    const all = [
+      ...staticEntries,
+      ...dynamicUnits,
+      ...dynamicMasterPlans,
+      ...dynamicOperationalPlans,
+    ];
 
     const map = new Map<string, { label: string; icon?: string }>();
     all.forEach((item) =>
@@ -415,7 +557,7 @@ const Navbar = (props: Props) => {
 
   const menuLookup = useMemo(
     () => getMenuLookup(),
-    [unitItems, masterPlanItems, t],
+    [unitItems, masterPlanItems, operationalPlanItems, t],
   );
 
   const validFavourites = favourites.filter((f) => menuLookup.has(f.href));
@@ -430,9 +572,12 @@ const Navbar = (props: Props) => {
       unitItems.map((it) => ({
         ...it,
         isFavourite: favourites.some((f) => f.href === it.href),
-        onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
+        onToggleFavourite:
+          isLoggedIn && props.isEditingFavourites
+            ? onToggleFavourite
+            : undefined,
       })),
-    [unitItems, favourites],
+    [unitItems, favourites, isLoggedIn, props.isEditingFavourites],
   );
 
   const masterPlanItemsResolved = useMemo(
@@ -440,9 +585,25 @@ const Navbar = (props: Props) => {
       masterPlanItems.map((it) => ({
         ...it,
         isFavourite: favourites.some((f) => f.href === it.href),
-        onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
+        onToggleFavourite:
+          isLoggedIn && props.isEditingFavourites
+            ? onToggleFavourite
+            : undefined,
       })),
-    [masterPlanItems, favourites],
+    [masterPlanItems, favourites, isLoggedIn, props.isEditingFavourites],
+  );
+
+  const operationalPlanItemsResolved = useMemo(
+    () =>
+      operationalPlanItems.map((it) => ({
+        ...it,
+        isFavourite: favourites.some((f) => f.href === it.href),
+        onToggleFavourite:
+          isLoggedIn && props.isEditingFavourites
+            ? onToggleFavourite
+            : undefined,
+      })),
+    [operationalPlanItems, favourites, isLoggedIn, props.isEditingFavourites],
   );
 
   // useEffect(() => {
@@ -592,36 +753,48 @@ const Navbar = (props: Props) => {
                             {t("Navbar/Favourites")}
                           </span>
 
-                          <DragDrop
-                            disableClass
-                            items={resolvedFavourites.map((f) => f.href)}
-                            getId={(id) => id}
-                            onReorder={(newOrderHrefs) => {
-                              reorderFavourites(newOrderHrefs);
-                            }}
-                            onDraggingChange={setIsAnyDragging}
-                            renderItem={(href, isDragging) => {
-                              const fav = resolvedFavourites.find(
-                                (f) => f.href === href,
-                              )!;
-                              return (
-                                <NavbarLink
-                                  key={fav.href}
-                                  href={fav.href}
-                                  label={fav.label}
-                                  icon={fav.icon}
-                                  isFavourite
-                                  isDragging={isAnyDragging}
-                                  onToggleFavourite={
-                                    isLoggedIn
-                                      ? (isFav, href) =>
-                                          onToggleFavourite(isFav, href)
-                                      : undefined
-                                  }
-                                />
-                              );
-                            }}
-                          />
+                          {props.isEditingFavourites ? (
+                            <DragDrop
+                              disableClass
+                              items={resolvedFavourites.map((f) => f.href)}
+                              getId={(id) => id}
+                              onReorder={(newOrderHrefs) => {
+                                reorderFavourites(newOrderHrefs);
+                              }}
+                              onDraggingChange={setIsAnyDragging}
+                              renderItem={(href, isDragging) => {
+                                const fav = resolvedFavourites.find(
+                                  (f) => f.href === href,
+                                )!;
+                                return (
+                                  <NavbarLink
+                                    key={fav.href}
+                                    href={fav.href}
+                                    label={fav.label}
+                                    icon={fav.icon}
+                                    isFavourite
+                                    isDragging={isAnyDragging}
+                                    onToggleFavourite={
+                                      isLoggedIn && props.isEditingFavourites
+                                        ? (isFav, href) =>
+                                            onToggleFavourite(isFav, href)
+                                        : undefined
+                                    }
+                                  />
+                                );
+                              }}
+                            />
+                          ) : (
+                            resolvedFavourites.map((fav) => (
+                              <NavbarLink
+                                key={fav.href}
+                                href={fav.href}
+                                label={fav.label}
+                                icon={fav.icon}
+                                isFavourite
+                              />
+                            ))
+                          )}
 
                           <hr className="mt-4 mb-7 rounded-full text-(--border-main)" />
                         </div>
@@ -632,17 +805,55 @@ const Navbar = (props: Props) => {
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Common/Developer")}
                           </span>
-                          <NavbarLink
-                            href="/developer/manage/users/"
-                            label={t("Common/Users")}
-                            icon="UserGroupIcon"
-                            isFavourite={favourites.some(
-                              (f) => f.href === "/developer/manage/users/",
-                            )}
-                            onToggleFavourite={
-                              isLoggedIn ? onToggleFavourite : undefined
-                            }
-                          />
+
+                          <span className="2xs:block hidden">
+                            <NavbarSubmenu
+                              label={t("Common/Manage")}
+                              icon={Outline.WrenchIcon}
+                              iconHover={Solid.WrenchIcon}
+                              hasScrollbar={props.hasScrollbar}
+                              menus={[
+                                {
+                                  label: t("Common/Users"),
+                                  items: [
+                                    {
+                                      href: "/developer/manage/users/",
+                                      label: t("Common/Users"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href === "/developer/manage/users/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                              ]}
+                              href="/developer/manage/"
+                              // isFavourite={favourites.some(
+                              //   (f) => f.href === "/developer/manage/",
+                              // )}
+                              // onToggleFavourite={
+                              //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
+                              // }
+                            />
+                          </span>
+
+                          <span className="2xs:hidden block">
+                            <NavbarLink
+                              href="/developer/manage/"
+                              label={t("Common/Manage")}
+                              icon="WrenchIcon"
+                              // isFavourite={favourites.some(
+                              //   (f) => f.href === "/developer/manage/",
+                              // )}
+                              // onToggleFavourite={
+                              //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
+                              // }
+                            />
+                          </span>
                           <hr className="mt-4 mb-7 rounded-full text-(--border-main)" />
                         </div>
                       )}
@@ -657,50 +868,106 @@ const Navbar = (props: Props) => {
                         icon="HomeIcon"
                         isFavourite={favourites.some((f) => f.href === "/")}
                         onToggleFavourite={
-                          isLoggedIn ? onToggleFavourite : undefined
+                          isLoggedIn && props.isEditingFavourites
+                            ? onToggleFavourite
+                            : undefined
                         }
                       />
 
-                      <NavbarSubmenu
-                        label={t("Navbar/Report")}
-                        icon={Outline.ChatBubbleBottomCenterTextIcon}
-                        iconHover={Solid.ChatBubbleBottomCenterTextIcon}
-                        hasScrollbar={props.hasScrollbar}
-                        menus={[
-                          ...(unitItemsResolved.filter((u) => !u.isHidden)
-                            .length > 0
-                            ? [
-                                {
-                                  label: t("Common/Units"),
-                                  items: unitItemsResolved.filter(
-                                    (u) => !u.isHidden,
-                                  ),
-                                },
-                              ]
-                            : []),
-                        ]}
-                      />
+                      <span className="2xs:block hidden">
+                        <NavbarSubmenu
+                          label={t("Navbar/Report")}
+                          icon={Outline.ChatBubbleBottomCenterTextIcon}
+                          iconHover={Solid.ChatBubbleBottomCenterTextIcon}
+                          hasScrollbar={props.hasScrollbar}
+                          menus={[
+                            ...(unitItemsResolved.filter((u) => !u.isHidden)
+                              .length > 0
+                              ? [
+                                  {
+                                    label: t("Common/Units"),
+                                    items: unitItemsResolved.filter(
+                                      (u) => !u.isHidden,
+                                    ),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                          href="/report/"
+                          // isFavourite={favourites.some(
+                          //   (f) => f.href === "/report/",
+                          // )}
+                          // onToggleFavourite={
+                          //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
+                          // }
+                        />
+                      </span>
 
-                      <NavbarSubmenu
-                        label={t("Navbar/Plan")}
-                        icon={Outline.CalendarIcon}
-                        iconHover={Solid.CalendarIcon}
-                        hasScrollbar={props.hasScrollbar}
-                        menus={[
-                          ...(masterPlanItemsResolved.filter(
-                            (mp) => !mp.isHidden,
-                          ).length > 0
-                            ? [
-                                {
-                                  label: t("Common/Master plans"),
-                                  items: masterPlanItemsResolved.filter(
-                                    (mp) => !mp.isHidden,
-                                  ),
-                                },
-                              ]
-                            : []),
-                        ]}
-                      />
+                      <span className="2xs:hidden block">
+                        <NavbarLink
+                          href="/report/"
+                          label={t("Navbar/Report")}
+                          icon="ChatBubbleBottomCenterTextIcon"
+                          // isFavourite={favourites.some((f) => f.href === "/report/")}
+                          // onToggleFavourite={
+                          //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
+                          // }
+                        />
+                      </span>
+
+                      <span className="2xs:block hidden">
+                        <NavbarSubmenu
+                          label={t("Navbar/Plan")}
+                          icon={Outline.CalendarIcon}
+                          iconHover={Solid.CalendarIcon}
+                          hasScrollbar={props.hasScrollbar}
+                          menus={[
+                            ...(masterPlanItemsResolved.filter(
+                              (mp) => !mp.isHidden,
+                            ).length > 0
+                              ? [
+                                  {
+                                    label: t("Common/Master plans"),
+                                    items: masterPlanItemsResolved.filter(
+                                      (mp) => !mp.isHidden,
+                                    ),
+                                  },
+                                ]
+                              : []),
+                            ...(operationalPlanItemsResolved.filter(
+                              (op) => !op.isHidden,
+                            ).length > 0
+                              ? [
+                                  {
+                                    label: t("Common/Operational plans"),
+                                    items: operationalPlanItemsResolved.filter(
+                                      (op) => !op.isHidden,
+                                    ),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                          href="/plan/"
+                          // isFavourite={favourites.some(
+                          //   (f) => f.href === "/plan/",
+                          // )}
+                          // onToggleFavourite={
+                          //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
+                          // }
+                        />
+                      </span>
+
+                      <span className="2xs:hidden block">
+                        <NavbarLink
+                          href="/plan/"
+                          label={t("Navbar/Plan")}
+                          icon="CalendarIcon"
+                          // isFavourite={favourites.some((f) => f.href === "/plan/")}
+                          // onToggleFavourite={
+                          //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
+                          // }
+                        />
+                      </span>
 
                       <NavbarLink
                         tooltip={t("Common/Not implemented")}
@@ -721,7 +988,9 @@ const Navbar = (props: Props) => {
                             (f) => f.href === "/audit-trail/",
                           )}
                           onToggleFavourite={
-                            isLoggedIn ? onToggleFavourite : undefined
+                            isLoggedIn && props.isEditingFavourites
+                              ? onToggleFavourite
+                              : undefined
                           }
                         />
                       )}
@@ -733,181 +1002,254 @@ const Navbar = (props: Props) => {
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Common/Admin")}
                           </span>
-                          <NavbarSubmenu
-                            label={t("Common/Manage")}
-                            icon={Outline.WrenchIcon}
-                            iconHover={Solid.WrenchIcon}
-                            // requiresAdmin
-                            menus={[
-                              {
-                                label: t("Common/Units"),
-                                items: [
-                                  {
-                                    href: "/admin/manage/units/unit-groups/",
-                                    label: t("Common/Groups"),
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/unit-groups/",
-                                    ),
-                                  },
-                                  {
-                                    href: "/admin/manage/units/",
-                                    label: t("Common/Units"),
+                          <span className="2xs:block hidden">
+                            <NavbarSubmenu
+                              label={t("Common/Manage")}
+                              icon={Outline.WrenchIcon}
+                              iconHover={Solid.WrenchIcon}
+                              // requiresAdmin
+                              menus={[
+                                {
+                                  label: t("Common/Units"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/units/",
+                                      label: t("Common/Units"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) => f.href === "/admin/manage/units/",
-                                    ),
-                                  },
-                                  {
-                                    title: t("Navbar/Report"),
-                                    href: "/admin/manage/units/categories/",
-                                    label: t("Common/Categories"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href === "/admin/manage/units/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/units/unit-groups/",
+                                      label: t("Common/Groups"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/unit-groups/",
+                                      ),
+                                    },
+                                    {
+                                      title: t("Navbar/Report"),
+                                      href: "/admin/manage/units/categories/",
+                                      label: t("Common/Categories"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/categories/",
-                                    ),
-                                  },
-                                  {
-                                    href: "/admin/manage/units/unit-columns/",
-                                    label: t("Common/Columns"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/categories/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/units/unit-columns/",
+                                      label: t("Common/Columns"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/unit-columns/",
-                                    ),
-                                  },
-                                  {
-                                    title: t("Navbar/Plan"),
-                                    href: "/admin/manage/units/master-plans/",
-                                    label: t("Common/Master plans"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/units/unit-columns/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                                {
+                                  label: t("Navbar/Plan"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/plan/planned-stops/",
+                                      label: t("Common/Planned stops"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/master-plans/",
-                                    ),
-                                  },
-                                  {
-                                    href: "/admin/manage/units/master-plan-fields/",
-                                    label: t("Common/Master plan fields"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/planned-stops/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/plan/products/",
+                                      label: t("Common/Products"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/master-plan-fields/",
-                                    ),
-                                  },
-                                  {
-                                    href: "/admin/manage/units/master-plans/import-rules/",
-                                    label: t("ImportRules/Import rules"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/products/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/plan/products/product-groups/",
+                                      label: t("Common/Product groups"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/units/master-plans/import-rules/",
-                                    ),
-                                  },
-                                ],
-                              },
-                              {
-                                label: t("Common/Shifts"),
-                                items: [
-                                  {
-                                    href: "/admin/manage/shifts/",
-                                    label: t("Common/Shifts"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/products/product-groups/",
+                                      ),
+                                    },
+                                    {
+                                      title: t("Navbar/Master planning"),
+                                      href: "/admin/manage/plan/master-plans/",
+                                      label: t("Common/Master plans"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) => f.href === "/admin/manage/shifts/",
-                                    ),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/master-plans/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/plan/master-plans/master-plan-fields/",
+                                      label: t("Common/Master plan fields"),
 
-                                    // disabled: true,
-                                    // tooltip: t("Common/Not implemented"),
-                                  },
-                                  {
-                                    href: "/admin/manage/shifts/shift-teams/",
-                                    label: t("Common/Shift teams"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/master-plans/master-plan-fields/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/plan/master-plans/import-rules/",
+                                      label: t("ImportRules/Import rules"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/shifts/shift-teams/",
-                                    ),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/master-plans/import-rules/",
+                                      ),
+                                    },
+                                    {
+                                      title: t("Navbar/Operational planning"),
+                                      href: "/admin/manage/plan/operational-plans/",
+                                      label: t("Common/Operational plans"),
 
-                                    // disabled: true,
-                                    // tooltip: t("Common/Not implemented"),
-                                  },
-                                ],
-                              },
-                              {
-                                label: t("Common/News"),
-                                items: [
-                                  {
-                                    href: "/admin/manage/news/news-types/",
-                                    label: t("Common/News types"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/operational-plans/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                                {
+                                  label: t("Common/Shifts"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/shifts/",
+                                      label: t("Common/Shifts"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/news/news-types/",
-                                    ),
-                                  },
-                                ],
-                              },
-                              {
-                                label: t("Common/Planned stops"),
-                                items: [
-                                  {
-                                    href: "/admin/manage/planned-stops/stop-types/",
-                                    label: t("Common/Stop types"),
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href === "/admin/manage/shifts/",
+                                      ),
+                                    },
+                                    {
+                                      href: "/admin/manage/shifts/shift-teams/",
+                                      label: t("Common/Shift teams"),
 
-                                    onToggleFavourite: isLoggedIn
-                                      ? onToggleFavourite
-                                      : undefined,
-                                    isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/planned-stops/stop-types/",
-                                    ),
-                                  },
-                                ],
-                              },
-                            ]}
-                            hasScrollbar={props.hasScrollbar}
-                          />
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/shifts/shift-teams/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                                {
+                                  label: t("Common/News"),
+                                  items: [
+                                    {
+                                      href: "/admin/manage/news/news-types/",
+                                      label: t("Common/News types"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/news/news-types/",
+                                      ),
+                                    },
+                                  ],
+                                },
+                              ]}
+                              href="/admin/manage/"
+                              // isFavourite={favourites.some(
+                              //   (f) => f.href === "/admin/manage/",
+                              // )}
+                              // onToggleFavourite={
+                              //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
+                              // }
+                              hasScrollbar={props.hasScrollbar}
+                            />
+                          </span>
+
+                          <span className="2xs:hidden block">
+                            <NavbarLink
+                              href="/admin/manage/"
+                              label={t("Common/Manage")}
+                              icon="WrenchIcon"
+                              // isFavourite={favourites.some(
+                              //   (f) => f.href === "/admin/manage/",
+                              // )}
+                              // onToggleFavourite={
+                              //   isLoggedIn && props.isEditingFavourites ? onToggleFavourite : undefined
+                              // }
+                            />
+                          </span>
                         </div>
                       )}
                     </div>

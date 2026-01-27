@@ -33,6 +33,8 @@ const DragDrop = <T,>({
   const [tempItems, setTempItems] = useState<T[] | null>(null);
   const cancelRef = useRef(false);
 
+  const isTouchDraggingRef = useRef(false);
+
   useEffect(() => {
     if (!draggingId) {
       setTempItems(null);
@@ -150,6 +152,53 @@ const DragDrop = <T,>({
     confirmOrCancel();
   };
 
+  const handlePointerDown = (e: React.PointerEvent, item: T) => {
+    if (!active) return;
+    if (e.pointerType !== "touch") return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    isTouchDraggingRef.current = true;
+
+    dragItemRef.current = item;
+    const id = getId(item);
+    setDraggingId(id);
+    onDraggingChange?.(true);
+    cancelRef.current = false;
+
+    originalItemsRef.current = items.slice();
+    setTempItems(items.slice());
+
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isTouchDraggingRef.current) return;
+    if (!draggingId) return;
+
+    e.preventDefault();
+
+    const el = document.elementFromPoint(
+      e.clientX,
+      e.clientY,
+    ) as HTMLElement | null;
+    const target = el?.closest("[data-dd-id]") as HTMLElement | null;
+    const targetId = target?.getAttribute("data-dd-id");
+    if (!targetId) return;
+
+    reorder(draggingId, targetId);
+  };
+
+  const finishTouchDrag = (e?: React.PointerEvent) => {
+    if (!isTouchDraggingRef.current) return;
+
+    e?.preventDefault();
+    isTouchDraggingRef.current = false;
+
+    confirmOrCancel();
+  };
+
   useEffect(() => {
     if (!draggingId) return;
 
@@ -205,7 +254,19 @@ const DragDrop = <T,>({
         return (
           <div
             key={id}
-            draggable={active}
+            data-dd-id={id}
+            draggable={active && !isTouchDraggingRef.current}
+            onPointerDown={(e) => handlePointerDown(e, item)}
+            onPointerMove={handlePointerMove}
+            onPointerUp={finishTouchDrag}
+            onPointerCancel={finishTouchDrag}
+            onContextMenu={(e) => {
+              if (active && isTouchDraggingRef.current) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
+            style={active ? { touchAction: "none" } : undefined}
             onDragStart={(e) => active && handleDragStart(e, item)}
             onDragEnter={(e) => active && handleDragEnter(e, item)}
             onDragOver={(e) => e.preventDefault()}

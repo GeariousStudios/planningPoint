@@ -60,7 +60,6 @@ namespace backend.Controllers
             [FromQuery] int[]? unitColumnIds = null,
             [FromQuery] int[]? categoryIds = null,
             [FromQuery] int[]? shiftIds = null,
-            [FromQuery] int[]? stopTypeIds = null,
             [FromQuery] int[]? masterPlanIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] string? search = null,
@@ -76,8 +75,6 @@ namespace backend.Controllers
                 .ThenInclude(uc => uc.Category)
                 .Include(u => u.UnitToShifts)
                 .ThenInclude(us => us.Shift)
-                .Include(u => u.UnitToStopTypes)
-                .ThenInclude(ust => ust.StopType)
                 .Include(u => u.MasterPlan);
 
             if (isHidden.HasValue)
@@ -107,13 +104,6 @@ namespace backend.Controllers
             if (shiftIds?.Any() == true)
             {
                 query = query.Where(u => u.UnitToShifts.Any(us => shiftIds.Contains(us.ShiftId)));
-            }
-
-            if (stopTypeIds?.Any() == true)
-            {
-                query = query.Where(u =>
-                    u.UnitToStopTypes.Any(ust => stopTypeIds.Contains(ust.StopTypeId))
-                );
             }
 
             if (masterPlanIds?.Any() == true)
@@ -210,12 +200,6 @@ namespace backend.Controllers
                 .GroupBy(us => us.ShiftId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            var stopTypeCount = _context
-                .Units.AsEnumerable()
-                .SelectMany(u => u.UnitToStopTypes)
-                .GroupBy(ust => ust.StopTypeId)
-                .ToDictionary(g => g.Key, g => g.Count());
-
             var masterPlanCount = _context
                 .Units.AsEnumerable()
                 .GroupBy(u => u.MasterPlanId ?? 0)
@@ -249,10 +233,6 @@ namespace backend.Controllers
                         .Where(us => us.Shift.SystemKey == null)
                         .Select(x => x.ShiftId)
                         .ToList(),
-                    StopTypeIds = u
-                        .UnitToStopTypes.OrderBy(x => x.Order)
-                        .Select(x => x.StopTypeId)
-                        .ToList(),
                     ActiveShiftId = u.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
                     IsPlannable = u.IsPlannable,
                     MasterPlanId = u.MasterPlanId,
@@ -271,7 +251,6 @@ namespace backend.Controllers
                     unitColumnCount = unitColumnCount,
                     categoryCount = categoryCount,
                     shiftCount = shiftCount,
-                    stopTypeCount = stopTypeCount,
                     masterPlanCount = masterPlanCount,
                 },
             };
@@ -291,8 +270,6 @@ namespace backend.Controllers
                 .ThenInclude(uc => uc.Category)
                 .Include(u => u.UnitToShifts)
                 .ThenInclude(us => us.Shift)
-                .Include(u => u.UnitToStopTypes)
-                .ThenInclude(ust => ust.StopType)
                 .Include(u => u.MasterPlan)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
@@ -328,10 +305,6 @@ namespace backend.Controllers
                     .UnitToShifts.OrderBy(x => x.Order)
                     .Where(us => us.Shift.SystemKey == null)
                     .Select(x => x.ShiftId)
-                    .ToList(),
-                StopTypeIds = unit
-                    .UnitToStopTypes.OrderBy(x => x.Order)
-                    .Select(x => x.StopTypeId)
                     .ToList(),
                 ActiveShiftId = unit.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
                 IsPlannable = unit.IsPlannable,
@@ -372,8 +345,6 @@ namespace backend.Controllers
                 .ThenInclude(uc => uc.Category)
                 .Include(u => u.UnitToShifts)
                 .ThenInclude(us => us.Shift)
-                .Include(u => u.UnitToStopTypes)
-                .ThenInclude(ust => ust.StopType)
                 .Include(u => u.MasterPlan)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
@@ -409,13 +380,6 @@ namespace backend.Controllers
                     .DefaultIfEmpty("—")
             );
 
-            var stopTypesList = string.Join(
-                "\n",
-                unit.UnitToStopTypes.OrderBy(x => x.Order)
-                    .Select(ust => $"{ust.StopType.Name} (ID: {ust.StopTypeId})")
-                    .DefaultIfEmpty("—")
-            );
-
             // Audit trail.
             await _audit.LogAsync(
                 "Delete",
@@ -436,7 +400,6 @@ namespace backend.Controllers
                     ["UnitColumns"] = unitColumnsList,
                     ["Categories"] = categoriesList,
                     ["Shifts"] = shiftsList,
-                    ["StopTypes"] = stopTypesList,
                     ["IsPlannable"] = unit.IsPlannable
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -596,12 +559,6 @@ namespace backend.Controllers
                 )
                 .ToList();
 
-            unit.UnitToStopTypes = dto
-                .StopTypeIds.Select(
-                    (typeId, index) => new UnitToStopType { StopTypeId = typeId, Order = index }
-                )
-                .ToList();
-
             _context.Units.Add(unit);
             await _context.SaveChangesAsync();
 
@@ -626,13 +583,6 @@ namespace backend.Controllers
                 .Include(us => us.Shift)
                 .LoadAsync();
 
-            await _context
-                .Entry(unit)
-                .Collection(u => u.UnitToStopTypes)
-                .Query()
-                .Include(us => us.StopType)
-                .LoadAsync();
-
             var result = new UnitDto
             {
                 Name = unit.Name,
@@ -652,10 +602,6 @@ namespace backend.Controllers
                     .Select(x => x.CategoryId)
                     .ToList(),
                 ShiftIds = unit.UnitToShifts.OrderBy(x => x.Order).Select(x => x.ShiftId).ToList(),
-                StopTypeIds = unit
-                    .UnitToStopTypes.OrderBy(x => x.Order)
-                    .Select(x => x.StopTypeId)
-                    .ToList(),
                 ActiveShiftId = unit.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
 
                 // Meta data.
@@ -686,13 +632,6 @@ namespace backend.Controllers
                     .DefaultIfEmpty("—")
             );
 
-            var stopTypesList = string.Join(
-                "\n",
-                unit.UnitToStopTypes.OrderBy(x => x.Order)
-                    .Select(ust => $"{ust.StopType.Name} (ID: {ust.StopTypeId})")
-                    .DefaultIfEmpty("—")
-            );
-
             // Audit trail.
             await _audit.LogAsync(
                 "Create",
@@ -713,7 +652,6 @@ namespace backend.Controllers
                     ["UnitColumns"] = unitColumnsList,
                     ["Categories"] = categoriesList,
                     ["Shifts"] = shiftsList,
-                    ["StopTypes"] = stopTypesList,
                     ["IsPlannable"] = unit.IsPlannable
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -740,8 +678,6 @@ namespace backend.Controllers
                 .ThenInclude(uc => uc.Category)
                 .Include(u => u.UnitToShifts)
                 .ThenInclude(us => us.Shift)
-                .Include(u => u.UnitToStopTypes)
-                .ThenInclude(ust => ust.StopType)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
@@ -837,12 +773,6 @@ namespace backend.Controllers
                     .Select(x => $"{x.Shift.Name} (ID: {x.ShiftId})")
                     .DefaultIfEmpty("—")
             );
-            var oldStopTypes = string.Join(
-                "\n",
-                unit.UnitToStopTypes.OrderBy(x => x.Order)
-                    .Select(x => $"{x.StopType.Name} (ID: {x.StopTypeId})")
-                    .DefaultIfEmpty("—")
-            );
 
             var oldValues = new Dictionary<string, object?>
             {
@@ -857,7 +787,6 @@ namespace backend.Controllers
                 ["UnitColumns"] = oldUnitColumns,
                 ["Categories"] = oldCategories,
                 ["Shifts"] = oldShifts,
-                ["StopTypes"] = oldStopTypes,
                 ["IsPlannable"] = unit.IsPlannable ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 ["MasterPlan"] = unit.MasterPlanId.HasValue
                     ? $"{unit.MasterPlan?.Name} (ID: {unit.MasterPlanId.Value})"
@@ -951,26 +880,6 @@ namespace backend.Controllers
 
             _context.UnitToShifts.AddRange(newShiftLinks);
 
-            var oldStopTypeLinks = await _context
-                .UnitToStopTypes.Where(l => l.UnitId == unit.Id)
-                .ToListAsync();
-
-            _context.UnitToStopTypes.RemoveRange(oldStopTypeLinks);
-
-            var newStopTypeLinks = dto
-                .StopTypeIds.Select(
-                    (typeId, index) =>
-                        new UnitToStopType
-                        {
-                            UnitId = unit.Id,
-                            StopTypeId = typeId,
-                            Order = index,
-                        }
-                )
-                .ToList();
-
-            _context.UnitToStopTypes.AddRange(newStopTypeLinks);
-
             // Meta data.
             unit.UpdateDate = now;
             unit.UpdatedBy = updatedBy;
@@ -997,10 +906,6 @@ namespace backend.Controllers
                     .Select(x => x.CategoryId)
                     .ToList(),
                 ShiftIds = unit.UnitToShifts.OrderBy(x => x.Order).Select(x => x.ShiftId).ToList(),
-                StopTypeIds = unit
-                    .UnitToStopTypes.OrderBy(x => x.Order)
-                    .Select(x => x.StopTypeId)
-                    .ToList(),
                 ActiveShiftId = unit.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
 
                 // Meta data.
@@ -1044,18 +949,6 @@ namespace backend.Controllers
                     .DefaultIfEmpty("—")
             );
 
-            var stopTypes = await _context
-                .StopTypes.Where(st => dto.StopTypeIds.Contains(st.Id))
-                .ToListAsync();
-
-            var newStopTypes = string.Join(
-                "\n",
-                stopTypes
-                    .OrderBy(st => dto.StopTypeIds.IndexOf(st.Id))
-                    .Select(st => $"{st.Name} (ID: {st.Id})")
-                    .DefaultIfEmpty("—")
-            );
-
             var newValues = new Dictionary<string, object?>
             {
                 ["ObjectID"] = unit.Id,
@@ -1069,7 +962,6 @@ namespace backend.Controllers
                 ["UnitColumns"] = newUnitColumns,
                 ["Categories"] = newCategories,
                 ["Shifts"] = newShifts,
-                ["StopTypes"] = newStopTypes,
                 ["IsPlannable"] = unit.IsPlannable ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 ["MasterPlan"] = unit.MasterPlanId.HasValue
                     ? $"{unit.MasterPlan?.Name} (ID: {unit.MasterPlanId.Value})"

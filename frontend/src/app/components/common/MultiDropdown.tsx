@@ -164,6 +164,7 @@ const MultiDropdown = ({
             : undefined
         }
         onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
         <li role="option" aria-hidden="true" hidden></li>
@@ -174,7 +175,7 @@ const MultiDropdown = ({
               optionRefs.current[index] = el;
             }}
             tabIndex={0}
-            className={`${value.includes(opt.value) ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-(--slow) select-none hover:bg-(--accent-color)`}
+            className={`${value.includes(opt.value) ? "font-bold bg-[color-mix(in_srgb,var(--accent-color)_50%,transparent)]" : ""} cursor-pointer p-2 transition-colors duration-(--slow) select-none hover:bg-(--accent-color)`}
             role="option"
             onClick={(e) => {
               e.stopPropagation();

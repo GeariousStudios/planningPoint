@@ -30,8 +30,10 @@ import MenuDropdownAnchor from "@/app/components/common/MenuDropdown/MenuDropdow
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import ReportModal from "@/app/components/modals/report/ReportModal";
+import CancelValueModal from "@/app/components/modals/report/CancelValueModal";
 import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
 import { useHandbook } from "@/app/context/HandbookContext";
+import RichTextEditor from "@/app/components/richTextEditor/RichTextEditor";
 
 type ShiftChange = {
   id: number;
@@ -43,6 +45,16 @@ type ShiftChange = {
 
 const UnitClient = (props: any) => {
   const c = useClient(props);
+  // --- Update handbook ---
+  const { setHandbook } = useHandbook();
+
+  useEffect(() => {
+    if (!c.isReady) {
+      return;
+    }
+
+    setHandbook("Unit");
+  }, [c.isReady, setHandbook]);
 
   if (c.canShowLock) {
     return <Message icon="lock" content="lock" fullscreen />;
@@ -51,13 +63,6 @@ const UnitClient = (props: any) => {
     return <Message content="invalid" fullscreen />;
   }
   if (c.isReady) {
-    // --- Update handbook ---
-    const { setHandbook } = useHandbook();
-
-    useEffect(() => {
-      setHandbook("Unit");
-    }, []);
-
     return (
       <>
         {/* --- MODALS --- */}
@@ -70,6 +75,7 @@ const UnitClient = (props: any) => {
           unitId={c.parsedUnitId}
           selectedDate={c.selectedDate}
           selectedHour={c.reportHour}
+          unitCreationDate={c.unitCreationDate}
         />
 
         <ReportModal
@@ -83,6 +89,7 @@ const UnitClient = (props: any) => {
           reportId={Number(c.reportId)}
           selectedDate={c.reportDate}
           selectedHour={c.reportHour}
+          unitCreationDate={c.unitCreationDate}
         />
 
         <DeleteModal
@@ -112,6 +119,15 @@ const UnitClient = (props: any) => {
               ? c.t("Unit/Remove post message")
               : undefined
           }
+        />
+
+        <CancelValueModal
+          isOpen={c.cancelValueModalOpen}
+          onClose={() => c.closeCancelValueModal()}
+          onConfirm={() => {
+            c.setEditingCellToNull();
+            c.confirmCancelValueModal();
+          }}
         />
 
         {/* --- CONTENT --- */}
@@ -412,16 +428,19 @@ const UnitClient = (props: any) => {
                       <React.Fragment key={`head-${i}`}>
                         <th
                           className={`${thClass} ${
-                            c.unitColumnDataTypes[i] === "Text" &&
-                            c.unitColumnLargeColumnFlags[i]
-                              ? "min-w-[64ch]"
-                              : "min-w-[10ch]"
+                            c.unitColumnDataTypes[i] === "TextField"
+                              ? "min-w-[48ch]"
+                              : c.unitColumnDataTypes[i] === "Text" &&
+                                  c.unitColumnLargeColumnFlags[i]
+                                ? "min-w-[64ch]"
+                                : "min-w-[10ch]"
                           } whitespace-nowrap`}
                         >
                           {col}
                         </th>
 
-                        {c.unitColumnDataTypes[i] === "Number" &&
+                        {(c.unitColumnDataTypes[i] === "Number" ||
+                          c.unitColumnDataTypes[i] === "Decimal") &&
                           c.unitColumnCompareFlags[i] && (
                             <th
                               className={`${thClass} w-0 min-w-[10ch] whitespace-nowrap`}
@@ -513,7 +532,7 @@ const UnitClient = (props: any) => {
 
                               c.toggleRow(hour);
                             }}
-                            aria-label="Öppna/stäng"
+                            aria-label={c.t("Unit/Open or close")}
                             className={`${hour % 2 === 0 ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} group/row cursor-pointer transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)`}
                           >
                             {/* --- Standard <td>s --- */}
@@ -658,7 +677,8 @@ const UnitClient = (props: any) => {
                             {c.unitColumnNames.map((_, colIdx) => {
                               const columnId = c.unitColumnIds[colIdx];
                               const columnName = c.unitColumnNames[colIdx];
-                              const dataType = c.unitColumnDataTypes[colIdx];
+                              const dataType =
+                                c.getColumnDataTypeById(columnId);
                               const hasCompare =
                                 c.unitColumnCompareFlags[colIdx];
                               const compareLabel =
@@ -670,6 +690,9 @@ const UnitClient = (props: any) => {
                                   c.columnName === columnName,
                               );
 
+                              const isNumeric =
+                                dataType === "Number" || dataType === "Decimal";
+
                               const displayValue =
                                 dataType === "Boolean"
                                   ? cell?.value === true
@@ -677,26 +700,25 @@ const UnitClient = (props: any) => {
                                     : cell?.value === "false"
                                       ? c.t("Common/No")
                                       : ""
-                                  : (cell?.intValue ?? cell?.value ?? "");
+                                  : dataType === "Number"
+                                    ? (cell?.intValue ?? cell?.value ?? "")
+                                    : (cell?.value ?? cell?.intValue ?? "");
 
-                              const numericCurrent =
-                                dataType === "Number"
-                                  ? c.getNumericCellValue(cell)
-                                  : undefined;
+                              const numericCurrent = isNumeric
+                                ? c.getNumericCellValue(cell, dataType)
+                                : undefined;
 
-                              const prevCell =
-                                dataType === "Number"
-                                  ? c.unitCells.find(
-                                      (uc) =>
-                                        uc.hour === hour - 1 &&
-                                        uc.columnName === columnName,
-                                    )
-                                  : undefined;
+                              const prevCell = isNumeric
+                                ? c.unitCells.find(
+                                    (uc) =>
+                                      uc.hour === hour - 1 &&
+                                      uc.columnName === columnName,
+                                  )
+                                : undefined;
 
-                              const numericPrev =
-                                dataType === "Number"
-                                  ? c.getNumericCellValue(prevCell)
-                                  : undefined;
+                              const numericPrev = isNumeric
+                                ? c.getNumericCellValue(prevCell, dataType)
+                                : undefined;
 
                               const diff =
                                 numericCurrent != null && numericPrev != null
@@ -717,55 +739,158 @@ const UnitClient = (props: any) => {
                                           : ""
                                     } ${
                                       c.unitColumnDataTypes[colIdx] ===
-                                        "Text" &&
-                                      c.unitColumnLargeColumnFlags[colIdx]
-                                        ? "min-w-[28ch]"
-                                        : "min-w-[10ch]"
+                                      "TextField"
+                                        ? "min-w-[64ch]"
+                                        : c.unitColumnDataTypes[colIdx] ===
+                                              "Text" &&
+                                            c.unitColumnLargeColumnFlags[colIdx]
+                                          ? "min-w-[28ch]"
+                                          : "min-w-[10ch]"
                                     } group/cell break-normal!`}
                                   >
                                     <div className="flex gap-4">
                                       {c.editingCell?.hour === hour &&
                                       c.editingCell?.columnId === columnId ? (
-                                        <div className="-mx-2">
-                                          <Input
-                                            compact
-                                            focusOnMount
-                                            type={
-                                              dataType === "Number"
-                                                ? "number"
-                                                : "text"
+                                        dataType === "TextField" ? (
+                                          <div
+                                            className="flex w-full cursor-default flex-col gap-4 py-2"
+                                            tabIndex={-1}
+                                            onBlurCapture={
+                                              c.handleTextFieldFocusOut
                                             }
-                                            value={String(c.editingValue ?? "")}
-                                            onChange={(val) =>
-                                              c.setEditingValue(
-                                                dataType === "Number"
-                                                  ? val === ""
-                                                    ? ""
-                                                    : isNaN(Number(val))
-                                                      ? ""
-                                                      : Number(val)
-                                                  : val,
-                                              )
-                                            }
-                                            onBlur={() =>
-                                              c.setEditingCell(null)
-                                            }
-                                            onKeyDown={(e) => {
+                                            onKeyDownCapture={(
+                                              e: React.KeyboardEvent<HTMLDivElement>,
+                                            ) => {
                                               if (e.key === "Escape") {
                                                 e.stopPropagation();
-                                                c.setEditingCell(null);
-                                              } else if (e.key === "Enter") {
+                                                c.cancelEdit();
+                                              }
+
+                                              if (
+                                                e.key === "Enter" &&
+                                                (e.ctrlKey || e.metaKey)
+                                              ) {
                                                 e.preventDefault();
                                                 c.saveInlineEdit();
                                               }
                                             }}
-                                            min={0}
-                                            max={999999}
-                                          />
-                                        </div>
+                                          >
+                                            <div
+                                              className="rounded bg-(--bg-grid)"
+                                              onFocusCapture={(e) =>
+                                                c.rememberLastFocused(
+                                                  e.target as HTMLElement,
+                                                )
+                                              }
+                                              onMouseDownCapture={(e) =>
+                                                c.rememberLastFocused(
+                                                  e.target as HTMLElement,
+                                                )
+                                              }
+                                            >
+                                              <RichTextEditor
+                                                ref={c.inlineRteRef}
+                                                singleLine
+                                                onReady={() => {
+                                                  c.inlineRteRef.current?.setContent(
+                                                    String(
+                                                      c.editingValue ?? "",
+                                                    ),
+                                                  );
+                                                  c.setOriginalEditingValue(
+                                                    String(
+                                                      c.editingValue ?? "",
+                                                    ),
+                                                  );
+                                                }}
+                                                onChange={(html) => {
+                                                  c.setEditingValue(html);
+                                                }}
+                                                shouldAutoFocus
+                                              />
+                                            </div>
+
+                                            <button
+                                              className={`${buttonPrimaryClass}`}
+                                              onClick={c.saveInlineEdit}
+                                            >
+                                              {c.t("Modal/Save")}
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <div className="relative inline-flex w-full align-middle">
+                                            <span className="invisible whitespace-pre">
+                                              {String(
+                                                c.editingValue ??
+                                                  displayValue ??
+                                                  "",
+                                              ) || " "}
+                                            </span>
+
+                                            <div className="absolute inset-0 mt-1.25 flex items-center">
+                                              <Input
+                                                onFocus={(e) =>
+                                                  c.rememberLastFocused(
+                                                    e.currentTarget as unknown as HTMLElement,
+                                                  )
+                                                }
+                                                compact
+                                                focusOnMount
+                                                type={
+                                                  dataType === "Number"
+                                                    ? "number"
+                                                    : dataType === "Decimal"
+                                                      ? "decimal"
+                                                      : "text"
+                                                }
+                                                value={String(
+                                                  c.editingValue ?? "",
+                                                )}
+                                                onChange={(val) =>
+                                                  c.setEditingValue(
+                                                    dataType === "Number"
+                                                      ? val === ""
+                                                        ? ""
+                                                        : isNaN(Number(val))
+                                                          ? ""
+                                                          : Number(val)
+                                                      : val,
+                                                  )
+                                                }
+                                                onBlur={() => c.cancelEdit()}
+                                                onKeyDown={(e) => {
+                                                  if (e.key === "Escape") {
+                                                    e.stopPropagation();
+                                                    c.cancelEdit();
+                                                  } else if (
+                                                    e.key === "Enter"
+                                                  ) {
+                                                    e.preventDefault();
+                                                    c.saveInlineEdit();
+                                                  }
+                                                }}
+                                                min={0}
+                                                max={999999}
+                                                compactWithBorder
+                                                classNameAddition="!border-(--border-main) bg-(--bg-main) w-full !px-2"
+                                              />
+                                            </div>
+                                          </div>
+                                        )
                                       ) : (
                                         <>
-                                          {displayValue}
+                                          {dataType === "TextField" ? (
+                                            <div
+                                              className="w-full [overflow-wrap:anywhere]"
+                                              dangerouslySetInnerHTML={{
+                                                __html: String(
+                                                  displayValue ?? "",
+                                                ),
+                                              }}
+                                            />
+                                          ) : (
+                                            <>{displayValue}</>
+                                          )}
 
                                           <CustomTooltip
                                             content={`${!props.isReporter ? c.t("Common/No access") : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report this data") + c.t("Unit/Tooltip this hour") : c.t("Unit/No columns")}`}
@@ -780,15 +905,10 @@ const UnitClient = (props: any) => {
                                               className={`${iconButtonPrimaryClass} group invisible ml-auto group-hover/cell:visible`}
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                // toggleUnitCellModal(hour);
-                                                c.setEditingCell({
+                                                c.beginInlineEdit(
                                                   hour,
                                                   columnId,
-                                                });
-                                                c.setEditingValue(
-                                                  cell?.value ??
-                                                    cell?.intValue ??
-                                                    "",
+                                                  cell,
                                                 );
                                               }}
                                               disabled={
@@ -808,17 +928,19 @@ const UnitClient = (props: any) => {
                                     </div>
                                   </td>
 
-                                  {dataType === "Number" && hasCompare && (
-                                    <td
-                                      className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === c.unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
-                                    >
-                                      {numericPrev == null
-                                        ? "0"
-                                        : diff! >= 0
-                                          ? `${diff}`
-                                          : `0`}
-                                    </td>
-                                  )}
+                                  {(dataType === "Number" ||
+                                    dataType === "Decimal") &&
+                                    hasCompare && (
+                                      <td
+                                        className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === c.unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
+                                      >
+                                        {numericPrev == null
+                                          ? "0"
+                                          : diff! >= 0
+                                            ? `${diff}`
+                                            : `0`}
+                                      </td>
+                                    )}
                                 </React.Fragment>
                               );
                             })}
@@ -1317,7 +1439,7 @@ const UnitClient = (props: any) => {
                                           )}
                                         </div>
                                         <div
-                                          className="text-sm break-all"
+                                          className="text-sm [overflow-wrap:anywhere]"
                                           dangerouslySetInnerHTML={{
                                             __html: report.content,
                                           }}

@@ -280,8 +280,8 @@ const ShiftTeamModal = (props: Props) => {
       const dirty =
         name !== "" ||
         isHidden !== false ||
-        lightColorHex !== "" ||
-        darkColorHex !== "" ||
+        lightColorHex !== "#212121" ||
+        darkColorHex !== "#e0e0e0" ||
         reverseColor !== false;
 
       setIsDirty(dirty);

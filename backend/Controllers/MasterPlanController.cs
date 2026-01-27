@@ -1,7 +1,7 @@
-using System.Net.Mail;
 using System.Text.Json;
 using backend.Data;
 using backend.Dtos.MasterPlan;
+using backend.Dtos.OperationalPlan;
 using backend.Dtos.Unit;
 using backend.Hubs;
 using backend.Models;
@@ -67,6 +67,10 @@ namespace backend.Controllers
             [FromQuery] int[]? unitGroupIds = null,
             [FromQuery] int[]? unitIds = null,
             [FromQuery] int[]? fieldIds = null,
+            [FromQuery] int[]? operationalPlanIds = null,
+            [FromQuery] int[]? productIds = null,
+            [FromQuery] int[]? productGroupIds = null,
+            [FromQuery] int[]? plannedStopIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] bool? allowRemovingElements = null,
             [FromQuery] bool? allowImport = null,
@@ -82,7 +86,11 @@ namespace backend.Controllers
                 .Include(mp => mp.MasterPlanToMasterPlanFields)
                 .ThenInclude(mpf => mpf.MasterPlanField)
                 .Include(mp => mp.MasterPlanToMasterPlanElements)
-                .ThenInclude(mpe => mpe.MasterPlanElement);
+                .ThenInclude(mpe => mpe.MasterPlanElement)
+                .Include(mp => mp.OperationalPlans)
+                .Include(mp => mp.ProductToMasterPlans)
+                .Include(mp => mp.ProductGroupToMasterPlans)
+                .Include(mp => mp.PlannedStopToMasterPlans);
 
             if (isHidden.HasValue)
             {
@@ -105,16 +113,54 @@ namespace backend.Controllers
             }
 
             if (unitIds?.Any() == true)
+            {
                 query = query.Where(mp =>
                     _context.Units.Any(u => u.MasterPlanId == mp.Id && unitIds.Contains(u.Id))
                 );
+            }
 
             if (fieldIds?.Any() == true)
+            {
                 query = query.Where(mp =>
                     mp.MasterPlanToMasterPlanFields.Any(mpf =>
                         fieldIds.Contains(mpf.MasterPlanFieldId)
                     )
                 );
+            }
+
+            if (operationalPlanIds?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    mp.OperationalPlans.Any(op => operationalPlanIds.Contains(op.Id))
+                );
+            }
+
+            if (productIds?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    _context.ProductToMasterPlans.Any(x =>
+                        x.MasterPlanId == mp.Id && productIds.Contains(x.ProductId)
+                    )
+                );
+            }
+
+            if (productGroupIds?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    _context.ProductGroupToMasterPlans.Any(x =>
+                        x.MasterPlanId == mp.Id && productGroupIds.Contains(x.ProductGroupId)
+                    )
+                );
+            }
+
+            if (plannedStopIds?.Any() == true)
+            {
+                query = query.Where(mp =>
+                    _context.PlannedStopToMasterPlans.Any(x =>
+                        x.MasterPlanId == mp.Id && plannedStopIds.Contains(x.PlannedStopId)
+                    )
+                );
+            }
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -137,6 +183,9 @@ namespace backend.Controllers
                         _context.Units.Count(u => u.MasterPlanId == mp.Id)
                     )
                     : query.OrderBy(mp => _context.Units.Count(u => u.MasterPlanId == mp.Id)),
+                "operationalplancount" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.OperationalPlans.Count())
+                    : query.OrderBy(mp => mp.OperationalPlans.Count()),
                 "fieldcount" => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.MasterPlanToMasterPlanFields.Count)
                     : query.OrderBy(mp => mp.MasterPlanToMasterPlanFields.Count),
@@ -149,6 +198,15 @@ namespace backend.Controllers
                 "allowimport" => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.AllowImport)
                     : query.OrderBy(mp => mp.AllowImport),
+                "productcount" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.ProductToMasterPlans.Count)
+                    : query.OrderBy(mp => mp.ProductToMasterPlans.Count),
+                "productgroupcount" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.ProductGroupToMasterPlans.Count)
+                    : query.OrderBy(mp => mp.ProductToMasterPlans.Count),
+                "plannedstopcount" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.PlannedStopToMasterPlans.Count)
+                    : query.OrderBy(mp => mp.PlannedStopToMasterPlans.Count),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.Id)
                     : query.OrderBy(mp => mp.Id),
@@ -189,6 +247,12 @@ namespace backend.Controllers
                 .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
 
+            var operationalPlanCount = await _context
+                .OperationalPlans.Where(op => op.MasterPlanId != null)
+                .GroupBy(op => op.MasterPlanId!.Value)
+                .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
+
             var fieldCount = await _context
                 .MasterPlanToMasterPlanFields.GroupBy(mpf => mpf.MasterPlanFieldId)
                 .Select(g => new
@@ -197,6 +261,48 @@ namespace backend.Controllers
                     Count = g.Select(mpf => mpf.MasterPlanId).Distinct().Count(),
                 })
                 .ToDictionaryAsync(x => x.FieldId, x => x.Count);
+
+            var productCount = await _context
+                .ProductToMasterPlans.GroupBy(x => x.MasterPlanId)
+                .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
+
+            var productGroupCount = await _context
+                .ProductGroupToMasterPlans.GroupBy(x => x.MasterPlanId)
+                .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
+
+            var plannedStopCount = await _context
+                .PlannedStopToMasterPlans.GroupBy(x => x.MasterPlanId)
+                .Select(g => new { MasterPlanId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
+
+            var productIdsCount = await _context
+                .ProductToMasterPlans.GroupBy(x => x.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    Count = g.Select(x => x.MasterPlanId).Distinct().Count(),
+                })
+                .ToDictionaryAsync(x => x.ProductId, x => x.Count);
+
+            var productGroupIdsCount = await _context
+                .ProductGroupToMasterPlans.GroupBy(x => x.ProductGroupId)
+                .Select(g => new
+                {
+                    ProductGroupId = g.Key,
+                    Count = g.Select(x => x.MasterPlanId).Distinct().Count(),
+                })
+                .ToDictionaryAsync(x => x.ProductGroupId, x => x.Count);
+
+            var plannedStopIdsCount = await _context
+                .PlannedStopToMasterPlans.GroupBy(x => x.PlannedStopId)
+                .Select(g => new
+                {
+                    PlannedStopId = g.Key,
+                    Count = g.Select(x => x.MasterPlanId).Distinct().Count(),
+                })
+                .ToDictionaryAsync(x => x.PlannedStopId, x => x.Count);
 
             var masterPlans = query
                 .Skip((page - 1) * pageSize)
@@ -213,6 +319,13 @@ namespace backend.Controllers
                             Id = u.Id,
                             Name = u.Name,
                             UnitGroupName = u.UnitGroup != null ? u.UnitGroup.Name : "",
+                        })
+                        .ToList(),
+                    OperationalPlans = t
+                        .OperationalPlans.Select(op => new OperationalPlanDto
+                        {
+                            Id = op.Id,
+                            Name = op.Name,
                         })
                         .ToList(),
                     IsHidden = t.IsHidden,
@@ -237,6 +350,7 @@ namespace backend.Controllers
                         .Select(mpe => new MasterPlanElementDto
                         {
                             Id = mpe.MasterPlanElement.Id,
+                            Status = mpe.MasterPlanElement.Status,
                             Values = t
                                 .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                                 .Select(mpf => new MasterPlanElementValueDto
@@ -257,6 +371,12 @@ namespace backend.Controllers
                         .MasterPlanToMasterPlanFields.Where(x => x.IsGroupKey)
                         .Select(x => (int?)x.MasterPlanFieldId)
                         .FirstOrDefault(),
+                    Products = new(),
+                    ProductCount = productCount.TryGetValue(t.Id, out var pc) ? pc : 0,
+                    ProductGroups = new(),
+                    ProductGroupCount = productGroupCount.TryGetValue(t.Id, out var pgc) ? pgc : 0,
+                    PlannedStops = new(),
+                    PlannedStopCount = plannedStopCount.TryGetValue(t.Id, out var psc) ? psc : 0,
 
                     // Meta data.
                     CreationDate = t.CreationDate,
@@ -282,7 +402,14 @@ namespace backend.Controllers
                     allowImportCount,
                     unitGroupCount,
                     unitCount,
+                    operationalPlanCount,
                     fieldCount,
+                    productCount,
+                    productGroupCount,
+                    plannedStopCount,
+                    productIdsCount,
+                    productGroupIdsCount,
+                    plannedStopIdsCount,
                 },
             };
 
@@ -329,6 +456,7 @@ namespace backend.Controllers
                 ReplaceOnImport = masterPlan.ReplaceOnImport,
                 UnitGroupId = masterPlan.UnitGroupId,
                 UnitGroupName = masterPlan.UnitGroup.Name ?? unknownGroup,
+                SkipRowOne = masterPlan.SkipRowOne,
                 Fields = masterPlan
                     .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                     .Select(mpf => new MasterPlanFieldDto
@@ -338,6 +466,8 @@ namespace backend.Controllers
                         DataType = mpf.MasterPlanField.DataType,
                         Alignment = mpf.MasterPlanField.Alignment,
                         IsHidden = mpf.MasterPlanField.IsHidden,
+                        LocalIncremental = mpf.MasterPlanField.LocalIncremental,
+                        GlobalIncremental = mpf.MasterPlanField.GlobalIncremental,
                     })
                     .ToList(),
                 Elements = masterPlan
@@ -345,6 +475,7 @@ namespace backend.Controllers
                     .Select(mpe => new MasterPlanElementDto
                     {
                         Id = mpe.MasterPlanElement.Id,
+                        Status = mpe.MasterPlanElement.Status,
                         GroupId = mpe.MasterPlanElement.GroupId,
                         StruckElement = mpe.MasterPlanElement.StruckElement,
                         CurrentElement = mpe.MasterPlanElement.CurrentElement,
@@ -407,7 +538,11 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("MasterPlan/NotFound", lang) });
             }
 
-            var isInUse = await _context.Units.AnyAsync(u => u.MasterPlanId == id);
+            var isInUse =
+                await _context.Units.AnyAsync(u => u.MasterPlanId == id)
+                || await _context.OperationalPlans.AnyAsync(op => op.MasterPlanId == id)
+                || await _context.ProductToMasterPlans.AnyAsync(x => x.MasterPlanId == id)
+                || await _context.PlannedStopToMasterPlans.AnyAsync(x => x.MasterPlanId == id);
 
             if (isInUse)
             {
@@ -510,7 +645,7 @@ namespace backend.Controllers
                 t.Name.ToLower() == dto.Name.ToLower()
             );
 
-            if (existingMasterPlan != null)
+            if (existingMasterPlan != null && existingMasterPlan.UnitGroupId == unitGroup.Id)
             {
                 return BadRequest(
                     new { message = await _t.GetAsync("MasterPlan/NameTaken", lang) }
@@ -594,6 +729,8 @@ namespace backend.Controllers
                         DataType = x.MasterPlanField.DataType,
                         Alignment = x.MasterPlanField.Alignment,
                         IsHidden = x.MasterPlanField.IsHidden,
+                        LocalIncremental = x.MasterPlanField.LocalIncremental,
+                        GlobalIncremental = x.MasterPlanField.GlobalIncremental,
                     })
                     .ToList(),
 
@@ -786,6 +923,8 @@ namespace backend.Controllers
                         DataType = x.MasterPlanField.DataType,
                         Alignment = x.MasterPlanField.Alignment,
                         IsHidden = x.MasterPlanField.IsHidden,
+                        LocalIncremental = x.MasterPlanField.LocalIncremental,
+                        GlobalIncremental = x.MasterPlanField.GlobalIncremental,
                     })
                     .ToList(),
 
@@ -1033,6 +1172,123 @@ namespace backend.Controllers
                     IsCheckedOutByMe = masterPlan.CheckedOutBy == username,
                 }
             );
+        }
+
+        [HttpGet("{id}/revisions")]
+        public async Task<IActionResult> GetRevisions(int id)
+        {
+            var lang = await GetLangAsync();
+            var exists = await _context.MasterPlans.AnyAsync(x => x.Id == id);
+
+            if (!exists)
+            {
+                return NotFound(new { message = await _t.GetAsync("MasterPlan/NotFound", lang) });
+            }
+
+            var items = await _context
+                .MasterPlanRevisions.AsNoTracking()
+                .Where(r => r.MasterPlanId == id)
+                .OrderByDescending(r => r.RevisionNumber)
+                .Select(r => new MasterPlanRevisionDto
+                {
+                    Id = r.Id,
+                    RevisionNumber = r.RevisionNumber,
+                    Label = "R-" + r.RevisionNumber,
+                    ArchivedAt = r.ArchivedAt,
+                    ArchivedBy = r.ArchivedBy,
+                })
+                .ToListAsync();
+
+            return Ok(new { items });
+        }
+
+        [HttpGet("{id}/revisions/{revisionId}")]
+        public async Task<IActionResult> GetRevision(int id, int revisionId)
+        {
+            var lang = await GetLangAsync();
+
+            var revision = await _context
+                .MasterPlanRevisions.AsNoTracking()
+                .Where(r => r.MasterPlanId == id && r.Id == revisionId)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.RevisionNumber,
+                    r.ArchivedAt,
+                    r.ArchivedBy,
+                    r.SnapshotJson,
+                })
+                .FirstOrDefaultAsync();
+
+            if (revision == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("MasterPlan/NotFound", lang) });
+            }
+
+            var dto = JsonSerializer.Deserialize<MasterPlanDto>(revision.SnapshotJson);
+
+            return Ok(
+                new
+                {
+                    revisionId = revision.Id,
+                    revisionNumber = revision.RevisionNumber,
+                    label = "R-" + revision.RevisionNumber,
+                    archivedAt = revision.ArchivedAt,
+                    archivedBy = revision.ArchivedBy,
+                    masterPlan = dto,
+                }
+            );
+        }
+
+        [HttpGet("{id}/products")]
+        public async Task<IActionResult> GetProducts(int id)
+        {
+            var exists = await _context.MasterPlans.AnyAsync(x => x.Id == id);
+            if (!exists)
+                return NotFound();
+
+            var items = await _context
+                .ProductToMasterPlans.AsNoTracking()
+                .Where(x => x.MasterPlanId == id)
+                .Select(x => new { id = x.ProductId, name = x.Product.Name })
+                .OrderBy(x => x.name)
+                .ToListAsync();
+
+            return Ok(new { items });
+        }
+
+        [HttpGet("{id}/product-groups")]
+        public async Task<IActionResult> GetProductGroups(int id)
+        {
+            var exists = await _context.MasterPlans.AnyAsync(x => x.Id == id);
+            if (!exists)
+                return NotFound();
+
+            var items = await _context
+                .ProductGroupToMasterPlans.AsNoTracking()
+                .Where(x => x.MasterPlanId == id)
+                .Select(x => new { id = x.ProductGroupId, name = x.ProductGroup.Name })
+                .OrderBy(x => x.name)
+                .ToListAsync();
+
+            return Ok(new { items });
+        }
+
+        [HttpGet("{id}/planned-stops")]
+        public async Task<IActionResult> GetPlannedStops(int id)
+        {
+            var exists = await _context.MasterPlans.AnyAsync(x => x.Id == id);
+            if (!exists)
+                return NotFound();
+
+            var items = await _context
+                .PlannedStopToMasterPlans.AsNoTracking()
+                .Where(x => x.MasterPlanId == id)
+                .Select(x => new { id = x.PlannedStopId, name = x.PlannedStop.Name })
+                .OrderBy(x => x.name)
+                .ToListAsync();
+
+            return Ok(new { items });
         }
     }
 }

@@ -60,6 +60,8 @@ export const Filter = ({
     divClassName += "2xl:flex";
   } else if (breakpoint === "3xl") {
     divClassName += "3xl:flex";
+  } else if (breakpoint === "4xl") {
+    divClassName += "4xl:flex";
   }
 
   return (
@@ -95,7 +97,7 @@ export const Filter = ({
               onClick={() => item.setShow(!item.show)}
               className="group flex cursor-pointer items-center justify-between gap-4"
             >
-              <div className="break-all">
+              <div className="[overflow-wrap:anywhere]">
                 <Input
                   type="checkbox"
                   checked={item.show}
@@ -103,7 +105,7 @@ export const Filter = ({
                   readOnly
                 />
               </div>
-              <span>({item.count ?? 0})</span>
+              <span className="wrap-normal">({item.count ?? 0})</span>
             </div>
           ))}
         </div>
@@ -157,7 +159,7 @@ export const AllFilter = ({
                 onClick={() => item.setShow(!item.show)}
                 className={`${index === filterData.length - 1 ? "mb-4" : ""} group flex cursor-pointer items-center justify-between gap-4 py-4`}
               >
-                <div className="break-all">
+                <div className="[overflow-wrap:anywhere]">
                   <Input
                     type="checkbox"
                     checked={item.show}
@@ -308,7 +310,7 @@ export const TdCell = ({
   return (
     <td className={`${tdClass} ${classNameAddition ? classNameAddition : ""}`}>
       <div
-        className={`${childClassNameAddition ? childClassNameAddition : ""} flex truncate overflow-hidden text-ellipsis`}
+        className={`${childClassNameAddition ? childClassNameAddition : ""} flex overflow-hidden text-ellipsis`}
       >
         {children}
       </div>

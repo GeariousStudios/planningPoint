@@ -451,7 +451,7 @@ const ShiftsClient = (props: Props) => {
       labelAsc: t("Shifts/visible shifts"),
       labelDesc: t("Shifts/hidden shifts"),
       classNameAddition: "w-[100px] min-w-[100px]",
-      childClassNameAddition: "w-[72px] min-w-[72px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: ShiftItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}

@@ -26,6 +26,7 @@ type InputProps = {
   minLength?: number;
   pattern?: string;
   inChip?: boolean;
+  inGrid?: boolean;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   min?: string | number;
   max?: string | number;
@@ -63,6 +64,7 @@ const Input = ({
   maxLength,
   pattern,
   inChip = false,
+  inGrid = false,
   inputMode,
   min,
   max,
@@ -88,6 +90,9 @@ const Input = ({
   const isDisabled = id === "disabled";
 
   const [showPassword, setShowPassword] = useState(false);
+
+  const isDecimal = type === "decimal";
+  const isNumber = type === "number" || isDecimal;
 
   useEffect(() => {
     if (focusOnMount && inputRef.current) {
@@ -120,7 +125,13 @@ const Input = ({
 
             inputRef.current = el;
           }}
-          type={type === "password" && showPassword ? "text" : type}
+          type={
+            isNumber
+              ? "number"
+              : type === "password" && showPassword
+                ? "text"
+                : type
+          }
           id={id}
           name={name ?? id}
           placeholder={
@@ -132,18 +143,82 @@ const Input = ({
           checked={isCheckbox || isRadio ? checked : undefined}
           onChange={(e) => {
             if (type === "number") {
-              const clean = e.target.value
-                .replace(/^0+(?!$)/, "")
-                .replace(/[^\d]/g, "");
+              const maxNum =
+                typeof max === "number"
+                  ? max
+                  : typeof max === "string"
+                    ? Number(max)
+                    : undefined;
 
-              if (clean === "") {
-                onChange?.("");
+              const minNum =
+                typeof min === "number"
+                  ? min
+                  : typeof min === "string"
+                    ? Number(min)
+                    : undefined;
+
+              const allowNegative =
+                typeof minNum === "number" &&
+                !Number.isNaN(minNum) &&
+                minNum < 0;
+
+              let raw = e.target.value;
+
+              if (isDecimal) {
+                raw = raw.replace(/,/g, ".");
+                raw = raw.replace(allowNegative ? /[^\d.\-]/g : /[^\d.]/g, "");
+
+                if (allowNegative) {
+                  raw = raw.startsWith("-")
+                    ? "-" + raw.slice(1).replace(/-/g, "")
+                    : raw.replace(/-/g, "");
+                } else {
+                  raw = raw.replace(/-/g, "");
+                }
+
+                const firstDot = raw.indexOf(".");
+                if (firstDot !== -1) {
+                  raw =
+                    raw.slice(0, firstDot + 1) +
+                    raw.slice(firstDot + 1).replace(/\./g, "");
+                }
+
+                if (raw === "" || raw === "-" || raw === "." || raw === "-.") {
+                  onChange?.(raw);
+                  return;
+                }
               } else {
-                const num = Number(clean);
-                const numericValue =
-                  typeof max === "number" ? Math.min(num, max) : num;
-                onChange?.(numericValue.toString());
+                raw = raw.replace(allowNegative ? /[^\d\-]/g : /[^\d]/g, "");
+
+                if (allowNegative) {
+                  raw = raw.startsWith("-")
+                    ? "-" + raw.slice(1).replace(/-/g, "")
+                    : raw.replace(/-/g, "");
+                } else {
+                  raw = raw.replace(/-/g, "");
+                }
+
+                if (raw === "" || raw === "-") {
+                  onChange?.(raw);
+                  return;
+                }
               }
+
+              const num = Number(raw);
+              if (Number.isNaN(num)) {
+                onChange?.("");
+                return;
+              }
+
+              let clamped = num;
+
+              if (typeof minNum === "number" && !Number.isNaN(minNum))
+                clamped = Math.max(clamped, minNum);
+
+              if (typeof maxNum === "number" && !Number.isNaN(maxNum))
+                clamped = Math.min(clamped, maxNum);
+
+              onChange?.(clamped.toString());
             } else {
               let v = e.target.value;
 
@@ -178,7 +253,7 @@ const Input = ({
           onBlur={onBlur}
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `accent-(--accent-color) relative cursor-pointer appearance-none` : `duration-medium flex ${compact ? "h-[24px] border-0! p-0!" : "h-[40px]"} ${compactWithBorder ? "h-[28px]!" : "h-[40px]"} caret-(--accent-color) w-full`} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${
+          className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-(--accent-color)` : `duration-medium flex ${compact ? "h-[24px] border-0! p-0!" : "h-[40px]"} ${compactWithBorder ? "h-[28px]!" : "h-[40px]"} w-full caret-(--accent-color)`} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${
             isColor ? "cursor-pointer p-1" : "p-2"
           } ${classNameAddition}`}
           readOnly={readOnly}
@@ -190,6 +265,13 @@ const Input = ({
                 e.preventDefault();
               }
             }
+
+            if (type === "decimal") {
+              const blocked = ["e", "E", "+", "-"];
+              if (blocked.includes(e.key)) {
+                e.preventDefault();
+              }
+              }
             onKeyDown?.(e);
           }}
           min={min}
@@ -200,7 +282,7 @@ const Input = ({
         />
 
         {icon && (
-          <div className="peer-focus:text-(--accent-color) pointer-events-none absolute top-1/2 left-4 flex h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:opacity-100">
+          <div className="pointer-events-none absolute top-1/2 left-4 flex h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-(--accent-color) peer-focus:opacity-100">
             {icon}
           </div>
         )}
@@ -211,7 +293,7 @@ const Input = ({
               type="button"
               tabIndex={-1}
               onClick={() => setShowPassword((prev) => !prev)}
-              className="duration-(--fast) hover:text-(--accent-color) flex cursor-pointer transition-colors"
+              className="flex cursor-pointer transition-colors duration-(--fast) hover:text-(--accent-color)"
             >
               {showPassword ? (
                 <EyeSlashIcon className="h-4 w-4" />
@@ -226,7 +308,7 @@ const Input = ({
           (!isCheckbox && !isRadio ? (
             <label
               htmlFor={id}
-              className={`${isDate || isTime || isDateTime ? "top-0" : "top-[60%]"} ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : "bg-(--bg-main)"} duration-(--slow) pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] select-none`}
+              className={`${isDate || isTime || isDateTime ? "top-0" : "top-[60%]"} ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : inGrid ? "bg-(--bg-grid)" : "bg-(--bg-main)"} pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-(--slow) select-none`}
             >
               {label}
               {(required || showAsterix) && <span className="pr-2" />}
@@ -247,7 +329,7 @@ const Input = ({
                 >
                   {label}
                 </span>
-                <div className="bg-(--accent-color) duration-(--fast) absolute bottom-0 left-0 h-[2px] w-0 rounded-full transition-all group-hover:w-full" />
+                <div className="absolute bottom-0 left-0 h-[2px] w-0 rounded-full bg-(--accent-color) transition-all duration-(--fast) group-hover:w-full" />
               </span>
             </label>
           ))}

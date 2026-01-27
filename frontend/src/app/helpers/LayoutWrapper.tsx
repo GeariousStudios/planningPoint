@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "../components/navbar/Navbar";
 import Topbar from "../components/topbar/Topbar";
 import { usePathname } from "next/navigation";
@@ -10,11 +10,19 @@ type Props = {
   children: ReactNode;
 };
 
+type BreadcrumbChild = {
+  label: string;
+  href: string;
+  clickable: boolean;
+  isActive: boolean;
+};
+
 type Breadcrumb = {
   label: string;
   href: string;
   clickable: boolean;
   isActive: boolean;
+  children?: BreadcrumbChild[];
 };
 
 const sameCrumbs = (a?: Breadcrumb[], b?: Breadcrumb[]) =>
@@ -22,6 +30,9 @@ const sameCrumbs = (a?: Breadcrumb[], b?: Breadcrumb[]) =>
 
 const LayoutWrapper = (props: Props) => {
   const t = useTranslations();
+
+  // --- REFS ---
+  const lastPathRef = useRef<string>("");
 
   // --- STATES ---
   const [hasScrollbar, setHasScrollbar] = useState(false);
@@ -31,6 +42,7 @@ const LayoutWrapper = (props: Props) => {
     }
     return false;
   });
+  const [isEditingFavourites, setIsEditingFavourites] = useState(false);
 
   const [unitName, setUnitName] = useState<string | null>(null);
   const [unitGroupId, setUnitGroupId] = useState<string | null>(null);
@@ -45,16 +57,12 @@ const LayoutWrapper = (props: Props) => {
   const pathname = usePathname();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const parts = pathname.split("/").filter(Boolean);
-  const isUnitsPath =
-    parts.length >= 3 && parts[0] === "report" && parts[1] === "units";
-  const isMasterPlansPath =
-    parts.length >= 3 && parts[0] === "plan" && parts[1] === "master-plans";
-  const [breadcrumbsLoading, setBreadcrumbsLoading] = useState(false);
+  const [breadcrumbsLoading, setBreadcrumbsLoading] = useState(true);
+  const locale = useLocale();
 
-  // --- IF UNIT OR MASTER PLAN, GET UNIT/MASTER PLAN/GROUP INFO ---
+  // --- IF UNIT, MASTER PLAN OR OPERATIONAL PLAN, GET UNIT/MASTER PLAN/OPERATIONAL PLAN/GROUP INFO ---
   useEffect(() => {
     if (parts.length >= 3 && parts[0] === "report" && parts[1] === "units") {
-      const groupId = parts[2];
       const unitId = parts[3];
 
       fetch(`${apiUrl}/unit/fetch/${unitId}`)
@@ -82,10 +90,36 @@ const LayoutWrapper = (props: Props) => {
       parts[0] === "plan" &&
       parts[1] === "master-plans"
     ) {
-      const groupId = parts[2];
       const masterPlanId = parts[3];
 
       fetch(`${apiUrl}/master-plan/fetch/${masterPlanId}`)
+        .then((res) => res.json())
+        .then((unit) => {
+          if (unit?.name) {
+            setUnitName(unit.name);
+          }
+
+          if (unit?.unitGroupId) {
+            setUnitGroupId(String(unit.unitGroupId));
+
+            fetch(`${apiUrl}/unit-group/fetch/${unit.unitGroupId}`)
+              .then((res) => res.json())
+              .then((group) => {
+                if (group?.name) {
+                  setUnitGroupName(group.name);
+                }
+              })
+              .catch(() => {});
+          }
+        });
+    } else if (
+      parts.length >= 3 &&
+      parts[0] === "plan" &&
+      parts[1] === "operational-plans"
+    ) {
+      const operationalPlanId = parts[3];
+
+      fetch(`${apiUrl}/operational-plan/fetch/${operationalPlanId}`)
         .then((res) => res.json())
         .then((unit) => {
           if (unit?.name) {
@@ -118,20 +152,20 @@ const LayoutWrapper = (props: Props) => {
   const breadcrumbTranslation = useMemo<CrumbMap>(
     () => ({
       // --- General ---
-      manage: { label: t("Common/Manage"), clickable: false },
+      manage: { label: t("Common/Manage"), clickable: true },
       "audit-trail": { label: t("Navbar/Audit trail"), clickable: false },
 
       // --- Report ---
-      report: { label: t("Navbar/Report"), clickable: false },
+      report: { label: t("Navbar/Report"), clickable: true },
       unit: { label: t("Common/Units"), clickable: false },
 
       // --- Plan ---
-      plan: { label: t("Navbar/Plan"), clickable: false },
-      "master-plans": { label: t("Common/Master plans"), clickable: false },
-      "import-rules": { label: t("ImportRules/Import rules"), clickable: false },
-      "master-plan-fields": {
-        label: t("Common/Master plan fields"),
-        clickable: false,
+      plan: { label: t("Navbar/Plan"), clickable: true },
+      "admin/manage/plan": { label: t("Navbar/Plan"), clickable: false },
+      "master-plans": { label: t("Common/Master plans"), clickable: true },
+      "operational-plans": {
+        label: t("Common/Operational plans"),
+        clickable: true,
       },
 
       // --- Admin ---
@@ -139,30 +173,90 @@ const LayoutWrapper = (props: Props) => {
 
       "unit-groups": {
         label: t("Common/Groups"),
-        clickable: false,
+        clickable: true,
       },
-      units: { label: t("Common/Units"), clickable: false },
-      categories: { label: t("Common/Categories"), clickable: false },
+      units: { label: t("Common/Units"), clickable: true },
+      categories: { label: t("Common/Categories"), clickable: true },
       "unit-columns": {
         label: t("Common/Columns"),
-        clickable: false,
+        clickable: true,
       },
 
       news: { label: t("Common/News"), clickable: false },
-      "news-types": { label: t("Common/News types"), clickable: false },
+      "news-types": { label: t("Common/News types"), clickable: true },
 
-      shifts: { label: t("Common/Shifts"), clickable: false },
-      "shift-teams": { label: t("Common/Shift teams"), clickable: false },
+      shifts: { label: t("Common/Shifts"), clickable: true },
+      "shift-teams": { label: t("Common/Shift teams"), clickable: true },
 
-      "planned-stops": { label: t("Common/Planned stops"), clickable: false },
-      "stop-types": { label: t("Common/Stop types"), clickable: false },
+      products: { label: t("Common/Products"), clickable: true },
+      "planned-stops": { label: t("Common/Planned stops"), clickable: true },
+      "import-rules": { label: t("ImportRules/Import rules"), clickable: true },
+      "master-plan-fields": {
+        label: t("Common/Master plan fields"),
+        clickable: true,
+      },
+      "product-groups": { label: t("Common/Product groups"), clickable: true },
 
       // --- Developer ---
       developer: { label: t("Common/Developer"), clickable: false },
-      users: { label: t("Common/Users"), clickable: false },
+      users: { label: t("Common/Users"), clickable: true },
     }),
     [t],
   );
+
+  // --- BREADCRUMB CHILDREN MAP ---
+  const breadcrumbChildrenMap = useMemo<Record<string, string[]>>(
+    () => ({
+      "admin/manage/shifts": ["admin/manage/shifts/shift-teams"],
+      "admin/manage/units": [
+        "admin/manage/units/unit-groups",
+        "admin/manage/units/unit-columns",
+        "admin/manage/units/categories",
+      ],
+      "admin/manage/plan/master-plans": [
+        "admin/manage/plan/master-plans/master-plan-fields",
+        "admin/manage/plan/master-plans/import-rules",
+      ],
+      "admin/manage/plan/products": [
+        "admin/manage/plan/products/product-groups",
+      ],
+    }),
+    [],
+  );
+
+  const normalizePath = (p: string) => {
+    let x = (p || "/").toLowerCase();
+
+    const loc = `/${locale.toLowerCase()}`;
+    if (x === loc) {
+      x = "/";
+    } else if (x.startsWith(loc + "/")) {
+      x = x.slice(loc.length);
+    }
+
+    if (!x.startsWith("/")) {
+      x = "/" + x;
+    }
+
+    if (x.length > 1 && x.endsWith("/")) {
+      x = x.slice(0, -1);
+    }
+
+    return x;
+  };
+
+  const getLabelForPath = (pathKey: string, fallbackPart?: string) => {
+    const translation =
+      breadcrumbTranslation[pathKey.toLowerCase()] ??
+      breadcrumbTranslation[(fallbackPart ?? "").toLowerCase()];
+    if (translation?.label) {
+      return translation.label;
+    }
+    if (fallbackPart) {
+      return fallbackPart.charAt(0).toUpperCase() + fallbackPart.slice(1);
+    }
+    return pathKey;
+  };
 
   // --- CREATE BREADCRUMBS ---
   const createBreadcrumbs = (
@@ -189,10 +283,20 @@ const LayoutWrapper = (props: Props) => {
     const localIsMasterPlansPath =
       filteredParts[0] === "plan" && filteredParts[1] === "master-plans";
 
+    const localIsOperationalPlansPath =
+      filteredParts[0] === "plan" && filteredParts[1] === "operational-plans";
+
     for (let index = 0; index < filteredParts.length; index++) {
       const part = filteredParts[index];
       const key = part.toLowerCase();
-      const translation = breadcrumbTranslation[key];
+      const prefixKey = filteredParts
+        .slice(0, index + 1)
+        .join("/")
+        .toLowerCase();
+
+      const translation =
+        breadcrumbTranslation[prefixKey] ?? breadcrumbTranslation[key];
+
       const isLast = index === filteredParts.length - 1;
 
       // --- Special cases ---
@@ -206,17 +310,32 @@ const LayoutWrapper = (props: Props) => {
           (unitGroupName || unitGroupId)) ||
         (localIsMasterPlansPath && index === 3 && unitName);
 
+      const isOperationalPlansSpecialKnown =
+        (localIsOperationalPlansPath &&
+          index === 2 &&
+          (unitGroupName || unitGroupId)) ||
+        (localIsOperationalPlansPath && index === 3 && unitName);
+
       // --- Don't continue if invalid segment ---
-      if (!translation && !isUnitsSpecialKnown && !isMasterPlansSpecialKnown) {
+      if (
+        !translation &&
+        !isUnitsSpecialKnown &&
+        !isMasterPlansSpecialKnown &&
+        !isOperationalPlansSpecialKnown
+      ) {
         break;
       }
 
       const label =
-        (localIsUnitsPath || localIsMasterPlansPath) &&
+        (localIsUnitsPath ||
+          localIsMasterPlansPath ||
+          localIsOperationalPlansPath) &&
         index === 2 &&
         (unitGroupName || unitGroupId)
           ? (unitGroupName ?? unitGroupId!)
-          : (localIsUnitsPath || localIsMasterPlansPath) &&
+          : (localIsUnitsPath ||
+                localIsMasterPlansPath ||
+                localIsOperationalPlansPath) &&
               index === 3 &&
               unitName
             ? unitName!
@@ -232,9 +351,25 @@ const LayoutWrapper = (props: Props) => {
           ? "/report/units"
           : localIsMasterPlansPath && index === 1
             ? "/plan/master-plans"
-            : "/" + filteredParts.slice(0, index + 1).join("/");
+            : localIsOperationalPlansPath && index === 1
+              ? "/plan/operational-plans"
+              : "/" + filteredParts.slice(0, index + 1).join("/");
 
-      crumbs.push({ label, href, clickable, isActive: isLast });
+      const childKeys = breadcrumbChildrenMap[prefixKey] ?? [];
+      const children =
+        childKeys.length > 0
+          ? childKeys.map((k) => {
+              const href = "/" + k;
+              return {
+                label: getLabelForPath(k, k.split("/").at(-1)),
+                href,
+                clickable: true,
+                isActive: normalizePath(pathname) === normalizePath(href),
+              };
+            })
+          : undefined;
+
+      crumbs.push({ label, href, clickable, isActive: isLast, children });
     }
 
     // --- Invalid page if invalid href ---
@@ -254,6 +389,12 @@ const LayoutWrapper = (props: Props) => {
 
   useEffect(() => {
     let isMounted = true;
+
+    if (lastPathRef.current !== pathname) {
+      lastPathRef.current = pathname;
+      setBreadcrumbsLoading(true);
+    }
+
     setBreadcrumbsReady(false);
 
     const localParts = pathname.split("/").filter(Boolean);
@@ -267,7 +408,16 @@ const LayoutWrapper = (props: Props) => {
       localParts[0] === "plan" &&
       localParts[1] === "master-plans";
 
-    if (!localIsUnitsPath && !localIsMasterPlansPath) {
+    const localIsOperationalPlansPath =
+      localParts.length >= 3 &&
+      localParts[0] === "plan" &&
+      localParts[1] === "operational-plans";
+
+    if (
+      !localIsUnitsPath &&
+      !localIsMasterPlansPath &&
+      !localIsOperationalPlansPath
+    ) {
       const next = createBreadcrumbs(pathname, {
         unitName,
         unitGroupId,
@@ -277,6 +427,7 @@ const LayoutWrapper = (props: Props) => {
       if (isMounted) {
         setBreadcrumbs(next);
         setBreadcrumbsReady(true);
+        setBreadcrumbsLoading(false);
       }
       return () => {
         isMounted = false;
@@ -296,7 +447,9 @@ const LayoutWrapper = (props: Props) => {
       ? fetch(
           localIsUnitsPath
             ? `${apiUrl}/unit/fetch/${entityId}`
-            : `${apiUrl}/master-plan/fetch/${entityId}`,
+            : localIsMasterPlansPath
+              ? `${apiUrl}/master-plan/fetch/${entityId}`
+              : `${apiUrl}/operational-plan/fetch/${entityId}`,
         )
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null)
@@ -307,24 +460,63 @@ const LayoutWrapper = (props: Props) => {
         return;
       }
 
-      const names = {
-        unitName: entity?.name ?? null,
-        unitGroupId: groupId ?? null,
-        unitGroupName: group?.name ?? null,
-      };
+      const isMismatch =
+        (localIsUnitsPath ||
+          localIsMasterPlansPath ||
+          localIsOperationalPlansPath) &&
+        entity &&
+        groupId &&
+        String(entity.unitGroupId) !== String(groupId);
 
-      const next = createBreadcrumbs(pathname, names);
+      const names = isMismatch
+        ? { unitName: null, unitGroupId: null, unitGroupName: null }
+        : {
+            unitName: entity?.name ?? null,
+            unitGroupId: groupId ?? null,
+            unitGroupName: group?.name ?? null,
+          };
+
+      const next = isMismatch
+        ? [
+            {
+              label: t("Message/Invalid"),
+              href: "/",
+              clickable: false,
+              isActive: true,
+            },
+          ]
+        : createBreadcrumbs(pathname, names);
 
       if (!sameCrumbs(breadcrumbs, next)) {
         setBreadcrumbs(next);
       }
       setBreadcrumbsReady(true);
+      setBreadcrumbsLoading(false);
     });
 
     return () => {
       isMounted = false;
     };
   }, [pathname, apiUrl, t, unitName, unitGroupId, unitGroupName]);
+
+  // --- SET PAGE TITLE ---
+  useEffect(() => {
+    const appName = "Planning Point";
+
+    if (pathname === "/") {
+      document.title = appName;
+      return;
+    }
+
+    const labels = (breadcrumbs ?? []).map((c) => c.label).filter(Boolean);
+
+    if (labels.length > 0) {
+      document.title = `${labels.join(" | ")}`;
+      return;
+    }
+
+    document.title = appName;
+  }, [pathname, breadcrumbs]);
 
   return (
     <>
@@ -333,6 +525,7 @@ const LayoutWrapper = (props: Props) => {
         setHasScrollbar={setHasScrollbar}
         navbarHidden={navbarHidden}
         setNavbarHidden={setNavbarHidden}
+        isEditingFavourites={isEditingFavourites}
       />
       <Topbar
         hasScrollbar={hasScrollbar}
@@ -340,6 +533,8 @@ const LayoutWrapper = (props: Props) => {
         navbarHidden={navbarHidden}
         setNavbarHidden={setNavbarHidden}
         breadcrumbsLoading={breadcrumbsLoading}
+        setIsEditingFavourites={setIsEditingFavourites}
+        isEditingFavourites={isEditingFavourites}
       />
       <div className="flex min-h-screen">
         <div

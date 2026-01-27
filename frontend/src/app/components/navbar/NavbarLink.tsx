@@ -83,7 +83,7 @@ const NavbarLink = (props: Props) => {
             )}
 
             <span
-              className={`${isActive ? "font-bold" : ""} flex truncate overflow-hidden`}
+              className={`${isActive ? "font-bold" : ""} [overflow-wrap:anywhere]`}
             >
               {props.label}
             </span>
@@ -103,7 +103,8 @@ const NavbarLink = (props: Props) => {
               showOnTouch
             >
               <button
-                className={`${props.isDragging ? "opacity-0" : "opacity-0 group-hover/link:opacity-100"} ${props.disabled ? "cursor-not-allowed" : ""} group ml-auto flex`}
+                // className={`${props.isDragging ? "opacity-0" : "opacity-0 group-hover/link:opacity-100"} ${props.disabled ? "cursor-not-allowed" : ""} group ml-auto flex`}
+                className={`${props.disabled ? "cursor-not-allowed" : ""} group ml-auto flex`}
                 onClick={(e) => {
                   e.preventDefault();
 

@@ -11,25 +11,28 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("master-plan-elements")]
+    [Route("master-plan-element")]
     public class MasterPlanElementController : ControllerBase
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
         private readonly AuditTrailService _audit;
+        private readonly MasterPlanRevisionService _revisionService;
 
         public MasterPlanElementController(
             AppDbContext context,
             UserService userService,
             ITranslationService t,
-            AuditTrailService audit
+            AuditTrailService audit,
+            MasterPlanRevisionService revisionService
         )
         {
             _context = context;
             _userService = userService;
             _t = t;
             _audit = audit;
+            _revisionService = revisionService;
         }
 
         private async Task<string> GetLangAsync()
@@ -93,6 +96,8 @@ namespace backend.Controllers
                 UpdatedBy = createdBy,
             };
 
+            await _revisionService.ArchiveOncePerCheckoutAsync(masterPlanId, createdBy);
+
             _context.MasterPlanElements.Add(newElement);
             await _context.SaveChangesAsync();
 
@@ -126,8 +131,17 @@ namespace backend.Controllers
 
             if (dto.Values != null)
             {
+                var incrementalFieldIds = await GetIncrementalFieldIdsAsync(masterPlanId);
+
                 foreach (var v in dto.Values)
                 {
+                    var isIncremental = incrementalFieldIds.Contains(v.MasterPlanFieldId);
+
+                    if (isIncremental && string.IsNullOrWhiteSpace(v.Value))
+                    {
+                        continue;
+                    }
+
                     _context.MasterPlanElementValues.Add(
                         new MasterPlanElementValue
                         {
@@ -144,6 +158,13 @@ namespace backend.Controllers
             }
 
             await _context.SaveChangesAsync();
+            await EnsureIncrementalValueAsync(
+                masterPlanId,
+                newElement.Id,
+                newElement.GroupId,
+                now,
+                createdBy
+            );
 
             await _context.Entry(newElement).Collection(e => e.Values).LoadAsync();
             await _context
@@ -258,6 +279,11 @@ namespace backend.Controllers
                 }
             );
 
+            if (masterPlanId != 0)
+            {
+                await _revisionService.ArchiveOncePerCheckoutAsync(masterPlanId, deletedBy);
+            }
+
             _context.MasterPlanElementValues.RemoveRange(element.Values);
             _context.MasterPlanToMasterPlanElements.RemoveRange(
                 element.MasterPlanToMasterPlanElements
@@ -323,6 +349,8 @@ namespace backend.Controllers
             var currentBefore = element.CurrentElement;
             var nextBefore = element.NextElement;
 
+            var currentOrder = element.MasterPlanToMasterPlanElements.FirstOrDefault()?.Order;
+
             var valueChanged =
                 dto.Values != null
                 && dto.Values.Any(v =>
@@ -333,10 +361,51 @@ namespace backend.Controllers
                     return oldVal != v.Value;
                 });
 
+            var groupChanged = dto.GroupId.HasValue && dto.GroupId.Value != element.GroupId;
+            var struckChanged = dto.StruckElement != element.StruckElement;
+            var currentChanged = dto.CurrentElement != element.CurrentElement;
+            var nextChanged = dto.NextElement != element.NextElement;
+            var orderChangedIntended =
+                dto.Order.HasValue
+                && (!currentOrder.HasValue || dto.Order.Value != currentOrder.Value);
+
+            var groupListChanged = dto.GroupList != null;
+
+            var willChange =
+                valueChanged
+                || groupChanged
+                || struckChanged
+                || currentChanged
+                || nextChanged
+                || orderChangedIntended
+                || groupListChanged;
+
+            if (!willChange)
+            {
+                return Ok(new { message = await _t.GetAsync("MasterPlanElement/Updated", lang) });
+            }
+
+            if (masterPlan != null)
+            {
+                await _revisionService.ArchiveOncePerCheckoutAsync(masterPlan.Id, updatedBy);
+            }
+
             if (dto.Values != null)
             {
+                var incrementalFieldIds =
+                    masterPlan != null
+                        ? await GetIncrementalFieldIdsAsync(masterPlan.Id)
+                        : new HashSet<int>();
+
                 foreach (var valueDto in dto.Values)
                 {
+                    var isIncremental = incrementalFieldIds.Contains(valueDto.MasterPlanFieldId);
+
+                    if (isIncremental && string.IsNullOrWhiteSpace(valueDto.Value))
+                    {
+                        continue;
+                    }
+
                     var existingValue = element.Values.FirstOrDefault(v =>
                         v.MasterPlanFieldId == valueDto.MasterPlanFieldId
                     );
@@ -400,6 +469,43 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
+            if (masterPlan != null && (groupChanged || orderChangedIntended || groupListChanged))
+            {
+                if (dto.GroupList != null)
+                {
+                    var touchedIds = dto
+                        .GroupList.Elements.Select(x => x.ElementId)
+                        .Distinct()
+                        .ToList();
+
+                    var touched = await _context
+                        .MasterPlanElements.Where(e => touchedIds.Contains(e.Id))
+                        .Select(e => new { e.Id, e.GroupId })
+                        .ToListAsync();
+
+                    foreach (var x in touched)
+                    {
+                        await EnsureIncrementalValueAsync(
+                            masterPlan.Id,
+                            x.Id,
+                            x.GroupId,
+                            now,
+                            updatedBy
+                        );
+                    }
+                }
+                else
+                {
+                    await EnsureIncrementalValueAsync(
+                        masterPlan.Id,
+                        element.Id,
+                        element.GroupId,
+                        now,
+                        updatedBy
+                    );
+                }
+            }
+
             var newValues = new Dictionary<string, object?>
             {
                 ["ObjectID"] = element.Id,
@@ -423,13 +529,17 @@ namespace backend.Controllers
             var newOrder = newValues["Order"];
             var orderChanged = oldOrder == null || !Equals(oldOrder, newOrder);
 
-            var groupChanged = groupBefore != element.GroupId;
-            var struckChanged = struckBefore != element.StruckElement;
-            var currentChanged = currentBefore != element.CurrentElement;
-            var nextChanged = nextBefore != element.NextElement;
+            var groupChangedAfter = groupBefore != element.GroupId;
+            var struckChangedAfter = struckBefore != element.StruckElement;
+            var currentChangedAfter = currentBefore != element.CurrentElement;
+            var nextChangedAfter = nextBefore != element.NextElement;
 
             var otherChanges =
-                groupChanged || struckChanged || currentChanged || nextChanged || valueChanged;
+                groupChangedAfter
+                || struckChangedAfter
+                || currentChangedAfter
+                || nextChangedAfter
+                || valueChanged;
 
             if (orderChanged)
             {
@@ -456,6 +566,345 @@ namespace backend.Controllers
             }
 
             return Ok(new { message = await _t.GetAsync("MasterPlanElement/Updated", lang) });
+        }
+
+        [HttpPut("update-status/{elementId}")]
+        [Authorize(Roles = "MasterPlanner")]
+        public async Task<IActionResult> UpdateElementStatus(
+            int elementId,
+            [FromBody] UpdateMasterPlanElementStatusDto dto
+        )
+        {
+            var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (updatedBy, userId) = userInfo.Value;
+
+            var element = await _context
+                .MasterPlanElements.Include(e => e.MasterPlanToMasterPlanElements)
+                .ThenInclude(link => link.MasterPlan)
+                .FirstOrDefaultAsync(e => e.Id == elementId);
+
+            if (element == null)
+                return NotFound(
+                    new { message = await _t.GetAsync("MasterPlanElement/NotFound", lang) }
+                );
+
+            if (element.Status == dto.Status)
+            {
+                return Ok(new { status = element.Status });
+            }
+
+            var now = DateTime.UtcNow;
+            var oldStatus = element.Status;
+
+            element.Status = dto.Status;
+            element.UpdateDate = now;
+            element.UpdatedBy = updatedBy;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { status = element.Status });
+        }
+
+        private static string GetGroupKey(int elementId, int? groupId)
+        {
+            if (groupId.HasValue && groupId.Value != 0)
+                return $"g:{groupId.Value}";
+            return $"e:{elementId}";
+        }
+
+        private async Task EnsureIncrementalValueAsync(
+            int masterPlanId,
+            int elementId,
+            int? groupId,
+            DateTime now,
+            string updatedBy
+        )
+        {
+            var fields = await _context
+                .MasterPlanToMasterPlanFields.Where(x =>
+                    x.MasterPlanId == masterPlanId
+                    && (x.MasterPlanField.LocalIncremental || x.MasterPlanField.GlobalIncremental)
+                )
+                .Select(x => new
+                {
+                    x.MasterPlanFieldId,
+                    x.MasterPlanField.LocalIncremental,
+                    x.MasterPlanField.GlobalIncremental,
+                })
+                .Distinct()
+                .ToListAsync();
+
+            if (fields.Count == 0)
+                return;
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+
+            foreach (var f in fields)
+            {
+                var counterPlanId = f.GlobalIncremental ? (int?)null : masterPlanId;
+
+                var counter = await _context
+                    .Set<MasterPlanIncrementalCounter>()
+                    .FirstOrDefaultAsync(x =>
+                        x.MasterPlanFieldId == f.MasterPlanFieldId
+                        && x.MasterPlanId == counterPlanId
+                    );
+
+                if (counter == null)
+                {
+                    var maxInDb = await GetMaxIncrementalInDb(
+                        masterPlanId,
+                        f.MasterPlanFieldId,
+                        f.GlobalIncremental
+                    );
+
+                    counter = new MasterPlanIncrementalCounter
+                    {
+                        MasterPlanFieldId = f.MasterPlanFieldId,
+                        MasterPlanId = counterPlanId,
+                        LastNumber = maxInDb,
+                        CreationDate = now,
+                        CreatedBy = updatedBy,
+                        UpdateDate = now,
+                        UpdatedBy = updatedBy,
+                    };
+
+                    _context.Set<MasterPlanIncrementalCounter>().Add(counter);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    var maxInDb = await GetMaxIncrementalInDb(
+                        masterPlanId,
+                        f.MasterPlanFieldId,
+                        f.GlobalIncremental
+                    );
+
+                    if (maxInDb > counter.LastNumber)
+                    {
+                        counter.LastNumber = Math.Max(counter.LastNumber, maxInDb);
+                        counter.UpdateDate = now;
+                        counter.UpdatedBy = updatedBy;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                if (f.LocalIncremental && groupId.HasValue && groupId.Value != 0)
+                {
+                    var groupElementIds = await _context
+                        .MasterPlanElements.Where(e => e.GroupId == groupId.Value)
+                        .Select(e => e.Id)
+                        .ToListAsync();
+
+                    var groupValues = await _context
+                        .MasterPlanElementValues.Where(v =>
+                            groupElementIds.Contains(v.MasterPlanElementId)
+                            && v.MasterPlanFieldId == f.MasterPlanFieldId
+                        )
+                        .ToListAsync();
+
+                    var canonical = groupValues
+                        .Select(v => TryParseNonNegativeInt(v.Value))
+                        .Where(n => n != null)
+                        .Min();
+
+                    if (canonical == null)
+                    {
+                        var elementExisting = await _context
+                            .MasterPlanElementValues.Where(v =>
+                                v.MasterPlanElementId == elementId
+                                && v.MasterPlanFieldId == f.MasterPlanFieldId
+                            )
+                            .Select(v => v.Value)
+                            .FirstOrDefaultAsync();
+
+                        var parsedElementExisting = TryParseNonNegativeInt(elementExisting);
+
+                        if (parsedElementExisting != null)
+                        {
+                            canonical = parsedElementExisting;
+                            if (canonical.Value > counter.LastNumber)
+                            {
+                                counter.LastNumber = canonical.Value;
+                                counter.UpdateDate = now;
+                                counter.UpdatedBy = updatedBy;
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+                        else
+                        {
+                            var next = counter.LastNumber + 1;
+                            canonical = next;
+                            counter.LastNumber = next;
+                            counter.UpdateDate = now;
+                            counter.UpdatedBy = updatedBy;
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+                    var canonicalStr = canonical.Value.ToString();
+
+                    var existingByElementId = groupValues
+                        .GroupBy(v => v.MasterPlanElementId)
+                        .ToDictionary(g => g.Key, g => g.First());
+
+                    foreach (var id in groupElementIds)
+                    {
+                        if (!existingByElementId.TryGetValue(id, out var row))
+                        {
+                            _context.MasterPlanElementValues.Add(
+                                new MasterPlanElementValue
+                                {
+                                    MasterPlanElementId = id,
+                                    MasterPlanFieldId = f.MasterPlanFieldId,
+                                    Value = canonicalStr,
+                                    CreationDate = now,
+                                    CreatedBy = updatedBy,
+                                    UpdateDate = now,
+                                    UpdatedBy = updatedBy,
+                                }
+                            );
+                        }
+                        else
+                        {
+                            if (row.Value != canonicalStr)
+                            {
+                                row.Value = canonicalStr;
+                                row.UpdateDate = now;
+                                row.UpdatedBy = updatedBy;
+                            }
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                    continue;
+                }
+
+                var existingValue = await _context
+                    .MasterPlanElementValues.Where(v =>
+                        v.MasterPlanElementId == elementId
+                        && v.MasterPlanFieldId == f.MasterPlanFieldId
+                    )
+                    .Select(v => v.Value)
+                    .FirstOrDefaultAsync();
+
+                var parsedExisting = TryParseNonNegativeInt(existingValue);
+
+                if (parsedExisting != null)
+                {
+                    if (parsedExisting.Value > counter.LastNumber)
+                    {
+                        counter.LastNumber = parsedExisting.Value;
+                        counter.UpdateDate = now;
+                        counter.UpdatedBy = updatedBy;
+                        await _context.SaveChangesAsync();
+                    }
+
+                    continue;
+                }
+
+                var nextValue = counter.LastNumber + 1;
+
+                var rowToSet = await _context.MasterPlanElementValues.FirstOrDefaultAsync(v =>
+                    v.MasterPlanElementId == elementId && v.MasterPlanFieldId == f.MasterPlanFieldId
+                );
+
+                if (rowToSet == null)
+                {
+                    _context.MasterPlanElementValues.Add(
+                        new MasterPlanElementValue
+                        {
+                            MasterPlanElementId = elementId,
+                            MasterPlanFieldId = f.MasterPlanFieldId,
+                            Value = nextValue.ToString(),
+                            CreationDate = now,
+                            CreatedBy = updatedBy,
+                            UpdateDate = now,
+                            UpdatedBy = updatedBy,
+                        }
+                    );
+                }
+                else
+                {
+                    rowToSet.Value = nextValue.ToString();
+                    rowToSet.UpdateDate = now;
+                    rowToSet.UpdatedBy = updatedBy;
+                }
+
+                counter.LastNumber = nextValue;
+                counter.UpdateDate = now;
+                counter.UpdatedBy = updatedBy;
+
+                await _context.SaveChangesAsync();
+            }
+
+            await tx.CommitAsync();
+        }
+
+        private async Task<int> GetMaxIncrementalInDb(
+            int masterPlanId,
+            int masterPlanFieldId,
+            bool isGlobal
+        )
+        {
+            IQueryable<MasterPlanElementValue> q = _context.MasterPlanElementValues.Where(v =>
+                v.MasterPlanFieldId == masterPlanFieldId
+            );
+
+            if (!isGlobal)
+            {
+                q = q.Join(
+                    _context.MasterPlanToMasterPlanElements.Where(l =>
+                        l.MasterPlanId == masterPlanId
+                    ),
+                    v => v.MasterPlanElementId,
+                    l => l.MasterPlanElementId,
+                    (v, l) => v
+                );
+            }
+
+            var values = await q.Select(v => v.Value).ToListAsync();
+
+            var max = 0;
+            foreach (var s in values)
+            {
+                var n = TryParseNonNegativeInt(s);
+                if (n != null && n.Value > max)
+                    max = n.Value;
+            }
+
+            return max;
+        }
+
+        private static int? TryParseNonNegativeInt(string? s)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+                return null;
+            if (!int.TryParse(s.Trim(), out var n))
+                return null;
+            return n >= 0 ? n : null;
+        }
+
+        private async Task<HashSet<int>> GetIncrementalFieldIdsAsync(int masterPlanId)
+        {
+            var ids = await _context
+                .MasterPlanToMasterPlanFields.Where(x =>
+                    x.MasterPlanId == masterPlanId
+                    && (x.MasterPlanField.LocalIncremental || x.MasterPlanField.GlobalIncremental)
+                )
+                .Select(x => x.MasterPlanFieldId)
+                .Distinct()
+                .ToListAsync();
+
+            return ids.ToHashSet();
         }
     }
 }

@@ -7,13 +7,13 @@ namespace backend.Models
     {
         public int Id { get; set; }
 
-        [MaxLength(32)]
+        [MaxLength(64)]
         public string Name { get; set; } = string.Empty;
         public UnitColumnDataType DataType { get; set; }
         public bool HasData { get; set; } = false;
         public bool Compare { get; set; } = false;
 
-        [MaxLength(32)]
+        [MaxLength(64)]
         public string ComparisonText { get; set; } = string.Empty;
         public bool LargeColumn { get; set; } = false;
 
@@ -29,7 +29,9 @@ namespace backend.Models
     public enum UnitColumnDataType
     {
         Number,
+        Decimal,
         Text,
+        TextField,
         Boolean,
     }
 }

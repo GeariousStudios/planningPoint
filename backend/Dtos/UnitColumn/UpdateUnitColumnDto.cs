@@ -6,14 +6,14 @@ namespace backend.Dtos.UnitColumn
     public class UpdateUnitColumnDto
     {
         [Required(ErrorMessage = "[1|Common/a name] Validation/Please enter")]
-        [MaxLength(32, ErrorMessage = "[2|Common/Name|32] Validation/cannot exceed")]
+        [MaxLength(64, ErrorMessage = "[2|Common/Name|64] Validation/cannot exceed")]
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "[3|UnitColumn/a data type] Validation/Please select")]
         public UnitColumnDataType DataType { get; set; }
         public bool Compare { get; set; }
 
-        [MaxLength(32, ErrorMessage = "[4|UnitColumn/Comparison text|32] Validation/cannot exceed")]
+        [MaxLength(64, ErrorMessage = "[4|UnitColumn/Comparison text|64] Validation/cannot exceed")]
         public string ComparisonText { get; set; } = string.Empty;
         public bool LargeColumn { get; set; }
 

@@ -567,7 +567,7 @@ const HomeClient = (props: Props) => {
                         className="h-6 min-h-6 w-6 min-w-6"
                       />
                       <span className="hidden md:block">
-                        {t("TrendingPanel/Cancel")}
+                        {t("Common/Cancel")}
                       </span>
                     </div>
                   </button>
@@ -654,7 +654,7 @@ const HomeClient = (props: Props) => {
                 <span className="font-semibold">{t("Common/Login")}</span>
               </div>
               {/* --- Login content --- */}
-              <div className="flex max-h-144 min-h-144 items-center justify-center rounded-b border border-t-0 border-(--border-main) p-4">
+              <div className="flex max-h-144 min-h-144 items-center justify-center rounded-b border border-t-0 border-(--border-main) bg-(--bg-grid) p-2">
                 {/* --- Login form --- */}
                 {props.isConnected ? (
                   <form
@@ -666,6 +666,7 @@ const HomeClient = (props: Props) => {
                       type="text"
                       label={t("Common/Username")}
                       onChange={(val) => setUsername(String(val))}
+                      inGrid
                       required
                     />
                     <Input
@@ -673,6 +674,7 @@ const HomeClient = (props: Props) => {
                       type="password"
                       label={t("Common/Password")}
                       onChange={(val) => setPassword(String(val))}
+                      inGrid
                       required
                     />
                     <button
@@ -714,7 +716,9 @@ const HomeClient = (props: Props) => {
           >
             {/* --- News header --- */}
             <div className="flex h-[40px] items-center justify-between rounded-t border border-(--border-main) bg-(--bg-grid-header) px-3 py-2">
-              <span className="truncate font-semibold">{t("Home/News and information")}</span>
+              <span className="truncate font-semibold">
+                {t("Home/News and information")}
+              </span>
 
               {props.isLoggedIn !== false && props.isAdmin && (
                 // <CustomTooltip content={t("Home/Add news")} hideOnClick>
@@ -730,7 +734,7 @@ const HomeClient = (props: Props) => {
             </div>
 
             {/* --- News content --- */}
-            <div className="flex max-h-144 min-h-144 flex-col overflow-y-auto rounded-b border border-t-0 border-(--border-main) p-2">
+            <div className="flex max-h-144 min-h-144 flex-col overflow-y-auto rounded-b border border-t-0 border-(--border-main) bg-(--bg-grid) p-2">
               {!props.isAuthReady ? (
                 ""
               ) : isLoadingNews ? (

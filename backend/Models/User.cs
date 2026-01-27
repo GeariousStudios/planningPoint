@@ -13,7 +13,7 @@ namespace backend.Models
         [MaxLength(32)]
         public string LastName { get; set; } = string.Empty;
 
-        [Required, MaxLength(16)]
+        [Required, MaxLength(32)]
         public string Username { get; set; } = string.Empty;
 
         [MaxLength(320)]

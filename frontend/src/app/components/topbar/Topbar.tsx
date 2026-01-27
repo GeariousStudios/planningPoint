@@ -2,28 +2,10 @@ import {
   iconButtonPrimaryClass,
   roundedButtonClass,
 } from "@/app/styles/buttonClasses";
-import {
-  BellIcon as SolidBellIcon,
-  UserIcon as SolidUserIcon,
-  QuestionMarkCircleIcon as SolidQuestionMarkCircleIcon,
-  ArrowLeftEndOnRectangleIcon as SolidArrowLeftEndOnRectangleIcon,
-  ArrowRightEndOnRectangleIcon as SolidArrowRightEndOnRectangleIcon,
-  Cog6ToothIcon as SolidCog6ToothIcon,
-  MoonIcon as SolidMoonIcon,
-  SunIcon as SolidSunIcon,
-} from "@heroicons/react/24/solid";
-import {
-  BellIcon as OutlineBellIcon,
-  UserIcon as OutlineUserIcon,
-  QuestionMarkCircleIcon as OutlineQuestionMarkCircleIcon,
-  ArrowLeftEndOnRectangleIcon as OutlineArrowLeftEndOnRectangleIcon,
-  ArrowRightEndOnRectangleIcon as OutlineArrowRightEndOnRectangleIcon,
-  Cog6ToothIcon as OutlineCog6ToothIcon,
-  MoonIcon as OutlineMoonIcon,
-  SunIcon as OutlineSunIcon,
-  Bars2Icon,
-} from "@heroicons/react/24/outline";
-import { useEffect, useRef, useState } from "react";
+import * as Solid from "@heroicons/react/24/solid";
+import * as SolidSmall from "@heroicons/react/16/solid";
+import * as Outline from "@heroicons/react/24/outline";
+import { createRef, useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
 import { useAuth } from "@/app/context/AuthContext";
 import Message from "../common/Message";
@@ -38,16 +20,28 @@ import { badgeClass } from "../manage/ManageClasses";
 import HandbookModal from "../modals/HandbookModal";
 import { useHandbook } from "@/app/context/HandbookContext";
 
+type BreadcrumbChild = {
+  label: string;
+  href: string;
+  clickable: boolean;
+  isActive: boolean;
+};
+
+type Breadcrumb = {
+  label: string;
+  href: string;
+  clickable: boolean;
+  isActive: boolean;
+  children?: BreadcrumbChild[];
+};
+
 type Props = {
   hasScrollbar: boolean;
   navbarHidden: boolean;
   setNavbarHidden: (value: boolean) => void;
-  breadcrumbs?: {
-    label: string;
-    href: string;
-    clickable: boolean;
-    isActive: boolean;
-  }[];
+  setIsEditingFavourites: (value: boolean) => void;
+  isEditingFavourites: boolean;
+  breadcrumbs?: Breadcrumb[];
   breadcrumbsLoading?: boolean;
 };
 
@@ -58,14 +52,36 @@ const Topbar = (props: Props) => {
   // --- Refs ---
   const userIconRef = useRef<HTMLButtonElement>(null);
   const bellIconRef = useRef<HTMLButtonElement>(null);
+  const crumbsIconRef = useRef<HTMLButtonElement>(null);
+
+  const crumbMenuTriggerRefs = useRef<
+    Record<string, React.RefObject<HTMLButtonElement | null>>
+  >({});
+
+  const getCrumbTriggerRef = (key: string) => {
+    if (!crumbMenuTriggerRefs.current[key]) {
+      crumbMenuTriggerRefs.current[key] = createRef<HTMLButtonElement>();
+    }
+    return crumbMenuTriggerRefs.current[key];
+  };
+
+  const [openCrumbKey, setOpenCrumbKey] = useState<string | null>(null);
+
+  const mobileKey = (href: string) => `m:${href}`;
+  const desktopKey = (href: string) => `d:${href}`;
+
+  const breadcrumbsRef = useRef<HTMLDivElement>(null);
 
   // --- States ---
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isHandbookModalOpen, setIsHandbookModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [userIconClicked, setUserIconClicked] = useState(false);
   const [bellIconClicked, setBellIconClicked] = useState(false);
+  const [crumbsIconClicked, setCrumbsIconClicked] = useState(false);
 
   // --- Other ---
   const { handbook } = useHandbook();
@@ -84,6 +100,38 @@ const Topbar = (props: Props) => {
   } = useAuth();
   const { toggleTheme, currentTheme } = useTheme();
   const { toggleLanguage, currentLanguage } = useLanguage();
+  const breadcrumbs = props.breadcrumbs ?? [];
+
+  // --- SCROLL HORIZONTALLY ---
+  useEffect(() => {
+    const el = breadcrumbsRef.current;
+    
+    if (!el) {
+      return;
+    }
+
+    const update = () => {
+      const maxScrollLeft = el.scrollWidth - el.clientWidth;
+      setCanScrollLeft(el.scrollLeft > 0);
+      setCanScrollRight(el.scrollLeft < maxScrollLeft - 1);
+    };
+
+    update();
+
+    const onScroll = () => update();
+    el.addEventListener("scroll", onScroll, { passive: true });
+
+    const ro = new ResizeObserver(() => update());
+    ro.observe(el);
+
+    window.addEventListener("resize", update);
+
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [breadcrumbs.length, props.breadcrumbsLoading, isAuthReady]);
 
   // --- HIDE TOPBAR ON SCROLL ---
   useEffect(() => {
@@ -139,12 +187,20 @@ const Topbar = (props: Props) => {
   const closeAllMenus = () => {
     setUserIconClicked(false);
     setBellIconClicked(false);
+    setCrumbsIconClicked(false);
+    setOpenCrumbKey(null);
+  };
+
+  const closeOtherMenus = () => {
+    setUserIconClicked(false);
+    setBellIconClicked(false);
+    setCrumbsIconClicked(false);
   };
 
   return (
     <>
       {/* --- MODAL(S) --- */}
-       <HandbookModal
+      <HandbookModal
         isOpen={isHandbookModalOpen}
         onClose={() => setIsHandbookModalOpen(false)}
         content={handbook}
@@ -170,69 +226,355 @@ const Topbar = (props: Props) => {
           <>
             {/* --- WELCOME MESSAGE --- */}
             <div
-              className={`${!props.navbarHidden ? (props.hasScrollbar ? "md:ml-67" : "md:ml-64") : ""} flex items-center gap-4`}
+              className={`${!props.navbarHidden ? (props.hasScrollbar ? "md:ml-67" : "md:ml-64") : ""} flex min-w-0 flex-1 items-center gap-4`}
             >
               <button
                 onClick={() => props.setNavbarHidden(false)}
                 className={`${iconButtonPrimaryClass} ${props.navbarHidden ? "block" : "md:hidden"} h-6 min-h-6 w-6 min-w-6`}
                 inert={!props.navbarHidden}
               >
-                <Bars2Icon />
+                <Outline.Bars2Icon />
               </button>
 
               {props.breadcrumbsLoading ? (
                 <span className="animate-shimmer h-6 w-64" />
-              ) : props.breadcrumbs?.length ? (
-                <div className="flex items-center">
-                  {/* <div className="flex flex-wrap md:hidden">
-                    {props.breadcrumbs.length > 1 && (
-                      <>
-                        <span className="xs:inline hidden md:hidden">
-                          ...&nbsp;/&nbsp;
-                        </span>
-                        <span className="font-semibold break-all text-(--accent-color)">
-                          {props.breadcrumbs.at(-1)?.label}
-                        </span>
-                      </>
-                    )}
-                    {props.breadcrumbs.length === 1 && (
-                      <span className="font-semibold text-(--accent-color)">
-                        {props.breadcrumbs[0].label}
-                      </span>
-                    )}
-                  </div> 
+              ) : breadcrumbs.length ? (
+                <div className="relative flex min-w-0 items-center">
+                  {canScrollLeft && (
+                    <button
+                      onClick={() =>
+                        breadcrumbsRef.current?.scrollBy({
+                          left: -220,
+                          behavior: "smooth",
+                        })
+                      }
+                      className="absolute left-0 z-[calc(var(--z-base)+1)] flex h-8 w-8 items-center justify-center rounded-full border border-(--border-main) bg-(--bg-navbar) hover:bg-(--bg-navbar-link)"
+                      aria-label="Scroll breadcrumbs left"
+                    >
+                      <SolidSmall.ChevronLeftIcon className="h-4 w-4" />
+                    </button>
+                  )}
 
-                  <div className="hidden flex-wrap items-center md:flex"> */}
-                  <div className="flex flex-wrap items-center">
-                    {props.breadcrumbs.map((item, idx) => (
-                      <span key={item.href}>
-                        {item.clickable ? (
-                          <Link href={item.href} className="">
-                            {item.label}
-                          </Link>
-                        ) : (
-                          <span
-                            className={
-                              item.isActive
-                                ? "font-semibold text-(--accent-color)"
-                                : !item.clickable
-                                  ? "opacity-50"
-                                  : ""
-                            }
-                          >
-                            {item.label}
-                          </span>
+                  <div
+                    ref={breadcrumbsRef}
+                    className={`min-w-0 overflow-x-auto scroll-smooth whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
+                  >
+                    <div className="inline-flex items-center">
+                      {/* --- MOBILE (<= 640px) ---*/}
+                      <div className="inline-flex items-center whitespace-nowrap sm:hidden">
+                        {breadcrumbs.length > 2 && (
+                          <div className="relative">
+                            <button
+                              ref={crumbsIconRef}
+                              onClick={() => {
+                                closeAllMenus();
+                                setCrumbsIconClicked(!crumbsIconClicked);
+                              }}
+                              aria-label="Breadcrumbs"
+                              className={`${crumbsIconClicked ? "bg-(--bg-navbar-link) text-(--accent-color)" : ""} flex h-8 min-h-8 w-8 min-w-8 cursor-pointer items-center justify-center rounded-full font-semibold transition-colors hover:bg-(--bg-navbar-link) hover:text-(--accent-color)`}
+                            >
+                              <span>. . .</span>
+                            </button>
+
+                            <MenuDropdown
+                              triggerRef={crumbsIconRef}
+                              isOpen={crumbsIconClicked}
+                              onClose={() => setCrumbsIconClicked(false)}
+                              autoWidth
+                              alignLeft
+                            >
+                              <div className="flex flex-col gap-2">
+                                {breadcrumbs.slice(0, -2).map((item) =>
+                                  item.clickable ? (
+                                    <span
+                                      key={item.href}
+                                      className="transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline"
+                                    >
+                                      <Link
+                                        href={item.href}
+                                        onClick={() =>
+                                          setCrumbsIconClicked(false)
+                                        }
+                                        className="flex items-center gap-2 whitespace-nowrap"
+                                      >
+                                        {item.label}
+                                        <Outline.ArrowRightIcon className="h-3 min-h-3 w-3 min-w-3" />
+                                      </Link>
+                                    </span>
+                                  ) : (
+                                    <span
+                                      key={item.href}
+                                      className="whitespace-nowrap opacity-50"
+                                    >
+                                      {item.label}
+                                    </span>
+                                  ),
+                                )}
+                              </div>
+                            </MenuDropdown>
+                          </div>
                         )}
-                        {idx !== (props.breadcrumbs?.length ?? 0) - 1 && (
-                          <span>&nbsp;/&nbsp;</span>
-                        )}
-                      </span>
-                    ))}
+
+                        {breadcrumbs.length > 2 && <span>&nbsp;/&nbsp;</span>}
+
+                        {(breadcrumbs.length > 2
+                          ? breadcrumbs.slice(-2)
+                          : breadcrumbs
+                        ).map((item, idx, arr) => {
+                          const hasChildren = !!item.children?.length;
+                          const key = mobileKey(item.href);
+
+                          return (
+                            <span
+                              key={item.href}
+                              className="relative inline-flex items-center"
+                            >
+                              {item.clickable ? (
+                                <Link
+                                  href={item.href}
+                                  className="transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline"
+                                >
+                                  {item.label}
+                                </Link>
+                              ) : (
+                                <span
+                                  className={
+                                    item.isActive
+                                      ? "font-semibold text-(--accent-color)"
+                                      : "opacity-50"
+                                  }
+                                >
+                                  {item.label}
+                                </span>
+                              )}
+
+                              {hasChildren ? (
+                                <>
+                                  <button
+                                    ref={getCrumbTriggerRef(key)}
+                                    onClick={() => {
+                                      closeOtherMenus();
+                                      setOpenCrumbKey((prev) =>
+                                        prev === key ? null : key,
+                                      );
+                                    }}
+                                    aria-label="Submenu"
+                                    className={`${openCrumbKey === key ? "bg-(--bg-navbar-link) text-(--accent-color)" : ""} ml-1 flex h-6 min-h-6 w-6 min-w-6 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-(--bg-navbar-link) hover:text-(--accent-color)`}
+                                  >
+                                    <SolidSmall.ChevronDownIcon className="h-4 w-4" />
+                                  </button>
+
+                                  <MenuDropdown
+                                    triggerRef={getCrumbTriggerRef(key)}
+                                    isOpen={openCrumbKey === key}
+                                    onClose={() => setOpenCrumbKey(null)}
+                                    autoWidth
+                                    alignLeft
+                                  >
+                                    <div className="flex flex-col gap-2">
+                                      {(item.children ?? []).map((child) => {
+                                        const content = (
+                                          <>
+                                            {child.label}
+                                            {child.clickable &&
+                                              !child.isActive && (
+                                                <Outline.ArrowRightIcon className="h-3 min-h-3 w-3 min-w-3" />
+                                              )}
+                                          </>
+                                        );
+
+                                        const className = `flex items-center gap-2 whitespace-nowrap transition-colors duration-(--fast) ${
+                                          child.isActive
+                                            ? "font-semibold text-(--accent-color)"
+                                            : ""
+                                        } ${
+                                          child.clickable && !child.isActive
+                                            ? "hover:text-(--accent-color) hover:underline"
+                                            : ""
+                                        } ${!child.clickable ? "opacity-50" : ""}`;
+
+                                        if (
+                                          !child.clickable ||
+                                          child.isActive
+                                        ) {
+                                          return (
+                                            <span
+                                              key={child.href}
+                                              className={className}
+                                            >
+                                              {content}
+                                            </span>
+                                          );
+                                        }
+
+                                        return (
+                                          <Link
+                                            key={child.href}
+                                            href={child.href}
+                                            onClick={() =>
+                                              setOpenCrumbKey(null)
+                                            }
+                                            className={className}
+                                          >
+                                            {content}
+                                          </Link>
+                                        );
+                                      })}
+                                    </div>
+                                  </MenuDropdown>
+                                </>
+                              ) : null}
+
+                              {idx !== arr.length - 1 && (
+                                <span>&nbsp;/&nbsp;</span>
+                              )}
+                            </span>
+                          );
+                        })}
+                      </div>
+
+                      {/* --- DESKTOP (> 640px) ---*/}
+                      <div className="hidden items-center whitespace-nowrap sm:inline-flex">
+                        {breadcrumbs.map((item, idx) => {
+                          const hasChildren = !!item.children?.length;
+                          const key = desktopKey(item.href);
+
+                          return (
+                            <span
+                              key={item.href}
+                              className="relative inline-flex items-center"
+                            >
+                              {item.clickable ? (
+                                <Link
+                                  href={item.href}
+                                  className="transition-colors duration-(--fast) hover:text-(--accent-color) hover:underline"
+                                >
+                                  {item.label}
+                                </Link>
+                              ) : (
+                                <span
+                                  className={
+                                    item.isActive
+                                      ? "font-semibold text-(--accent-color)"
+                                      : "opacity-50"
+                                  }
+                                >
+                                  {item.label}
+                                </span>
+                              )}
+
+                              {hasChildren ? (
+                                <>
+                                  <button
+                                    ref={getCrumbTriggerRef(key)}
+                                    onClick={() => {
+                                      closeOtherMenus();
+                                      setOpenCrumbKey((prev) =>
+                                        prev === key ? null : key,
+                                      );
+                                    }}
+                                    aria-label="Submenu"
+                                    className={`${openCrumbKey === key ? "bg-(--bg-navbar-link) text-(--accent-color)" : ""} ml-1 flex h-6 min-h-6 w-6 min-w-6 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-(--bg-navbar-link) hover:text-(--accent-color)`}
+                                  >
+                                    <SolidSmall.ChevronDownIcon className="h-4 w-4" />
+                                  </button>
+
+                                  <MenuDropdown
+                                    triggerRef={getCrumbTriggerRef(key)}
+                                    isOpen={openCrumbKey === key}
+                                    onClose={() => setOpenCrumbKey(null)}
+                                    autoWidth
+                                    alignLeft
+                                  >
+                                    <div className="flex flex-col gap-2">
+                                      {(item.children ?? []).map((child) => {
+                                        const content = (
+                                          <>
+                                            {child.label}
+                                            {child.clickable &&
+                                              !child.isActive && (
+                                                <Outline.ArrowRightIcon className="h-3 min-h-3 w-3 min-w-3" />
+                                              )}
+                                          </>
+                                        );
+
+                                        const className = `flex items-center gap-2 whitespace-nowrap transition-colors duration-(--fast) ${
+                                          child.isActive
+                                            ? "font-semibold text-(--accent-color)"
+                                            : ""
+                                        } ${
+                                          child.clickable && !child.isActive
+                                            ? "hover:text-(--accent-color) hover:underline"
+                                            : ""
+                                        } ${!child.clickable ? "opacity-50" : ""}`;
+
+                                        if (
+                                          !child.clickable ||
+                                          child.isActive
+                                        ) {
+                                          return (
+                                            <span
+                                              key={child.href}
+                                              className={className}
+                                            >
+                                              {content}
+                                            </span>
+                                          );
+                                        }
+
+                                        return (
+                                          <Link
+                                            key={child.href}
+                                            href={child.href}
+                                            onClick={() =>
+                                              setOpenCrumbKey(null)
+                                            }
+                                            className={className}
+                                          >
+                                            {content}
+                                          </Link>
+                                        );
+                                      })}
+                                    </div>
+                                  </MenuDropdown>
+                                </>
+                              ) : null}
+
+                              {idx !== breadcrumbs.length - 1 && (
+                                <span>&nbsp;/&nbsp;</span>
+                              )}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
+
+                  {canScrollRight && (
+                    <button
+                      onClick={() =>
+                        breadcrumbsRef.current?.scrollBy({
+                          left: 220,
+                          behavior: "smooth",
+                        })
+                      }
+                      className="absolute right-0 z-[calc(var(--z-base)+1)] flex h-8 w-8 items-center justify-center rounded-full border border-(--border-main) bg-(--bg-navbar) hover:bg-(--bg-navbar-link)"
+                      aria-label="Scroll breadcrumbs right"
+                    >
+                      <SolidSmall.ChevronRightIcon className="h-5 w-5" />
+                    </button>
+                  )}
+
+                  {canScrollLeft && (
+                    <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-(--bg-navbar) to-transparent" />
+                  )}
+
+                  {canScrollRight && (
+                    <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-(--bg-navbar) to-transparent" />
+                  )}
                 </div>
               ) : isLoggedIn ? (
                 <div className="flex flex-wrap items-center">
-                  {/* <div className="xs:flex hidden"> */}
                   <span className="">{t("SettingsModal/Welcome")}&nbsp;</span>
                   <div>
                     <span className="font-semibold text-(--accent-color)">
@@ -240,7 +582,6 @@ const Topbar = (props: Props) => {
                     </span>
                     !
                   </div>
-                  {/* </div> */}
                 </div>
               ) : (
                 <span></span>
@@ -257,7 +598,7 @@ const Topbar = (props: Props) => {
                   setIsHandbookModalOpen(!isHandbookModalOpen);
                 }}
               >
-                <span className="group relative flex h-6 w-6 items-center text-2xl justify-center">
+                <span className="group relative flex h-6 w-6 items-center justify-center text-2xl">
                   <span
                     className={`${isHandbookModalOpen ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                   >
@@ -283,10 +624,10 @@ const Topbar = (props: Props) => {
                     }}
                   >
                     <span className="group relative flex h-6 w-6 items-center justify-center">
-                      <OutlineBellIcon
+                      <Outline.BellIcon
                         className={`${bellIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                       />
-                      <SolidBellIcon
+                      <Solid.BellIcon
                         className={`${bellIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                       />
                     </span>
@@ -315,19 +656,19 @@ const Topbar = (props: Props) => {
                   <span className="group relative flex h-6 w-6 items-center justify-center">
                     {isLoggedIn ? (
                       <>
-                        <OutlineUserIcon
+                        <Outline.UserIcon
                           className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                         />
-                        <SolidUserIcon
+                        <Solid.UserIcon
                           className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                         />
                       </>
                     ) : (
                       <>
-                        <OutlineCog6ToothIcon
+                        <Outline.Cog6ToothIcon
                           className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                         />
-                        <SolidCog6ToothIcon
+                        <Solid.Cog6ToothIcon
                           className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                         />
                       </>
@@ -344,13 +685,13 @@ const Topbar = (props: Props) => {
                     <div className="flex flex-col gap-4">
                       <div className="flex justify-between gap-4">
                         {isLoggedIn ? (
-                          <span className="font-semibold break-words text-(--accent-color)">
+                          <span className="font-semibold [overflow-wrap:anywhere] text-(--accent-color)">
                             {firstName && lastName
                               ? firstName + " " + lastName
                               : firstName || username}
                           </span>
                         ) : (
-                          <span className="font-semibold break-words text-(--accent-color)">
+                          <span className="font-semibold [overflow-wrap:anywhere] text-(--accent-color)">
                             {t("SettingsModal/No one logged in")}
                           </span>
                         )}
@@ -443,23 +784,40 @@ const Topbar = (props: Props) => {
                       }
                       icon={
                         currentTheme === "dark"
-                          ? OutlineSunIcon
-                          : OutlineMoonIcon
+                          ? Outline.SunIcon
+                          : Outline.MoonIcon
                       }
                       iconHover={
-                        currentTheme === "dark" ? SolidSunIcon : SolidMoonIcon
+                        currentTheme === "dark" ? Solid.SunIcon : Solid.MoonIcon
                       }
                     />
                     {isLoggedIn && (
-                      <TopbarLink
-                        onClick={() => {
-                          closeAllMenus();
-                          setIsSettingsModalOpen(true);
-                        }}
-                        label={t("Common/Settings")}
-                        icon={OutlineCog6ToothIcon}
-                        iconHover={SolidCog6ToothIcon}
-                      />
+                      <>
+                        <TopbarLink
+                          onClick={() => {
+                            closeAllMenus();
+                            setIsSettingsModalOpen(true);
+                          }}
+                          label={t("Common/Settings")}
+                          icon={Outline.Cog6ToothIcon}
+                          iconHover={Solid.Cog6ToothIcon}
+                        />
+
+                        <TopbarLink
+                          onClick={() => {
+                            props.setIsEditingFavourites(
+                              !props.isEditingFavourites,
+                            );
+                          }}
+                          label={
+                            props.isEditingFavourites
+                              ? t("Navbar/Stop editing favourites")
+                              : t("Navbar/Edit favourites")
+                          }
+                          icon={Outline.StarIcon}
+                          iconHover={Solid.StarIcon}
+                        />
+                      </>
                     )}
                   </div>
 
@@ -472,15 +830,15 @@ const Topbar = (props: Props) => {
                       <TopbarLink
                         onClick={handleLogout}
                         label={t("Common/Logout")}
-                        icon={OutlineArrowLeftEndOnRectangleIcon}
-                        iconHover={SolidArrowLeftEndOnRectangleIcon}
+                        icon={Outline.ArrowLeftEndOnRectangleIcon}
+                        iconHover={Solid.ArrowLeftEndOnRectangleIcon}
                       />
                     ) : (
                       <TopbarLink
                         href="/"
                         label={t("Common/Login")}
-                        icon={OutlineArrowRightEndOnRectangleIcon}
-                        iconHover={SolidArrowRightEndOnRectangleIcon}
+                        icon={Outline.ArrowRightEndOnRectangleIcon}
+                        iconHover={Solid.ArrowRightEndOnRectangleIcon}
                       />
                     )}
                   </div>

@@ -7,7 +7,7 @@ namespace backend.Models
     {
         public int Id { get; set; }
 
-        [MaxLength(32)]
+        [MaxLength(64)]
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
         public int UnitGroupId { get; set; }
@@ -15,6 +15,7 @@ namespace backend.Models
         public bool AllowRemovingElements { get; set; }
         public bool AllowImport { get; set; }
         public bool ReplaceOnImport { get; set; }
+        public bool SkipRowOne { get; set; } = true;
 
         // Meta data.
         public DateTime CreationDate { get; set; }
@@ -26,10 +27,16 @@ namespace backend.Models
         public bool IsCheckedOut { get; set; } = false;
         public string? CheckedOutBy { get; set; }
         public DateTime? CheckedOutAt { get; set; }
+        public DateTime? RevisionArchivedForCheckoutAt { get; set; }
 
         public List<MasterPlanToMasterPlanField> MasterPlanToMasterPlanFields { get; set; } = new();
         public List<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; } =
             new();
         public List<MasterPlanFieldMapping> FieldMappings { get; set; } = new();
+
+        public List<OperationalPlan> OperationalPlans { get; set; } = new();
+        public List<ProductToMasterPlan> ProductToMasterPlans { get; set; } = new();
+        public List<PlannedStopToMasterPlan> PlannedStopToMasterPlans { get; set; } = new();
+        public List<ProductGroupToMasterPlan> ProductGroupToMasterPlans { get; set; } = new();
     }
 }

@@ -2,6 +2,7 @@
 
 @theme {
   /* --- CUSTOM BREAKPOINTS --- */
+  --breakpoint-4xl: 160rem;
   --breakpoint-3xl: 120rem;
   --breakpoint-ml: 56rem;
   --breakpoint-xs: 32rem;

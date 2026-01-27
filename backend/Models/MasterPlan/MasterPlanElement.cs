@@ -8,6 +8,7 @@ namespace backend.Models
         public List<MasterPlanElementValue> Values { get; set; } = new();
         public List<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; } =
             new();
+        public MasterPlanElementStatus Status { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }
@@ -20,5 +21,12 @@ namespace backend.Models
         public bool StruckElement { get; set; }
         public bool CurrentElement { get; set; }
         public bool NextElement { get; set; }
+    }
+
+    public enum MasterPlanElementStatus
+    {
+        NotStarted,
+        InProgress,
+        Finished,
     }
 }

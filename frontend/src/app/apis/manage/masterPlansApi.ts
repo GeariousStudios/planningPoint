@@ -6,7 +6,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export type SortOrder = "asc" | "desc";
 
-// --- admin/manage/units/master-plans/MasterPlansClient.tsx ---
+// --- admin/manage/plan/master-plans/MasterPlansClient.tsx ---
 export const fetchContent = async ({
   page,
   pageSize,
@@ -43,10 +43,7 @@ export const fetchContent = async ({
   }
 
   if (filters?.allowImport !== undefined) {
-    params.append(
-      "allowImport",
-      String(filters.allowImport),
-    );
+    params.append("allowImport", String(filters.allowImport));
   }
 
   if (filters?.unitGroupIds) {
@@ -61,6 +58,18 @@ export const fetchContent = async ({
 
   filters?.masterPlanFieldIds?.forEach((id) => {
     params.append("fieldIds", id.toString());
+  });
+
+  filters?.operationalPlanIds?.forEach((id) => {
+    params.append("operationalPlanIds", id.toString());
+  });
+
+  filters?.productIds?.forEach((id) => {
+    params.append("productIds", id.toString());
+  });
+
+  filters?.plannedStopIds?.forEach((id) => {
+    params.append("plannedStopIds", id.toString());
   });
   // --- FILTERS STOP ---
 
@@ -190,5 +199,105 @@ export const fetchUnits = async (): Promise<UnitOption[]> => {
 
   const result = await response.json();
 
+  return result.items ?? [];
+};
+
+export type MasterPlanProductOption = { id: number; name: string };
+
+export const fetchMasterPlanProducts = async (
+  masterPlanId: number,
+): Promise<MasterPlanProductOption[]> => {
+  const response = await fetch(
+    `${apiUrl}/master-plan/${masterPlanId}/products`,
+    {
+      headers: {
+        "X-User-Language": localStorage.getItem("language") || "sv",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    return [];
+  }
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const result = await response.json();
+  return result.items ?? [];
+};
+
+export type MasterPlanPlannedStopOption = { id: number; name: string };
+
+export const fetchMasterPlanPlannedStops = async (
+  masterPlanId: number,
+): Promise<MasterPlanPlannedStopOption[]> => {
+  const response = await fetch(
+    `${apiUrl}/master-plan/${masterPlanId}/planned-stops`,
+    {
+      headers: {
+        "X-User-Language": localStorage.getItem("language") || "sv",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    return [];
+  }
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const result = await response.json();
+  return result.items ?? [];
+};
+
+export type ProductOption = { id: number; name: string };
+export type PlannedStopOption = { id: number; name: string };
+
+export const fetchProducts = async (): Promise<ProductOption[]> => {
+  const response = await fetch(`${apiUrl}/product?sortBy=name&sortOrder=asc`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    return [];
+  }
+
+  const result = await response.json();
+  return result.items ?? [];
+};
+
+export const fetchPlannedStops = async (): Promise<PlannedStopOption[]> => {
+  const response = await fetch(
+    `${apiUrl}/planned-stop?sortBy=name&sortOrder=asc`,
+    {
+      headers: {
+        "X-User-Language": localStorage.getItem("language") || "sv",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    return [];
+  }
+
+  const result = await response.json();
   return result.items ?? [];
 };

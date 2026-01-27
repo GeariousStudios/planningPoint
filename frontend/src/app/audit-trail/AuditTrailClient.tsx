@@ -486,7 +486,7 @@ const AuditTrailClient = (props: Props) => {
       </div>
 
       {/* --- RESULT LIST --- */}
-      <div className="relative w-full overflow-x-auto rounded border border-(--border-main)">
+      <div className="relative w-full overflow-x-auto rounded border border-(--border-main) bg-(--bg-grid)">
         <table className="w-full min-w-6xl table-fixed border-collapse">
           <thead className="bg-(--bg-grid-header)">
             <tr>
@@ -517,6 +517,7 @@ const AuditTrailClient = (props: Props) => {
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
+                classNameAddition="w-64"
               />
               <ThCell
                 sortingItem="entityId"
@@ -638,7 +639,7 @@ const AuditTrailClient = (props: Props) => {
                                                     <td className="px-4 pr-2 align-top font-medium whitespace-nowrap">
                                                       {key}
                                                     </td>
-                                                    <td className="px-4 break-words">
+                                                    <td className="px-4 [overflow-wrap:anywhere]">
                                                       {checkIfHtml(value) ? (
                                                         <div
                                                           className="prose prose-sm max-w-none"
@@ -748,7 +749,7 @@ const AuditTrailClient = (props: Props) => {
                                                     <td className="px-4 pr-2 align-top font-medium whitespace-nowrap">
                                                       {key}
                                                     </td>
-                                                    <td className="px-4 break-words">
+                                                    <td className="px-4 [overflow-wrap:anywhere]">
                                                       {checkIfHtml(value) ? (
                                                         <div
                                                           className="prose prose-sm max-w-none"
@@ -862,7 +863,7 @@ const AuditTrailClient = (props: Props) => {
                                                 <td className="px-4 pr-2 align-top font-medium whitespace-nowrap">
                                                   {key}
                                                 </td>
-                                                <td className="px-4 break-words">
+                                                <td className="px-4 [overflow-wrap:anywhere]">
                                                   {checkIfHtml(value) ? (
                                                     <div
                                                       className="prose prose-sm max-w-none"

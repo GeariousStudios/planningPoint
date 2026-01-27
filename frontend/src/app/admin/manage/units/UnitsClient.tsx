@@ -10,13 +10,11 @@ import {
   fetchCategories,
   fetchUnitGroups,
   fetchShifts,
-  fetchStopTypes,
   fetchMasterPlans,
   UnitColumnOption,
   CategoryOption,
   UnitGroupOption,
   ShiftOption,
-  StopTypeOption,
   MasterPlanOption,
 } from "@/app/apis/manage/unitsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
@@ -118,7 +116,6 @@ const UnitsClient = (props: Props) => {
   const [unitColumns, setUnitColumns] = useState<UnitColumnOption[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [shifts, setShifts] = useState<ShiftOption[]>([]);
-  const [stopTypes, setStopTypes] = useState<StopTypeOption[]>([]);
   const [masterPlans, setMasterPlans] = useState<MasterPlanOption[]>([]);
   useEffect(() => {
     fetchUnitGroups()
@@ -135,10 +132,6 @@ const UnitsClient = (props: Props) => {
 
     fetchShifts()
       .then(setShifts)
-      .catch((err) => notify("error", t("Modal/Unknown error")));
-
-    fetchStopTypes()
-      .then(setStopTypes)
       .catch((err) => notify("error", t("Modal/Unknown error")));
 
     fetchMasterPlans()
@@ -220,13 +213,12 @@ const UnitsClient = (props: Props) => {
             <span className="w-full font-semibold">
               {t("Units/Belongs to master plan")}:
             </span>
-            <>
-              {item.masterPlanName === null ? (
-                <span className="-mt-2">-</span>
-              ) : (
-                <span className="-mt-2">{item.masterPlanName}</span>
-              )}
-            </>
+
+            {item.masterPlanName === null ? (
+              <span className="-mt-2">-</span>
+            ) : (
+              <span className="-mt-2">{item.masterPlanName}</span>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Columns")}:</span>
@@ -270,7 +262,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-reverse)`}
+                      className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                     >
                       {cat.name}
                     </span>
@@ -320,56 +312,6 @@ const UnitsClient = (props: Props) => {
                       }
                     >
                       {shift.name}
-                    </span>
-                  );
-                })
-              )}
-            </>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">
-              {t("Common/Stop types")}:
-            </span>
-            <>
-              {stopTypes.filter((stopType) =>
-                item.stopTypeIds.includes(stopType.id),
-              ).length === 0 ? (
-                <span className="-mt-2">-</span>
-              ) : (
-                item.stopTypeIds.map((id) => {
-                  const stopType = stopTypes.find((s) => s.id === id);
-                  if (!stopType) {
-                    return null;
-                  }
-
-                  return (
-                    <span
-                      key={id}
-                      className={badgeClass}
-                      style={
-                        stopType.reverseColor
-                          ? {
-                              boxShadow: `inset 0 0 0 1px ${
-                                currentTheme === "dark"
-                                  ? stopType.darkColorHex
-                                  : stopType.lightColorHex
-                              }`,
-                              backgroundColor: "transparent",
-                              color: "var(--text-main)",
-                            }
-                          : {
-                              backgroundColor:
-                                currentTheme === "dark"
-                                  ? stopType.darkColorHex
-                                  : stopType.lightColorHex,
-                              color:
-                                currentTheme === "dark"
-                                  ? stopType.darkTextColorHex
-                                  : stopType.lightTextColorHex,
-                            }
-                      }
-                    >
-                      {stopType.name}
                     </span>
                   );
                 })
@@ -511,7 +453,7 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-reverse)`}
+                className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
               >
                 {cat.name}
               </span>
@@ -571,62 +513,13 @@ const UnitsClient = (props: Props) => {
       responsivePriority: 5,
     },
     {
-      key: "stopTypes",
-      label: t("Common/Stop types"),
-      sortingItem: "stoptypecount",
-      labelAsc: t("Units/stop type amount") + t("Manage/ascending"),
-      labelDesc: t("Units/stop type amount") + t("Manage/descending"),
-      getValue: (item: UnitItem) => (
-        <div className="flex flex-wrap gap-2">
-          {item.stopTypeIds.map((id) => {
-            const stopType = stopTypes.find((s) => s.id === id);
-            if (!stopType) {
-              return null;
-            }
-
-            return (
-              <span
-                key={id}
-                className={badgeClass}
-                style={
-                  stopType.reverseColor
-                    ? {
-                        boxShadow: `inset 0 0 0 1px ${
-                          currentTheme === "dark"
-                            ? stopType.darkColorHex
-                            : stopType.lightColorHex
-                        }`,
-                        backgroundColor: "transparent",
-                        color: "var(--text-main)",
-                      }
-                    : {
-                        backgroundColor:
-                          currentTheme === "dark"
-                            ? stopType.darkColorHex
-                            : stopType.lightColorHex,
-                        color:
-                          currentTheme === "dark"
-                            ? stopType.darkTextColorHex
-                            : stopType.lightTextColorHex,
-                      }
-                }
-              >
-                {stopType.name}
-              </span>
-            );
-          })}
-        </div>
-      ),
-      responsivePriority: 5,
-    },
-    {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
       labelAsc: t("Units/visible units"),
       labelDesc: t("Units/hidden units"),
       classNameAddition: "w-[100px] min-w-[100px]",
-      childClassNameAddition: "w-[72px] min-w-[72px]",
+      childClassNameAddition: "w-fit",
       getValue: (item: UnitItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
@@ -696,16 +589,6 @@ const UnitsClient = (props: Props) => {
         shiftIds: val
           ? [...(prev.shiftIds ?? []), shiftId]
           : (prev.shiftIds ?? []).filter((id) => id !== shiftId),
-      }));
-    },
-
-    selectedStopTypes: filters.stopTypeIds ?? [],
-    setStopTypeSelected: (stopTypeId: number, val: boolean) => {
-      setFilters((prev) => ({
-        ...prev,
-        stopTypeIds: val
-          ? [...(prev.stopTypeIds ?? []), stopTypeId]
-          : (prev.stopTypeIds ?? []).filter((id) => id !== stopTypeId),
       }));
     },
 
@@ -799,17 +682,6 @@ const UnitsClient = (props: Props) => {
         setSelected: (val: boolean) =>
           filterControls.setShiftSelected(shift.id, val),
         count: counts?.shiftCount?.[shift.id],
-      })),
-    },
-    {
-      label: t("Common/Stop types"),
-      breakpoint: "2xl",
-      options: stopTypes.map((stopType) => ({
-        label: stopType.name,
-        isSelected: filterControls.selectedStopTypes.includes(stopType.id),
-        setSelected: (val: boolean) =>
-          filterControls.setStopTypeSelected(stopType.id, val),
-        count: counts?.stopTypeCount?.[stopType.id],
       })),
     },
   ];

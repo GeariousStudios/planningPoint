@@ -189,6 +189,8 @@ namespace backend.Controllers
                         .MasterPlanToMasterPlanFields.Select(mpf => mpf.MasterPlanId)
                         .OrderBy(id => id)
                         .ToList(),
+                    LocalIncremental = t.LocalIncremental,
+                    GlobalIncremental = t.GlobalIncremental,
                     IsHidden = t.IsHidden,
 
                     // Meta data.
@@ -237,10 +239,12 @@ namespace backend.Controllers
                 Name = masterPlanField.Name,
                 DataType = masterPlanField.DataType,
                 Alignment = masterPlanField.Alignment,
-                IsHidden = masterPlanField.IsHidden,
                 MasterPlanIds = masterPlanField
                     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
                     .ToList(),
+                LocalIncremental = masterPlanField.LocalIncremental,
+                GlobalIncremental = masterPlanField.GlobalIncremental,
+                IsHidden = masterPlanField.IsHidden,
             };
 
             return Ok(result);
@@ -292,6 +296,12 @@ namespace backend.Controllers
                     ["ObjectID"] = field.Id,
                     ["Name"] = field.Name,
                     ["DataType"] = field.DataType.ToString(),
+                    ["LocalIncremental"] = field.LocalIncremental
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["GlobalIncremental"] = field.GlobalIncremental
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["Alignment"] = field.Alignment.ToString(),
                     ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
                 }
@@ -322,6 +332,19 @@ namespace backend.Controllers
                 );
             }
 
+            if (dto.DataType != MasterPlanFieldDataType.Number)
+            {
+                dto.LocalIncremental = false;
+                dto.GlobalIncremental = false;
+            }
+
+            if (dto.LocalIncremental && dto.GlobalIncremental)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("MasterPlanField/IncrementalConflict", lang) }
+                );
+            }
+
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
@@ -339,6 +362,8 @@ namespace backend.Controllers
                 Name = dto.Name,
                 DataType = dto.DataType,
                 Alignment = dto.Alignment,
+                LocalIncremental = dto.LocalIncremental,
+                GlobalIncremental = dto.GlobalIncremental,
                 IsHidden = dto.IsHidden,
                 // MasterPlanToMasterPlanFields =
                 //     dto.MasterPlanIds != null
@@ -366,6 +391,8 @@ namespace backend.Controllers
                 Name = field.Name,
                 DataType = field.DataType,
                 Alignment = field.Alignment,
+                LocalIncremental = field.LocalIncremental,
+                GlobalIncremental = field.GlobalIncremental,
                 IsHidden = field.IsHidden,
                 // MasterPlanIds = field
                 //     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
@@ -390,6 +417,12 @@ namespace backend.Controllers
                     ["ObjectID"] = field.Id,
                     ["Name"] = field.Name,
                     ["DataType"] = field.DataType.ToString(),
+                    ["LocalIncremental"] = field.LocalIncremental
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["GlobalIncremental"] = field.GlobalIncremental
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["Alignment"] = field.Alignment.ToString(),
                     ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
                 }
@@ -428,6 +461,19 @@ namespace backend.Controllers
                 );
             }
 
+            if (dto.DataType != MasterPlanFieldDataType.Number)
+            {
+                dto.LocalIncremental = false;
+                dto.GlobalIncremental = false;
+            }
+
+            if (dto.LocalIncremental && dto.GlobalIncremental)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("MasterPlanField/IncrementalConflict", lang) }
+                );
+            }
+
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
@@ -456,6 +502,12 @@ namespace backend.Controllers
                 ["ObjectID"] = field.Id,
                 ["Name"] = field.Name,
                 ["DataType"] = field.DataType.ToString(),
+                ["LocalIncremental"] = field.LocalIncremental
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
+                ["GlobalIncremental"] = field.GlobalIncremental
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["Alignment"] = field.Alignment.ToString(),
                 ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
             };
@@ -463,6 +515,8 @@ namespace backend.Controllers
             field.Name = dto.Name;
             field.DataType = dto.DataType;
             field.Alignment = dto.Alignment;
+            field.LocalIncremental = dto.LocalIncremental;
+            field.GlobalIncremental = dto.GlobalIncremental;
             field.IsHidden = dto.IsHidden;
 
             // _context.MasterPlanToMasterPlanFields.RemoveRange(field.MasterPlanToMasterPlanFields);
@@ -490,6 +544,8 @@ namespace backend.Controllers
                 Name = field.Name,
                 DataType = field.DataType,
                 Alignment = field.Alignment,
+                LocalIncremental = field.LocalIncremental,
+                GlobalIncremental = field.GlobalIncremental,
                 IsHidden = field.IsHidden,
                 // MasterPlanIds = field
                 //     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
@@ -515,6 +571,12 @@ namespace backend.Controllers
                         ["ObjectID"] = field.Id,
                         ["Name"] = field.Name,
                         ["DataType"] = field.DataType.ToString(),
+                        ["LocalIncremental"] = field.LocalIncremental
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                        ["GlobalIncremental"] = field.GlobalIncremental
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                         ["Alignment"] = field.Alignment.ToString(),
                         ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
                     },

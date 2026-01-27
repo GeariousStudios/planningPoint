@@ -9,6 +9,10 @@ type Props = {
   triggerRef?: RefObject<HTMLElement | null>;
   closeOnScroll?: boolean;
   onModal?: boolean;
+  autoWidth?: boolean;
+  alignLeft?: boolean;
+  center?: boolean;
+  maxHeight?: number | string;
 };
 
 const MenuDropdown = (props: Props) => {
@@ -18,18 +22,44 @@ const MenuDropdown = (props: Props) => {
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
   const updateWidthAndPosition = () => {
+    if (props.center) {
+      const w = props.autoWidth ? undefined : 256;
+
+      setWidth(props.autoWidth ? "max-content" : `${w}px`);
+
+      setPosition({
+        top: window.scrollY + window.innerHeight / 2,
+        left: window.scrollX + window.innerWidth / 2,
+      });
+
+      return;
+    }
+
     if (!props.triggerRef?.current) return;
 
     const rect = props.triggerRef.current.getBoundingClientRect();
-    const desiredWidth = 256;
-    const leftPos = rect.right - desiredWidth;
+    const desiredWidth = props.autoWidth ? 0 : 256;
 
-    const adjustedWidth = leftPos < 8 ? rect.right - 8 : desiredWidth;
+    let left: number;
 
-    setWidth(`${adjustedWidth}px`);
+    if (props.alignLeft) {
+      const overflowRight = rect.left + desiredWidth - window.innerWidth;
+      const adjustedWidth =
+        overflowRight > 0 ? desiredWidth - overflowRight - 8 : desiredWidth;
+
+      setWidth(`${adjustedWidth}px`);
+      left = rect.left;
+    } else {
+      const leftPos = rect.right - desiredWidth;
+      const adjustedWidth = leftPos < 8 ? rect.right - 8 : desiredWidth;
+
+      setWidth(`${adjustedWidth}px`);
+      left = rect.right - adjustedWidth;
+    }
+
     setPosition({
       top: rect.bottom + window.scrollY + 4,
-      left: rect.right - adjustedWidth + window.scrollX,
+      left: left + window.scrollX,
     });
   };
 
@@ -145,11 +175,16 @@ const MenuDropdown = (props: Props) => {
         {...(props.onModal ? { "data-inside-modal": "true" } : {})}
         role="dialog"
         aria-hidden={!props.isOpen}
-        className={`${props.isOpen ? "visible" : "invisible"} ${props.isOpen && entered ? "opacity-100" : "opacity-0"} bg-(--bg-topbar) duration-(--fast) absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex max-h-[462.5px] flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility]`}
+        className={`${props.isOpen ? "visible" : "invisible"} ${props.isOpen && entered ? "opacity-100" : "opacity-0"} absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex max-h-[462.5px] flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-(--bg-topbar) p-4 [overflow-wrap:anywhere] shadow-[0_0_16px_0_rgba(0,0,0,0.200)] transition-[opacity,visibility] duration-(--fast)`}
         style={{
-          width,
+          width: props.autoWidth ? "max-content" : width,
           top: position.top,
           left: position.left,
+          transform: props.center ? "translate(-50%, -50%)" : "",
+          maxHeight:
+            typeof props.maxHeight === "number"
+              ? `${props.maxHeight}px`
+              : props.maxHeight,
         }}
       >
         {props.children}

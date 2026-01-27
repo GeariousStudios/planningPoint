@@ -219,6 +219,8 @@ const UnitGroupModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
+      window.dispatchEvent(new Event("master-plan-list-updated"));
+      window.dispatchEvent(new Event("operational-plan-list-updated"));
       notify("success", t("Common/Group") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));

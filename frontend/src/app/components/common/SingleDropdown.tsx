@@ -162,6 +162,7 @@ const SingleDropdown = ({
             : undefined
         }
         onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
         <li role="option" aria-hidden="true" hidden></li>
@@ -172,7 +173,7 @@ const SingleDropdown = ({
               optionRefs.current[index] = el;
             }}
             tabIndex={0}
-            className={`${value === opt.value ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-(--slow) select-none hover:bg-(--accent-color)`}
+            className={`${value === opt.value ? "bg-[color-mix(in_srgb,var(--accent-color)_50%,transparent)] font-bold" : ""} cursor-pointer p-2 transition-colors duration-(--slow) select-none hover:bg-(--accent-color)`}
             role="option"
             onClick={() => {
               onChange && onChange(opt.value);

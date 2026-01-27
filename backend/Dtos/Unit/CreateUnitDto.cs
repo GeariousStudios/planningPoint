@@ -6,7 +6,7 @@ namespace backend.Dtos.Unit
     public class CreateUnitDto
     {
         [Required(ErrorMessage = "[1|Common/a name] Validation/Please enter")]
-        [MaxLength(16, ErrorMessage = "[2|Common/Name|16] Validation/cannot exceed")]
+        [MaxLength(64, ErrorMessage = "[2|Common/Name|64] Validation/cannot exceed")]
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "[3|Unit/a group] Validation/Please select")]
@@ -30,7 +30,6 @@ namespace backend.Dtos.Unit
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();
         public List<int> ShiftIds { get; set; } = new();
-        public List<int> StopTypeIds { get; set; } = new();
         public bool IsHidden { get; set; }
         public bool IsPlannable { get; set; }
         public int? MasterPlanId { get; set; }

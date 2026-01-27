@@ -7,7 +7,7 @@ namespace backend.Models
     {
         public int Id { get; set; }
 
-        [MaxLength(32)]
+        [MaxLength(64)]
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
 
