@@ -324,17 +324,7 @@ namespace backend.Controllers
                 column.Id,
                 deletedBy,
                 userId,
-                new Dictionary<string, object?>
-                {
-                    ["ObjectID"] = column.Id,
-                    ["Name"] = column.Name,
-                    ["DataType"] = column.DataType.ToString(),
-                    ["Compare"] = column.Compare ? new[] { "Common/Yes" } : new[] { "Common/No" },
-                    ["ComparisonText"] = column.ComparisonText ?? "—",
-                    ["LargeColumn"] = column.LargeColumn
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
-                }
+                new Dictionary<string, object?> { ["ObjectID"] = column.Id, ["Name"] = column.Name }
             );
 
             _context.UnitColumns.Remove(column);

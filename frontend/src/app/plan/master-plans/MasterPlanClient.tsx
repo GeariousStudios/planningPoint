@@ -302,51 +302,55 @@ const MasterPlanClient = (props: Props) => {
                 )}
 
                 {/* --- Import --- */}
-                {c.isEditing && !c.isCheckingIn && c.masterPlans[0]?.allowImport && (
-                  <div className="flex gap-4">
-                    <input
-                      id="excel-import-input"
-                      type="file"
-                      accept=".xlsx,.xls"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] ?? null;
-                        if (!file) {
-                          return;
-                        }
+                {c.isEditing &&
+                  !c.isCheckingIn &&
+                  c.masterPlans[0]?.allowImport && (
+                    <div className="flex gap-4">
+                      <input
+                        id="excel-import-input"
+                        type="file"
+                        accept=".xlsx,.xls"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] ?? null;
+                          if (!file) {
+                            return;
+                          }
 
-                        c.handleImport(file);
-                        e.currentTarget.value = "";
-                      }}
-                    />
+                          c.handleImport(file);
+                          e.currentTarget.value = "";
+                        }}
+                      />
 
-                    <button
-                      className={`${buttonSecondaryClass} lg:w-max lg:px-4`}
-                      onClick={() => {
-                        document.getElementById("excel-import-input")?.click();
-                      }}
-                      disabled={c.importing}
-                    >
-                      {c.importing ? (
-                        <div className="flex items-center justify-center gap-2 truncate">
-                          <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
-                          {t("MasterPlan/Importing master plan")}
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2 truncate">
-                          <HoverIcon
-                            outline={Outline.ArrowUpTrayIcon}
-                            solid={Solid.ArrowUpTrayIcon}
-                            className="h-6 w-6"
-                          />
-                          <span className="xs:block hidden">
-                            {t("MasterPlan/Import master plan")}
-                          </span>
-                        </div>
-                      )}
-                    </button>
-                  </div>
-                )}
+                      <button
+                        className={`${buttonSecondaryClass} lg:w-max lg:px-4`}
+                        onClick={() => {
+                          document
+                            .getElementById("excel-import-input")
+                            ?.click();
+                        }}
+                        disabled={c.importing}
+                      >
+                        {c.importing ? (
+                          <div className="flex items-center justify-center gap-2 truncate">
+                            <Outline.ArrowPathIcon className="h-6 w-6 motion-safe:animate-[spin_1s_linear_infinite]" />{" "}
+                            {t("MasterPlan/Importing master plan")}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2 truncate">
+                            <HoverIcon
+                              outline={Outline.ArrowUpTrayIcon}
+                              solid={Solid.ArrowUpTrayIcon}
+                              className="h-6 w-6"
+                            />
+                            <span className="xs:block hidden">
+                              {t("MasterPlan/Import master plan")}
+                            </span>
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                  )}
               </div>
 
               {/* --- Checked out by text --- */}
@@ -459,7 +463,9 @@ const MasterPlanClient = (props: Props) => {
                               role="switch"
                               aria-checked={c.isKeepSeparate}
                               className={`${switchClass(c.isKeepSeparate)} `}
-                              onClick={() => c.setIsKeepSeparate((prev) => !prev)}
+                              onClick={() =>
+                                c.setIsKeepSeparate((prev) => !prev)
+                              }
                               disabled={c.editMode === "group"}
                             >
                               <div
@@ -522,8 +528,8 @@ const MasterPlanClient = (props: Props) => {
                               onClick={() => {
                                 const topGroup =
                                   c.editMode === "group"
-                                    ? (c.masterPlans[0]?.elements?.[0]?.groupId ??
-                                      null)
+                                    ? (c.masterPlans[0]?.elements?.[0]
+                                        ?.groupId ?? null)
                                     : null;
                                 c.handleAddElement(
                                   c.masterPlans[0]?.id as number,
@@ -1315,7 +1321,10 @@ const MasterPlanClient = (props: Props) => {
                           {c.fieldOptions
                             .filter((f) => !f.isHidden)
                             .map((f, i) => {
-                              const val = c.getDisplayValue(el, f);
+                              const val =
+                                el.values?.find(
+                                  (v: any) => v.masterPlanFieldId === f.id,
+                                )?.value ?? "";
                               return (
                                 <TdCell
                                   key={`${el.id}-${f.value}`}
@@ -1323,7 +1332,7 @@ const MasterPlanClient = (props: Props) => {
                                     i === c.fieldOptions.length - 1
                                       ? "w-full min-w-fit"
                                       : "min-w-fit whitespace-nowrap"
-                                  } ${f.dataType?.toLowerCase() === "date" && c.isEditing ? "!min-w-[11rem]" : ""} ${c.isEditing ? "px-2!" : ""}  ${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""} `}
+                                  } ${f.dataType?.toLowerCase() === "date" && c.isEditing ? "!min-w-[11rem]" : ""} ${c.isEditing ? "px-2!" : ""}  ${el.status === "InProgress" ? "!border-(--border-inProgress)" : el.status === "Finished" ? "!border-(--border-finished)" : ""}`}
                                 >
                                   <div
                                     className={`flex w-full ${
@@ -1334,7 +1343,7 @@ const MasterPlanClient = (props: Props) => {
                                           : f.alignment === "Left"
                                             ? "justify-start"
                                             : "justify-start"
-                                    }`}
+                                    } whitespace-nowrap`}
                                   >
                                     {c.isEditing ? (
                                       <div
@@ -1349,10 +1358,6 @@ const MasterPlanClient = (props: Props) => {
                                         </span>
                                         <div className="absolute w-full">
                                           {(() => {
-                                            const isIncremental =
-                                              !!f.localIncremental ||
-                                              !!f.globalIncremental;
-
                                             return (
                                               <Input
                                                 type={
@@ -1368,15 +1373,8 @@ const MasterPlanClient = (props: Props) => {
                                                         : "text"
                                                 }
                                                 value={val || ""}
-                                                readOnly={isIncremental}
-                                                tabIndex={
-                                                  isIncremental ? -1 : 0
-                                                }
+                                                tabIndex={0}
                                                 onChange={(newValue) => {
-                                                  if (isIncremental) {
-                                                    return;
-                                                  }
-
                                                   c.handleCellChange(
                                                     String(planId),
                                                     String(el.id),
@@ -1389,7 +1387,7 @@ const MasterPlanClient = (props: Props) => {
                                                   el.struckElement
                                                     ? "line-through opacity-60 "
                                                     : ""
-                                                } ${isIncremental ? "pointer-events-none opacity-70 " : ""}${
+                                                } ${
                                                   el.status === "InProgress"
                                                     ? "!border-(--border-main)"
                                                     : el.status === "Finished"
@@ -1436,7 +1434,9 @@ const MasterPlanClient = (props: Props) => {
             <div className="xs:w-auto flex w-full items-center">
               <button
                 type="button"
-                onClick={() => c.setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() =>
+                  c.setCurrentPage((prev) => Math.max(prev - 1, 1))
+                }
                 disabled={c.currentPage === 1}
                 className={iconButtonPrimaryClass}
               >
@@ -1502,10 +1502,15 @@ const MasterPlanClient = (props: Props) => {
                 type="button"
                 onClick={() =>
                   c.setCurrentPage((prev) =>
-                    Math.min(prev + 1, Math.ceil(c.totalGroups / c.itemsPerPage)),
+                    Math.min(
+                      prev + 1,
+                      Math.ceil(c.totalGroups / c.itemsPerPage),
+                    ),
                   )
                 }
-                disabled={c.currentPage >= Math.ceil(c.totalGroups / c.itemsPerPage)}
+                disabled={
+                  c.currentPage >= Math.ceil(c.totalGroups / c.itemsPerPage)
+                }
                 className={iconButtonPrimaryClass}
               >
                 <SmallerSolid.ChevronRightIcon className="min-h-full min-w-full" />

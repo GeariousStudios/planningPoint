@@ -577,27 +577,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = masterPlan.Id,
                     ["Name"] = masterPlan.Name,
-                    ["UnitGroup"] =
-                        $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})" ?? "—",
-                    ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
-                        ? string.Join(
-                            "<br>",
-                            masterPlan
-                                .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
-                                .Select(mpf =>
-                                    $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
-                                )
-                        )
-                        : "—",
-                    ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
-                    ["AllowImport"] = masterPlan.AllowImport
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
-                    ["IsHidden"] = masterPlan.IsHidden
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
                 }
             );
 

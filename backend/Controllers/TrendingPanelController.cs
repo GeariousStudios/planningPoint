@@ -512,35 +512,6 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = panel.Id,
                         ["Name"] = panel.Name,
-                        ["ViewMode"] = panel.ViewMode,
-                        ["PanelSize"] = panel.ColSpan,
-                        ["UnitsToTrend"] = panel
-                            .TrendingPanelToUnits.Join(
-                                _context.Units,
-                                tpu => tpu.UnitId,
-                                u => u.Id,
-                                (tpu, u) => $"{u.Name} (ID: {u.Id})"
-                            )
-                            .ToList()
-                            .DefaultIfEmpty("—")
-                            .ToList(),
-                        ["DataToTrend"] =
-                            panel.UnitColumnId == null
-                                ? new[] { "Common/All" }
-                                : _context
-                                    .UnitColumns.Where(uc => uc.Id == panel.UnitColumnId)
-                                    .Select(uc => $"{uc.Name} (ID: {uc.Id})")
-                                    .FirstOrDefault(),
-                        ["TrendingType"] = panel.Type,
-                        ["TrendingPeriod"] = panel.Period,
-                        ["CustomStartDate"] =
-                            panel.CustomStartDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
-                        ["CustomEndDate"] =
-                            panel.CustomEndDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
-                        ["ShowInfo"] = panel.ShowInfo
-                            ? new[] { "Common/Yes" }
-                            : new[] { "Common/No" },
-                        ["Order"] = $"{panel.Order + 1}: {panel.Name} (ID: {panel.Id})",
                     }
                 );
             }

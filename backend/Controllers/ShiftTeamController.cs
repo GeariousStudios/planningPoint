@@ -241,14 +241,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = shiftTeam.Id,
                     ["Name"] = shiftTeam.Name,
-                    ["LightColorHex"] = shiftTeam.LightColorHex,
-                    ["DarkColorHex"] = shiftTeam.DarkColorHex,
-                    ["ReverseColor"] = shiftTeam.ReverseColor
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
-                    ["IsHidden"] = shiftTeam.IsHidden
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
                 }
             );
 

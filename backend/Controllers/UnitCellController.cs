@@ -253,14 +253,7 @@ namespace backend.Controllers
             }
 
             // Audit trail.
-            var logData = new Dictionary<string, object?>
-            {
-                ["ObjectID"] = cell.Id,
-                ["BelongsToUnit"] = $"{cell.Unit?.Name} (ID: {cell.UnitId})",
-                ["BelongsToColumn"] = $"{cell.Column?.Name} (ID: {cell.ColumnId})",
-                ["Date"] = cell.Date?.ToString("yyyy-MM-dd") ?? "—",
-                ["Hour"] = cell.Hour,
-            };
+            var logData = new Dictionary<string, object?> { ["ObjectID"] = cell.Id };
 
             if (cell.Column?.DataType == UnitColumnDataType.Number)
             {

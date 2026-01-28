@@ -279,15 +279,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = productGroup.Id,
                     ["Name"] = productGroup.Name,
-                    ["MasterPlans"] = productGroup
-                        .ProductGroupToMasterPlans.Select(p => p.MasterPlanId)
-                        .ToList(),
-                    ["Products"] = productGroup
-                        .ProductGroupToProducts.Select(p => p.ProductId)
-                        .ToList(),
-                    ["IsHidden"] = productGroup.IsHidden
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
                 }
             );
 
@@ -423,6 +414,26 @@ namespace backend.Controllers
             };
 
             // Audit trail.
+            var masterPlanMeta = await _context
+                .MasterPlans.Where(mp => (dto.MasterPlanIds ?? Array.Empty<int>()).Contains(mp.Id))
+                .Select(mp => new { mp.Id, mp.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+            var productMeta = await _context
+                .Products.Where(p => (dto.ProductIds ?? Array.Empty<int>()).Contains(p.Id))
+                .Select(p => new { p.Id, p.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+            var fieldMeta = await _context
+                .MasterPlanFields.Where(f =>
+                    (dto.ProductGroupFieldValues ?? Enumerable.Empty<ProductGroupFieldValueDto>())
+                        .Select(x => x.MasterPlanFieldId)
+                        .Distinct()
+                        .Contains(f.Id)
+                )
+                .Select(f => new { f.Id, f.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
             await _audit.LogAsync(
                 "Create",
                 "ProductGroup",
@@ -433,8 +444,40 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = productGroup.Id,
                     ["Name"] = productGroup.Name,
-                    ["MasterPlans"] = dto.MasterPlanIds,
-                    ["Products"] = dto.ProductIds,
+                    ["MasterPlans"] =
+                        dto.MasterPlanIds?.Any() == true
+                            ? string.Join(
+                                "<br>",
+                                dto.MasterPlanIds.OrderBy(id => id)
+                                    .Select(id =>
+                                        $"{masterPlanMeta.GetValueOrDefault(id, $"#{id}")} (ID: {id})"
+                                    )
+                            )
+                            : "—",
+                    ["Products"] =
+                        dto.ProductIds?.Any() == true
+                            ? string.Join(
+                                "<br>",
+                                dto.ProductIds.Select(
+                                    (id, index) =>
+                                        $"{productMeta.GetValueOrDefault(id, $"#{id}")} (ID: {id})"
+                                )
+                            )
+                            : "—",
+                    ["ProductGroupFieldValues"] =
+                        (dto.ProductGroupFieldValues?.Any() == true)
+                            ? string.Join(
+                                "<br>",
+                                dto.ProductGroupFieldValues.OrderBy(x => x.ProductId)
+                                    .ThenBy(x => x.MasterPlanFieldId)
+                                    .Select(x =>
+                                        $"{productMeta.GetValueOrDefault(x.ProductId, $"#{x.ProductId}")} → "
+                                        + $"{fieldMeta.GetValueOrDefault(x.MasterPlanFieldId, $"#{x.MasterPlanFieldId}")} "
+                                        + $"(ID: {x.MasterPlanFieldId}): "
+                                        + $"{(string.IsNullOrWhiteSpace(x.Value) ? "—" : x.Value)}"
+                                    )
+                            )
+                            : "—",
                     ["IsHidden"] = dto.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
             );
@@ -530,16 +573,60 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var masterPlanMeta = await _context
+                .MasterPlans.Where(mp => (dto.MasterPlanIds ?? Array.Empty<int>()).Contains(mp.Id))
+                .Select(mp => new { mp.Id, mp.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+            var productMeta = await _context
+                .Products.Where(p => (dto.ProductIds ?? Array.Empty<int>()).Contains(p.Id))
+                .Select(p => new { p.Id, p.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+            var fieldMeta = await _context
+                .MasterPlanFields.Where(f =>
+                    (dto.ProductGroupFieldValues ?? Enumerable.Empty<ProductGroupFieldValueDto>())
+                        .Select(x => x.MasterPlanFieldId)
+                        .Distinct()
+                        .Contains(f.Id)
+                )
+                .Select(f => new { f.Id, f.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
             var oldValues = new Dictionary<string, object?>
             {
                 ["ObjectID"] = productGroup.Id,
                 ["Name"] = productGroup.Name,
-                ["MasterPlans"] = productGroup
-                    .ProductGroupToMasterPlans.Select(p => p.MasterPlanId)
-                    .ToList(),
-                ["Products"] = productGroup
-                    .ProductGroupToProducts.Select(p => p.ProductId)
-                    .ToList(),
+                ["MasterPlans"] = productGroup.ProductGroupToMasterPlans.Any()
+                    ? string.Join(
+                        "<br>",
+                        productGroup
+                            .ProductGroupToMasterPlans.OrderBy(x => x.MasterPlanId)
+                            .Select(x => $"{x.MasterPlan.Name} (ID: {x.MasterPlanId})")
+                    )
+                    : "—",
+                ["Products"] = productGroup.ProductGroupToProducts.Any()
+                    ? string.Join(
+                        "<br>",
+                        productGroup
+                            .ProductGroupToProducts.OrderBy(x => x.Order)
+                            .Select(x => $"{x.Product.Name} (ID: {x.ProductId})")
+                    )
+                    : "—",
+                ["ProductGroupFieldValues"] = productGroup.ProductGroupFieldValues.Any()
+                    ? string.Join(
+                        "<br>",
+                        productGroup
+                            .ProductGroupFieldValues.OrderBy(x => x.ProductId)
+                            .ThenBy(x => x.MasterPlanFieldId)
+                            .Select(x =>
+                                $"{productMeta.GetValueOrDefault(x.ProductId, $"#{x.ProductId}")} → "
+                                + $"{fieldMeta.GetValueOrDefault(x.MasterPlanFieldId, $"#{x.MasterPlanFieldId}")} "
+                                + $"(ID: {x.MasterPlanFieldId}): "
+                                + $"{(string.IsNullOrWhiteSpace(x.Value) ? "—" : x.Value)}"
+                            )
+                    )
+                    : "—",
                 ["IsHidden"] = productGroup.IsHidden
                     ? new[] { "Common/Yes" }
                     : new[] { "Common/No" },
@@ -640,8 +727,40 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = productGroup.Id,
                         ["Name"] = productGroup.Name,
-                        ["MasterPlans"] = dto.MasterPlanIds,
-                        ["Products"] = dto.ProductIds,
+                        ["MasterPlans"] =
+                            dto.MasterPlanIds?.Any() == true
+                                ? string.Join(
+                                    "<br>",
+                                    dto.MasterPlanIds.OrderBy(id => id)
+                                        .Select(id =>
+                                            $"{masterPlanMeta.GetValueOrDefault(id, $"#{id}")} (ID: {id})"
+                                        )
+                                )
+                                : "—",
+                        ["Products"] =
+                            dto.ProductIds?.Any() == true
+                                ? string.Join(
+                                    "<br>",
+                                    dto.ProductIds.Select(
+                                        (id, index) =>
+                                            $"{productMeta.GetValueOrDefault(id, $"#{id}")} (ID: {id})"
+                                    )
+                                )
+                                : "—",
+                        ["ProductGroupFieldValues"] =
+                            dto.ProductGroupFieldValues?.Any() == true
+                                ? string.Join(
+                                    "<br>",
+                                    dto.ProductGroupFieldValues.OrderBy(x => x.ProductId)
+                                        .ThenBy(x => x.MasterPlanFieldId)
+                                        .Select(x =>
+                                            $"{productMeta.GetValueOrDefault(x.ProductId, $"#{x.ProductId}")} → "
+                                            + $"{fieldMeta.GetValueOrDefault(x.MasterPlanFieldId, $"#{x.MasterPlanFieldId}")} "
+                                            + $"(ID: {x.MasterPlanFieldId}): "
+                                            + $"{(string.IsNullOrWhiteSpace(x.Value) ? "—" : x.Value)}"
+                                        )
+                                )
+                                : "—",
                         ["IsHidden"] = dto.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },

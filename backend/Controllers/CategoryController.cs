@@ -362,11 +362,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = category.Id,
                     ["Name"] = category.Name,
-                    ["SubCategories"] =
-                        string.Join(
-                            "<br>",
-                            subCategoriesToDelete.Select(sc => $"{sc.Name} (ID: {sc.Id})")
-                        ) ?? "—",
                 }
             );
 

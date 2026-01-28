@@ -240,6 +240,9 @@ const MasterPlanFieldModal = (props: Props) => {
 
     setLocalIncremental(result.localIncremental ?? false);
     setOriginalLocalIncremental(result.localIncremental ?? false);
+
+    setGlobalIncremental(result.globalIncremental ?? false);
+    setOriginalGlobalIncremental(result.globalIncremental ?? false);
   };
 
   // --- Update master plan field ---
@@ -461,7 +464,7 @@ const MasterPlanFieldModal = (props: Props) => {
                 />
               </div>
 
-              {dataType === "Number" ? (
+              {/* {dataType === "Number" ? (
                 <>
                   <div className="flex items-center gap-2">
                     <hr className="w-12 text-(--border-tertiary)" />
@@ -539,7 +542,7 @@ const MasterPlanFieldModal = (props: Props) => {
                 </>
               ) : (
                 ""
-              )}
+              )} */}
 
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />

@@ -257,16 +257,7 @@ namespace backend.Controllers
                 report.Id,
                 deletedBy,
                 userId,
-                new Dictionary<string, object?>
-                {
-                    ["ObjectID"] = report.Id,
-                    ["BelongsToUnit"] = $"{report.Unit.Name} (ID: {report.UnitId})",
-                    ["Category"] = report.CategoryName ?? "—",
-                    ["SubCategory"] = report.SubCategoryName ?? "—",
-                    ["StartTime"] = report.StartTime.ToString("yyyy-MM-dd HH:mm"),
-                    ["StopTime"] = report.StopTime?.ToString("yyyy-MM-dd HH:mm") ?? "—",
-                    ["Content"] = report.Content,
-                }
+                new Dictionary<string, object?> { ["ObjectID"] = report.Id }
             );
 
             _context.Reports.Remove(report);

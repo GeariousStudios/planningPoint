@@ -278,18 +278,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = operationalPlan.Id,
                     ["Name"] = operationalPlan.Name,
-                    ["UnitGroup"] =
-                        $"{operationalPlan.UnitGroup.Name} (ID: {operationalPlan.UnitGroupId})"
-                        ?? "—",
-                    ["MasterPlan"] =
-                        operationalPlan.MasterPlan == null
-                            ? "—"
-                            : $"{operationalPlan.MasterPlan.Name} (ID: {operationalPlan.MasterPlanId})",
-                    ["LightColorHex"] = operationalPlan.ProductLightColorHex,
-                    ["DarkColorHex"] = operationalPlan.ProductDarkColorHex,
-                    ["IsHidden"] = operationalPlan.IsHidden
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
                 }
             );
 
@@ -426,8 +414,8 @@ namespace backend.Controllers
                         operationalPlan.MasterPlan == null
                             ? "—"
                             : $"{operationalPlan.MasterPlan.Name} (ID: {operationalPlan.MasterPlanId})",
-                    ["LightColorHex"] = operationalPlan.ProductLightColorHex,
-                    ["DarkColorHex"] = operationalPlan.ProductDarkColorHex,
+                    ["ProductLightColorHex"] = operationalPlan.ProductLightColorHex,
+                    ["ProductDarkColorHex"] = operationalPlan.ProductDarkColorHex,
                     ["IsHidden"] = operationalPlan.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -525,8 +513,8 @@ namespace backend.Controllers
                     operationalPlan.MasterPlan == null
                         ? "—"
                         : $"{operationalPlan.MasterPlan.Name} (ID: {operationalPlan.MasterPlanId})",
-                ["LightColorHex"] = operationalPlan.ProductLightColorHex,
-                ["DarkColorHex"] = operationalPlan.ProductDarkColorHex,
+                ["ProductLightColorHex"] = operationalPlan.ProductLightColorHex,
+                ["ProductDarkColorHex"] = operationalPlan.ProductDarkColorHex,
                 ["IsHidden"] = operationalPlan.IsHidden
                     ? new[] { "Common/Yes" }
                     : new[] { "Common/No" },
@@ -585,8 +573,8 @@ namespace backend.Controllers
                             operationalPlan.MasterPlan == null
                                 ? "—"
                                 : $"{operationalPlan.MasterPlan.Name} (ID: {operationalPlan.MasterPlanId})",
-                        ["LightColorHex"] = operationalPlan.ProductLightColorHex,
-                        ["DarkColorHex"] = operationalPlan.ProductDarkColorHex,
+                        ["ProductLightColorHex"] = operationalPlan.ProductLightColorHex,
+                        ["ProductDarkColorHex"] = operationalPlan.ProductDarkColorHex,
                         ["IsHidden"] = operationalPlan.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },

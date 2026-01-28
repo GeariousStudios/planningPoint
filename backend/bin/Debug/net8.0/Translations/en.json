@@ -192,6 +192,8 @@
   "AuditTrail/IsHidden": "Hidden",
   "AuditTrail/LightColorHex": "Light colour (hex)",
   "AuditTrail/DarkColorHex": "Dark colour (hex)",
+  "AuditTrail/ProductLightColorHex": "Product light colour (hex)",
+  "AuditTrail/ProductDarkColorHex": "Product dark colour (hex)",
   "AuditTrail/CycleLengthWeeks": "Cycle length (weeks)",
   "AuditTrail/AnchorWeekStart": "Reference week",
   "AuditTrail/Teams": "Teams",
@@ -288,6 +290,7 @@
   "AuditTrail/ProductGroup": "Product group",
   "AuditTrail/LocalIncremental": "Locally incremental",
   "AuditTrail/GlobalIncremental": "Globally incremental",
+  "AuditTrail/ProductGroupFieldValues": "Field values",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

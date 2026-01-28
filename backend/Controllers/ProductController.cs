@@ -276,22 +276,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = product.Id,
                     ["Name"] = product.Name,
-                    ["MasterPlans"] = product
-                        .ProductToMasterPlans.Select(p => p.MasterPlanId)
-                        .ToList(),
-                    ["MasterPlanFields"] = product
-                        .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
-                        .Select(x => new
-                        {
-                            Id = x.MasterPlanFieldId,
-                            Name = x.MasterPlanField.Name,
-                            DataType = x.MasterPlanField.DataType.ToString(),
-                            Value = x.Value,
-                        })
-                        .ToList(),
-                    ["IsHidden"] = product.IsHidden
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
                 }
             );
 
@@ -437,6 +421,11 @@ namespace backend.Controllers
                 .ToDictionaryAsync(x => x.Id, x => x);
 
             // Audit trail.
+            var masterPlanMeta = await _context
+                .MasterPlans.Where(mp => (dto.MasterPlanIds ?? Array.Empty<int>()).Contains(mp.Id))
+                .Select(mp => new { mp.Id, mp.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
             await _audit.LogAsync(
                 "Create",
                 "Product",
@@ -447,21 +436,29 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = product.Id,
                     ["Name"] = product.Name,
-                    ["MasterPlans"] = dto.MasterPlanIds,
-                    ["MasterPlanFields"] = product
-                        .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
-                        .Select(x => new
-                        {
-                            Id = x.MasterPlanFieldId,
-                            Name = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta)
-                                ? meta.Name
-                                : $"#{x.MasterPlanFieldId}",
-                            DataType = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta2)
-                                ? meta2.DataType
-                                : "",
-                            Value = x.Value,
-                        })
-                        .ToList(),
+                    ["MasterPlans"] =
+                        dto.MasterPlanIds?.Any() == true
+                            ? string.Join(
+                                "<br>",
+                                dto.MasterPlanIds.OrderBy(id => id)
+                                    .Select(id =>
+                                        $"{masterPlanMeta.GetValueOrDefault(id, $"#{id}")} (ID: {id})"
+                                    )
+                            )
+                            : "—",
+                    ["MasterPlanFields"] = product.ProductToMasterPlanFields.Any()
+                        ? product
+                            .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
+                            .Select(x => new
+                            {
+                                Id = x.MasterPlanFieldId,
+                                Name = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta)
+                                    ? meta.Name
+                                    : $"#{x.MasterPlanFieldId}",
+                                Value = string.IsNullOrWhiteSpace(x.Value) ? "—" : x.Value,
+                            })
+                            .ToList()
+                        : "—",
                     ["IsHidden"] = dto.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
             );
@@ -570,17 +567,25 @@ namespace backend.Controllers
             {
                 ["ObjectID"] = product.Id,
                 ["Name"] = product.Name,
-                ["MasterPlans"] = product.ProductToMasterPlans.Select(p => p.MasterPlanId).ToList(),
-                ["MasterPlanFields"] = product
-                    .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
-                    .Select(x => new
-                    {
-                        Id = x.MasterPlanFieldId,
-                        Name = x.MasterPlanField.Name,
-                        DataType = x.MasterPlanField.DataType.ToString(),
-                        Value = x.Value,
-                    })
-                    .ToList(),
+                ["MasterPlans"] = product.ProductToMasterPlans.Any()
+                    ? string.Join(
+                        "<br>",
+                        product
+                            .ProductToMasterPlans.OrderBy(x => x.MasterPlanId)
+                            .Select(x => $"{x.MasterPlan.Name} (ID: {x.MasterPlanId})")
+                    )
+                    : "—",
+                ["MasterPlanFields"] = product.ProductToMasterPlanFields.Any()
+                    ? product
+                        .ProductToMasterPlanFields.OrderBy(x => x.MasterPlanFieldId)
+                        .Select(x => new
+                        {
+                            Id = x.MasterPlanFieldId,
+                            Name = x.MasterPlanField.Name,
+                            Value = string.IsNullOrWhiteSpace(x.Value) ? "—" : x.Value,
+                        })
+                        .ToList()
+                    : "—",
                 ["IsHidden"] = product.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
@@ -647,10 +652,7 @@ namespace backend.Controllers
                     Name = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta)
                         ? meta.Name
                         : $"#{x.MasterPlanFieldId}",
-                    DataType = fieldMeta.TryGetValue(x.MasterPlanFieldId, out var meta2)
-                        ? meta2.DataType
-                        : "",
-                    Value = x.Value ?? "",
+                    Value = string.IsNullOrWhiteSpace(x.Value) ? "—" : x.Value,
                 })
                 .ToList();
 
@@ -681,8 +683,17 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = product.Id,
                         ["Name"] = product.Name,
-                        ["MasterPlans"] = dto.MasterPlanIds,
-                        ["MasterPlanFields"] = newMasterPlanFields,
+                        ["MasterPlans"] = product.ProductToMasterPlans.Any()
+                            ? string.Join(
+                                "<br>",
+                                product
+                                    .ProductToMasterPlans.OrderBy(x => x.MasterPlanId)
+                                    .Select(x => $"{x.MasterPlan.Name} (ID: {x.MasterPlanId})")
+                            )
+                            : "—",
+                        ["MasterPlanFields"] = newMasterPlanFields.Any()
+                            ? newMasterPlanFields
+                            : "—",
                         ["IsHidden"] = dto.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },

@@ -8,6 +8,7 @@ namespace backend.Models
         public int MasterPlanFieldId { get; set; }
         public int? MasterPlanId { get; set; }
         public int LastNumber { get; set; }
+        public Guid? GlobalIncrementalKey { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }

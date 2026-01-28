@@ -291,20 +291,7 @@ namespace backend.Controllers
                 field.Id,
                 deletedBy,
                 userId,
-                new Dictionary<string, object?>
-                {
-                    ["ObjectID"] = field.Id,
-                    ["Name"] = field.Name,
-                    ["DataType"] = field.DataType.ToString(),
-                    ["LocalIncremental"] = field.LocalIncremental
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
-                    ["GlobalIncremental"] = field.GlobalIncremental
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
-                    ["Alignment"] = field.Alignment.ToString(),
-                    ["IsHidden"] = field.IsHidden ? "Common/Yes" : "Common/No",
-                }
+                new Dictionary<string, object?> { ["ObjectID"] = field.Id, ["Name"] = field.Name }
             );
 
             _context.MasterPlanFields.Remove(field);

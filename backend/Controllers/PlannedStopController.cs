@@ -230,17 +230,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = plannedStop.Id,
                     ["Name"] = plannedStop.Name,
-                    ["LightColorHex"] = plannedStop.LightColorHex,
-                    ["DarkColorHex"] = plannedStop.DarkColorHex,
-                    ["ReverseColor"] = plannedStop.ReverseColor
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
-                    ["MasterPlans"] = plannedStop
-                        .PlannedStopToMasterPlans.Select(p => p.MasterPlanId)
-                        .ToList(),
-                    ["IsHidden"] = plannedStop.IsHidden
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
                 }
             );
 
@@ -333,6 +322,11 @@ namespace backend.Controllers
             };
 
             // Audit trail.
+            var masterPlanMeta = await _context
+                .MasterPlans.Where(mp => (dto.MasterPlanIds ?? Array.Empty<int>()).Contains(mp.Id))
+                .Select(mp => new { mp.Id, mp.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
             await _audit.LogAsync(
                 "Create",
                 "PlannedStop",
@@ -348,9 +342,16 @@ namespace backend.Controllers
                     ["ReverseColor"] = plannedStop.ReverseColor
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
-                    ["MasterPlans"] = plannedStop
-                        .PlannedStopToMasterPlans.Select(p => p.MasterPlanId)
-                        .ToList(),
+                    ["MasterPlans"] =
+                        dto.MasterPlanIds?.Any() == true
+                            ? string.Join(
+                                "<br>",
+                                dto.MasterPlanIds.OrderBy(id => id)
+                                    .Select(id =>
+                                        $"{masterPlanMeta.GetValueOrDefault(id, $"#{id}")} (ID: {id})"
+                                    )
+                            )
+                            : "—",
                     ["IsHidden"] = plannedStop.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -421,9 +422,14 @@ namespace backend.Controllers
                 ["ReverseColor"] = plannedStop.ReverseColor
                     ? new[] { "Common/Yes" }
                     : new[] { "Common/No" },
-                ["MasterPlans"] = plannedStop
-                    .PlannedStopToMasterPlans.Select(p => p.MasterPlanId)
-                    .ToList(),
+                ["MasterPlans"] = plannedStop.PlannedStopToMasterPlans.Any()
+                    ? string.Join(
+                        "<br>",
+                        plannedStop
+                            .PlannedStopToMasterPlans.OrderBy(x => x.MasterPlanId)
+                            .Select(x => $"{x.MasterPlan.Name} (ID: {x.MasterPlanId})")
+                    )
+                    : "—",
                 ["IsHidden"] = plannedStop.IsHidden
                     ? new[] { "Common/Yes" }
                     : new[] { "Common/No" },
@@ -489,9 +495,14 @@ namespace backend.Controllers
                         ["ReverseColor"] = plannedStop.ReverseColor
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },
-                        ["MasterPlans"] = plannedStop
-                            .PlannedStopToMasterPlans.Select(p => p.MasterPlanId)
-                            .ToList(),
+                        ["MasterPlans"] = plannedStop.PlannedStopToMasterPlans.Any()
+                            ? string.Join(
+                                "<br>",
+                                plannedStop
+                                    .PlannedStopToMasterPlans.OrderBy(x => x.MasterPlanId)
+                                    .Select(x => $"{x.MasterPlan.Name} (ID: {x.MasterPlanId})")
+                            )
+                            : "—",
                         ["IsHidden"] = plannedStop.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },

@@ -263,11 +263,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = user.Id,
                     ["Username"] = user.Username ?? "—",
-                    ["FirstName"] = user.FirstName ?? "—",
-                    ["LastName"] = user.LastName ?? "—",
-                    ["Email"] = user.Email ?? "—",
-                    ["Roles"] = user.GetRoleStrings(),
-                    ["IsLocked"] = user.IsLocked ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
             );
 

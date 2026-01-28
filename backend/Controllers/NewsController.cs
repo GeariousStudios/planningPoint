@@ -306,10 +306,7 @@ namespace backend.Controllers
                 new Dictionary<string, object?>
                 {
                     ["ObjectID"] = newsItem.Id,
-                    ["Date"] = newsItem.Date.ToString("yyyy-MM-dd HH:mm"),
-                    ["NewsType"] = $"{newsItem.TypeName} (ID: {newsItem.TypeId})",
                     ["Headline"] = newsItem.Headline,
-                    ["Content"] = newsItem.Content,
                 }
             );
 

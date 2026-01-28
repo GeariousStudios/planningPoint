@@ -512,59 +512,7 @@ namespace backend.Controllers
                 shift.Id,
                 deletedBy,
                 userId,
-                new Dictionary<string, object?>
-                {
-                    ["ObjectID"] = shift.Id,
-                    ["Name"] = shift.Name,
-                    ["LightColorHex"] = shift.LightColorHex,
-                    ["DarkColorHex"] = shift.DarkColorHex,
-                    ["ReverseColor"] = shift.ReverseColor
-                        ? new[] { "Common/Yes" }
-                        : new[] { "Common/No" },
-                    ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
-                    ["AnchorWeekStart"] = shift.AnchorWeekStart,
-                    ["Teams"] =
-                        shift
-                            .ShiftToShiftTeams.Select(st =>
-                                st.ShiftTeam != null
-                                    ? $"{st.ShiftTeam.Name} (ID: {st.ShiftTeam.Id})"
-                                    : $"(ID: {st.ShiftTeamId})"
-                            )
-                            .ToList() ?? new List<string> { "—" },
-                    ["WeeklyTimes"] = _context
-                        .ShiftToShiftTeamSchedules.Where(s => s.ShiftId == shift.Id)
-                        .AsEnumerable()
-                        .Select(s =>
-                        {
-                            var team = _context.ShiftTeams.FirstOrDefault(t =>
-                                t.Id == s.ShiftTeamId
-                            );
-                            var displayName = _context
-                                .ShiftToShiftTeams.Where(x =>
-                                    x.ShiftId == shift.Id && x.ShiftTeamId == s.ShiftTeamId
-                                )
-                                .Select(x => x.DisplayName)
-                                .FirstOrDefault();
-
-                            return new Dictionary<string, object?>
-                            {
-                                ["TeamId"] = team?.Name,
-                                ["DisplayName"] = string.IsNullOrWhiteSpace(displayName)
-                                    ? "—"
-                                    : displayName,
-                                ["WeekIndex"] = s.WeekIndex + 1,
-                                ["DayOfWeek"] = s.DayOfWeek,
-                                ["Start"] = TimeSpan
-                                    .FromMinutes(Math.Floor(s.StartTime.TotalMinutes))
-                                    .ToString(@"hh\:mm"),
-                                ["Stop"] = TimeSpan
-                                    .FromMinutes(Math.Floor(s.EndTime.TotalMinutes))
-                                    .ToString(@"hh\:mm"),
-                            };
-                        })
-                        .ToList(),
-                    ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
-                }
+                new Dictionary<string, object?> { ["ObjectID"] = shift.Id, ["Name"] = shift.Name }
             );
 
             _context.Shifts.Remove(shift);
