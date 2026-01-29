@@ -78,7 +78,7 @@ type ProductGroupFetchDto = {
 
 export type MasterPlanElementStatus = "NotStarted" | "InProgress" | "Finished";
 
-export const useMasterPlan = (
+export const useMasterPlanClient = (
   t: any,
   apiUrl: string | undefined,
   token: string | null,

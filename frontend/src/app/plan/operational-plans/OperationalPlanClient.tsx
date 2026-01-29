@@ -34,7 +34,7 @@ import { useParams } from "next/navigation";
 import {
   MasterPlanElementStatus,
   useMasterPlan,
-} from "@/app/hooks/useMasterPlan";
+} from "@/app/hooks/useMasterPlanClient";
 import {
   badgeClass,
   filterClass,

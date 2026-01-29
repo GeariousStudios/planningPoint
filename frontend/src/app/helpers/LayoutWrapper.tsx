@@ -167,6 +167,7 @@ const LayoutWrapper = (props: Props) => {
         label: t("Common/Operational plans"),
         clickable: true,
       },
+      "planning-rules": { label: t("Navbar/Planning rules"), clickable: true },
 
       // --- Admin ---
       admin: { label: t("Common/Admin"), clickable: false },
@@ -216,6 +217,9 @@ const LayoutWrapper = (props: Props) => {
       "admin/manage/plan/master-plans": [
         "admin/manage/plan/master-plans/master-plan-fields",
         "admin/manage/plan/master-plans/import-rules",
+      ],
+      "admin/manage/plan/operational-plans": [
+        "admin/manage/plan/operational-plans/planning-rules",
       ],
       "admin/manage/plan/products": [
         "admin/manage/plan/products/product-groups",

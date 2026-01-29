@@ -1172,6 +1172,20 @@ const Navbar = (props: Props) => {
                                           "/admin/manage/plan/operational-plans/",
                                       ),
                                     },
+                                    {
+                                      href: "/admin/manage/plan/operational-plans/planning-rules/",
+                                      label: t("Navbar/Planning rules"),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/operational-plans/planning-rules/",
+                                      ),
+                                    },
                                   ],
                                 },
                                 {

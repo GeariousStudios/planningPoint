@@ -73,6 +73,10 @@ const AdminManageNavClient = (props: Props) => {
           href: "/admin/manage/plan/operational-plans/",
           label: t("Common/Operational plans"),
         },
+        {
+          href: "/admin/manage/plan/operational-plans/planning-rules/",
+          label: t("Navbar/Planning rules"),
+        },
       ],
     },
     {

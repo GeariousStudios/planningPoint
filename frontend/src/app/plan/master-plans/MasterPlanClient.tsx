@@ -33,8 +33,8 @@ import HoverIcon from "@/app/components/common/HoverIcon";
 import { useParams } from "next/navigation";
 import {
   MasterPlanElementStatus,
-  useMasterPlan,
-} from "@/app/hooks/useMasterPlan";
+  useMasterPlanClient,
+} from "@/app/hooks/useMasterPlanClient";
 import {
   badgeClass,
   filterClass,
@@ -61,7 +61,7 @@ const MasterPlanClient = (props: Props) => {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const c = useMasterPlan(t, apiUrl, token, masterPlanId);
+  const c = useMasterPlanClient(t, apiUrl, token, masterPlanId);
 
   // --- Update handbook ---
   const { setHandbook } = useHandbook();
