@@ -59,6 +59,11 @@ const ImportRulesClient = (props: Props) => {
   const [isReverting, setIsReverting] = useState(false);
 
   // --- Other ---
+  const hasChanges =
+    JSON.stringify(columnMapping) !== JSON.stringify(originalMapping) ||
+    groupFieldId !== originalGroupFieldId ||
+    replaceOnImport !== originalReplaceOnImport ||
+    skipRowOne !== originalSkipRowOne;
   const { notify } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token =
@@ -200,7 +205,7 @@ const ImportRulesClient = (props: Props) => {
       return;
     }
 
-    notify("success", t("ImportRules/Rules saved"));
+    notify("success", t("Common/Rules saved"));
     setIsSaving(false);
 
     setOriginalMapping(columnMapping);
@@ -222,15 +227,9 @@ const ImportRulesClient = (props: Props) => {
     setReplaceOnImport(originalReplaceOnImport);
     setSkipRowOne(originalSkipRowOne);
 
-    notify("info", t("ImportRules/Changes reverted"));
+    notify("info", t("Common/Changes reverted"));
     setIsReverting(false);
   };
-
-  const hasChanges =
-    JSON.stringify(columnMapping) !== JSON.stringify(originalMapping) ||
-    groupFieldId !== originalGroupFieldId ||
-    replaceOnImport !== originalReplaceOnImport ||
-    skipRowOne !== originalSkipRowOne;
 
   // --- Excel columns generation ---
   const excelColumns = Array.from({ length: 16384 }, (_, i) => {
@@ -264,7 +263,7 @@ const ImportRulesClient = (props: Props) => {
           content={
             fields.length === 0
               ? t("ImportRules/Tooltip select a master plan")
-              : t("ImportRules/Tooltip save rules")
+              : t("Common/Tooltip save rules")
           }
           showOnTouch
           longDelay
@@ -284,7 +283,7 @@ const ImportRulesClient = (props: Props) => {
               <div className="flex items-center justify-center gap-2">
                 <LoadingSpinner />
                 <span className="hidden lg:block">
-                  {t("ImportRules/Saving rules")}
+                  {t("Common/Saving rules")}
                 </span>
               </div>
             ) : (
@@ -295,7 +294,7 @@ const ImportRulesClient = (props: Props) => {
                   className="h-6 w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("ImportRules/Save rules")}
+                  {t("Common/Save rules")}
                 </span>
               </div>
             )}
@@ -307,7 +306,7 @@ const ImportRulesClient = (props: Props) => {
           content={
             fields.length === 0
               ? t("ImportRules/Tooltip select a master plan")
-              : t("ImportRules/Tooltip revert changes")
+              : t("Common/Tooltip revert changes")
           }
           showOnTouch
           longDelay
@@ -323,7 +322,7 @@ const ImportRulesClient = (props: Props) => {
               <div className="flex items-center justify-center gap-2">
                 <LoadingSpinner />
                 <span className="hidden lg:block">
-                  {t("ImportRules/Reverting changes")}
+                  {t("Common/Reverting changes")}
                 </span>
               </div>
             ) : (
@@ -334,7 +333,7 @@ const ImportRulesClient = (props: Props) => {
                   className="h-6 w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("ImportRules/Revert changes")}
+                  {t("Common/Revert changes")}
                 </span>
               </div>
             )}
@@ -345,8 +344,8 @@ const ImportRulesClient = (props: Props) => {
       {/* --- MASTER PLAN SELECTION --- */}
       <div className="grid w-full rounded-2xl bg-(--bg-modal)">
         <div className="flex items-center justify-between gap-4 px-6 pt-6">
-          <h2 className="text-lg font-semibold whitespace-nowrap">
-            {t("ImportRules/Import rules")} {t("Common/for")}{" "}
+          <h2 className="text-lg font-semibold">
+            {t("Navbar/Import rules")} {t("Common/for")}{" "}
             {t("Common/master plan")}
           </h2>
         </div>

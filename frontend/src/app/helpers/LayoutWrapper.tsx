@@ -191,7 +191,7 @@ const LayoutWrapper = (props: Props) => {
 
       products: { label: t("Common/Products"), clickable: true },
       "planned-stops": { label: t("Common/Planned stops"), clickable: true },
-      "import-rules": { label: t("ImportRules/Import rules"), clickable: true },
+      "import-rules": { label: t("Navbar/Import rules"), clickable: true },
       "master-plan-fields": {
         label: t("Common/Master plan fields"),
         clickable: true,

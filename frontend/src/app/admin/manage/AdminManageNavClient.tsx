@@ -66,7 +66,7 @@ const AdminManageNavClient = (props: Props) => {
         },
         {
           href: "/admin/manage/plan/master-plans/import-rules/",
-          label: t("ImportRules/Import rules"),
+          label: t("Navbar/Import rules"),
         },
         {
           title: t("Navbar/Operational planning"),

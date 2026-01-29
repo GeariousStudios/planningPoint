@@ -445,7 +445,7 @@ const Navbar = (props: Props) => {
       },
       {
         href: "/admin/manage/plan/master-plans/import-rules/",
-        label: t("ImportRules/Import rules"),
+        label: t("Navbar/Import rules"),
         icon: "WrenchIcon",
       },
       {
@@ -1145,7 +1145,7 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       href: "/admin/manage/plan/master-plans/import-rules/",
-                                      label: t("ImportRules/Import rules"),
+                                      label: t("Navbar/Import rules"),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites

@@ -26,6 +26,7 @@ type DropdownProps = {
   smallDropdown?: boolean;
   showMore?: boolean;
   usePortal?: boolean;
+  disabled?: boolean;
 };
 
 const SingleDropdown = ({
@@ -46,6 +47,7 @@ const SingleDropdown = ({
   smallDropdown = false,
   showMore = false,
   usePortal = false,
+  disabled = false,
 }: DropdownProps) => {
   // --- VARIABLES ---
   // --- Refs ---
@@ -62,6 +64,14 @@ const SingleDropdown = ({
   });
 
   // --- ISOPEN HANDLER ---
+  const handleOpen = (state: boolean) => {
+    if (disabled) {
+      return;
+    }
+
+    setIsOpen(state);
+  };
+
   useEffect(() => {
     const sc = scrollContainer?.();
     if (!sc) {
@@ -84,7 +94,7 @@ const SingleDropdown = ({
       const wrapper = wrapperRef.current;
 
       if (wrapper && !wrapper.contains(target)) {
-        setIsOpen(false);
+        handleOpen(false);
       }
     };
     document.addEventListener("mousedown", close);
@@ -103,6 +113,14 @@ const SingleDropdown = ({
       }, 0);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!disabled) {
+      return;
+    }
+
+    setIsOpen(false);
+  }, [disabled]);
 
   const selectedLabel = options.find((opt) => opt.value === value)?.label || "";
 
@@ -177,15 +195,15 @@ const SingleDropdown = ({
             role="option"
             onClick={() => {
               onChange && onChange(opt.value);
-              setIsOpen(false);
+              handleOpen(false);
             }}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
-                setIsOpen(false);
+                handleOpen(false);
               } else if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 onChange && onChange(opt.value);
-                setIsOpen(false);
+                handleOpen(false);
               }
             }}
           >
@@ -200,18 +218,18 @@ const SingleDropdown = ({
     <div className={`relative w-full`} ref={wrapperRef}>
       <div className="relative w-full">
         <div
-          className={`${isOpen ? "outline-2 outline-offset-2 outline-(--accent-color)" : ""} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${smallDropdown ? "h-[24px] text-sm" : "h-[40px]"} z-1 flex w-full cursor-pointer items-center gap-2 rounded border bg-transparent p-2 transition-[max-height] duration-(--medium)`}
-          onClick={() => setIsOpen(!isOpen)}
+          className={`${isOpen ? "outline-2 outline-offset-2 outline-(--accent-color)" : ""} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${smallDropdown ? "h-[24px] text-sm" : "h-[40px]"} ${disabled ? "cursor-not-allowed" : "cursor-pointer"} z-1 flex w-full items-center gap-2 rounded border bg-transparent p-2 transition-[max-height] duration-(--medium)`}
+          onClick={() => handleOpen(!isOpen)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              setIsOpen(!isOpen);
+              handleOpen(!isOpen);
             } else if (e.key === "Escape") {
-              setIsOpen(false);
+              handleOpen(false);
             }
           }}
           role="button"
-          tabIndex={tabIndex ?? 0}
+          tabIndex={disabled ? -1 : (tabIndex ?? 0)}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
@@ -247,55 +265,6 @@ const SingleDropdown = ({
           isOpen &&
           typeof document !== "undefined" &&
           createPortal(dropdownList, document.body)}
-
-        {/* {isOpen && (
-          <FocusTrap
-            focusTrapOptions={{
-              clickOutsideDeactivates: true,
-              escapeDeactivates: true,
-              returnFocusOnDeactivate: true,
-              fallbackFocus: () => document.body,
-            }}
-          >
-            <ul
-              data-inside-modal="true"
-              ref={(el) => {
-                dropdownRef.current = el;
-              }}
-              className={`${isOpen ? `pointer-events-auto ${showMore ? "max-h-68" : "max-h-48"} opacity-100` : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : "bg-(--bg-main)"} ${showAbove ? "bottom-full rounded-t border-b-0" : "top-full rounded-b border-t-0"} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${smallDropdown ? "text-sm" : ""} absolute z-(--z-tooltip) ml-2 w-[calc(100%-1rem)] list-none border opacity-0 transition-[opacity,max-height] duration-(--medium)`}
-              role="listbox"
-              inert={!isOpen || undefined}
-            >
-              <li role="option" aria-hidden="true" hidden></li>
-              {options.map((opt, index) => (
-                <li
-                  key={opt.value}
-                  ref={(el) => {
-                    optionRefs.current[index] = el;
-                  }}
-                  tabIndex={0}
-                  className={`${value === opt.value ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-(--slow) select-none hover:bg-(--accent-color)`}
-                  role="option"
-                  onClick={() => {
-                    onChange && onChange(opt.value);
-                    setIsOpen(false);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape") {
-                      setIsOpen(false);
-                    } else if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      onChange && onChange(opt.value);
-                      setIsOpen(false);
-                    }
-                  }}
-                >
-                  {opt.label}
-                </li>
-              ))}
-            </ul>
-          </FocusTrap>
-        )} */}
 
         {/* This <select> is here to get form validation check */}
         <select
