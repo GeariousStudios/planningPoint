@@ -10,13 +10,13 @@ import {
 import Message from "../../components/common/Message";
 import CustomTooltip from "../../components/common/CustomTooltip";
 import React, { useEffect } from "react";
-import useClient, {
+import useUnitClient, {
   shiftsClass,
   shiftsIconClass,
   tdClass,
   tdClassSpecial,
   thClass,
-} from "@/app/hooks/useClient";
+} from "@/app/hooks/useUnitClient";
 import HoverIcon from "@/app/components/common/HoverIcon";
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
@@ -44,7 +44,7 @@ type ShiftChange = {
 };
 
 const UnitClient = (props: any) => {
-  const c = useClient(props);
+  const c = useUnitClient(props);
   // --- Update handbook ---
   const { setHandbook } = useHandbook();
 

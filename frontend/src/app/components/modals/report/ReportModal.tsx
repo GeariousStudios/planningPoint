@@ -37,6 +37,7 @@ import {
 import { start } from "repl";
 import DeleteModal from "../DeleteModal";
 import { useTranslations } from "next-intl";
+import { capitalize } from "@/app/helpers/textUtils";
 
 type Props = {
   isOpen: boolean;
@@ -1052,7 +1053,7 @@ const ReportModal = (props: Props) => {
                           >
                             <SingleDropdown
                               id="category"
-                              label={t("Common/Category")}
+                              label={capitalize(t("Common/category"))}
                               value={
                                 currentReport.categoryId
                                   ? String(currentReport.categoryId)
@@ -1093,7 +1094,7 @@ const ReportModal = (props: Props) => {
                               return subs.length > 0 ? (
                                 <SingleDropdown
                                   id="subCategory"
-                                  label={t("Common/Sub category")}
+                                  label={capitalize(t("Common/sub category"))}
                                   value={
                                     currentReport.subCategoryId
                                       ? String(currentReport.subCategoryId)

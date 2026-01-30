@@ -26,6 +26,7 @@ import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
+import { capitalize } from "@/app/helpers/textUtils";
 
 type Props = {
   isConnected: boolean | null;
@@ -158,7 +159,7 @@ const UnitsClient = (props: Props) => {
       await deleteContent(id);
       await fetchItems();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Manage/deleted1"), 4000); // <-- Unique.
+      notify("success", capitalize(t("Common/unit")) + t("Manage/deleted1"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -246,7 +247,7 @@ const UnitsClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Common/Categories")}:
+              {capitalize(t("Common/categories"))}:
             </span>
             <>
               {categories.filter((cat) => item.categoryIds.includes(cat.id))
@@ -438,7 +439,7 @@ const UnitsClient = (props: Props) => {
     },
     {
       key: "categories",
-      label: t("Common/Categories"),
+      label: capitalize(t("Common/categories")),
       sortingItem: "categorycount",
       labelAsc: t("Units/category amount") + t("Manage/ascending"),
       labelDesc: t("Units/category amount") + t("Manage/descending"),
@@ -663,7 +664,7 @@ const UnitsClient = (props: Props) => {
       })),
     },
     {
-      label: t("Common/Categories"),
+      label: capitalize(t("Common/categories")),
       breakpoint: "2xl",
       options: categories.map((cat) => ({
         label: cat.name,

@@ -57,7 +57,7 @@ type ShiftChange = {
   newShiftId: number;
 };
 
-const useClient = (props: Props) => {
+const useUnitClient = (props: Props) => {
   const t = useTranslations();
 
   // --- VARIABLES ---
@@ -1442,4 +1442,4 @@ const useClient = (props: Props) => {
   };
 };
 
-export default useClient;
+export default useUnitClient;

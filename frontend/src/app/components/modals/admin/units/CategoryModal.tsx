@@ -20,6 +20,7 @@ import DragDrop from "../../../common/DragDrop";
 import { useTranslations } from "next-intl";
 import { categoryConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
+import { capitalize } from "@/app/helpers/textUtils";
 
 type Props = {
   isOpen: boolean;
@@ -169,7 +170,7 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Category") + t("Modal/created1"), 4000);
+      notify("success", capitalize(t("Common/category")) + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -267,7 +268,7 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Category") + t("Modal/updated1"), 4000);
+      notify("success", capitalize(t("Common/category")) + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {

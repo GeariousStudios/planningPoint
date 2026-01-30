@@ -18,6 +18,7 @@ import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
 import type { ElementType } from "react";
 import DragDrop from "../common/DragDrop";
+import { capitalize } from "@/app/helpers/textUtils";
 
 type Props = {
   hasScrollbar: boolean;
@@ -405,7 +406,7 @@ const Navbar = (props: Props) => {
       { href: "/", label: t("Navbar/Home"), icon: "HomeIcon" },
       {
         href: "/developer/manage/",
-        label: t("Common/Developer") + " / " + t("Common/Manage"),
+        label: t("Common/Developer") + " / " + capitalize(t("Common/manage")),
         icon: "WrenchIcon",
       },
       {
@@ -415,12 +416,12 @@ const Navbar = (props: Props) => {
       },
       {
         href: "/admin/manage/",
-        label: t("Common/Admin") + " / " + t("Common/Manage"),
+        label: t("Common/Admin") + " / " + capitalize(t("Common/manage")),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/categories/",
-        label: t("Common/Categories"),
+        label: capitalize(t("Common/categories")),
         icon: "WrenchIcon",
       },
       {
@@ -808,7 +809,7 @@ const Navbar = (props: Props) => {
 
                           <span className="2xs:block hidden">
                             <NavbarSubmenu
-                              label={t("Common/Manage")}
+                              label={capitalize(t("Common/manage"))}
                               icon={Outline.WrenchIcon}
                               iconHover={Solid.WrenchIcon}
                               hasScrollbar={props.hasScrollbar}
@@ -844,7 +845,7 @@ const Navbar = (props: Props) => {
                           <span className="2xs:hidden block">
                             <NavbarLink
                               href="/developer/manage/"
-                              label={t("Common/Manage")}
+                              label={capitalize(t("Common/manage"))}
                               icon="WrenchIcon"
                               // isFavourite={favourites.some(
                               //   (f) => f.href === "/developer/manage/",
@@ -1004,7 +1005,7 @@ const Navbar = (props: Props) => {
                           </span>
                           <span className="2xs:block hidden">
                             <NavbarSubmenu
-                              label={t("Common/Manage")}
+                              label={capitalize(t("Common/manage"))}
                               icon={Outline.WrenchIcon}
                               iconHover={Solid.WrenchIcon}
                               // requiresAdmin
@@ -1041,7 +1042,7 @@ const Navbar = (props: Props) => {
                                     {
                                       title: t("Navbar/Report"),
                                       href: "/admin/manage/units/categories/",
-                                      label: t("Common/Categories"),
+                                      label: capitalize(t("Common/categories")),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1254,7 +1255,7 @@ const Navbar = (props: Props) => {
                           <span className="2xs:hidden block">
                             <NavbarLink
                               href="/admin/manage/"
-                              label={t("Common/Manage")}
+                              label={capitalize(t("Common/manage"))}
                               icon="WrenchIcon"
                               // isFavourite={favourites.some(
                               //   (f) => f.href === "/admin/manage/",

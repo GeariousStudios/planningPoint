@@ -22,6 +22,7 @@ import { unitConstraints } from "@/app/helpers/inputConstraints";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import HoverIcon from "@/app/components/common/HoverIcon";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
+import { capitalize } from "@/app/helpers/textUtils";
 
 type Props = {
   isOpen: boolean;
@@ -234,7 +235,7 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Modal/created1"), 4000);
+      notify("success", capitalize(t("Common/unit")) + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -494,7 +495,7 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Modal/updated1"), 4000);
+      notify("success", capitalize(t("Common/unit")) + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -807,7 +808,7 @@ const UnitModal = (props: Props) => {
               </div>
 
               <MultiDropdown
-                label={t("Common/Categories")}
+                label={capitalize(t("Common/categories"))}
                 value={categoryIds.map(String)}
                 onChange={(val: string[]) => setCategoryIds(val.map(Number))}
                 options={categories.map((c) => ({

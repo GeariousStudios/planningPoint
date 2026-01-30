@@ -1,16 +1,12 @@
 {
-  "Common/Administrate": "Administrera",
-  "Common/Manage": "Hantera",
-  "Common/Categories": "Kategorier",
+  "Common/manage": "hantera",
   "Common/categories": "kategorier",
-  "Common/Category": "Kategori",
   "Common/category": "kategori",
-  "Common/Sub category": "Underkategori",
   "Common/sub category": "underkategori",
-  "Common/Units": "Enheter",
-  "Common/units": "enheter",
-  "Common/Unit": "Enhet",
-  "Common/unit": "enhet",
+  "Common/unit": {
+    "one": "enhet",
+    "other": "enheter"
+  },
   "Common/Groups": "Grupper",
   "Common/groups": "grupper",
   "Common/Group": "Grupp",

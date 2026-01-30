@@ -18,6 +18,7 @@ import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
+import { capitalize } from "@/app/helpers/textUtils";
 
 type Props = {
   isConnected: boolean | null;
@@ -134,7 +135,7 @@ const CategoriesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Category") + t("Manage/deleted1"), 4000); // <-- Unique.
+      notify("success", capitalize(t("Common/category")) + t("Manage/deleted1"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import NavbarLink from "@/app/components/navbar/NavbarLink";
 import NavPage from "@/app/components/navbar/NavPage";
+import { capitalize } from "@/app/helpers/textUtils";
 
 type Props = {
   isConnected: boolean | null;
@@ -32,7 +33,7 @@ const AdminManageNavClient = (props: Props) => {
         {
           title: t("Navbar/Report"),
           href: "/admin/manage/units/categories/",
-          label: t("Common/Categories"),
+          label: capitalize(t("Common/categories")),
         },
         {
           href: "/admin/manage/units/unit-columns/",

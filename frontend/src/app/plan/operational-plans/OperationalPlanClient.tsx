@@ -33,7 +33,7 @@ import HoverIcon from "@/app/components/common/HoverIcon";
 import { useParams } from "next/navigation";
 import {
   MasterPlanElementStatus,
-  useMasterPlan,
+  useMasterPlanClient,
 } from "@/app/hooks/useMasterPlanClient";
 import {
   badgeClass,

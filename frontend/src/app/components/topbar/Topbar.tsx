@@ -19,6 +19,7 @@ import { useTranslations } from "next-intl";
 import { badgeClass } from "../manage/ManageClasses";
 import HandbookModal from "../modals/HandbookModal";
 import { useHandbook } from "@/app/context/HandbookContext";
+import { capitalize } from "@/app/helpers/textUtils";
 
 type BreadcrumbChild = {
   label: string;
@@ -773,7 +774,7 @@ const Topbar = (props: Props) => {
                   <div>
                     {/* <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-(--border-tertiary)" /> */}
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                      {t("Common/Manage")}
+                      {capitalize(t("Common/manage"))}
                     </span>
                     <TopbarLink
                       onClick={toggleTheme}

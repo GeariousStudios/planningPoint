@@ -5,6 +5,7 @@ import Navbar from "../components/navbar/Navbar";
 import Topbar from "../components/topbar/Topbar";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { capitalize } from "./textUtils";
 
 type Props = {
   children: ReactNode;
@@ -152,7 +153,7 @@ const LayoutWrapper = (props: Props) => {
   const breadcrumbTranslation = useMemo<CrumbMap>(
     () => ({
       // --- General ---
-      manage: { label: t("Common/Manage"), clickable: true },
+      manage: { label: capitalize(t("Common/manage")), clickable: true },
       "audit-trail": { label: t("Navbar/Audit trail"), clickable: false },
 
       // --- Report ---
@@ -177,7 +178,7 @@ const LayoutWrapper = (props: Props) => {
         clickable: true,
       },
       units: { label: t("Common/Units"), clickable: true },
-      categories: { label: t("Common/Categories"), clickable: true },
+      categories: { label: capitalize(t("Common/categories")), clickable: true },
       "unit-columns": {
         label: t("Common/Columns"),
         clickable: true,
