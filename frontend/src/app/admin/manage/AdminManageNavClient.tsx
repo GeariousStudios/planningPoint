@@ -39,7 +39,11 @@ const AdminManageNavClient = (props: Props) => {
           href: "/admin/manage/units/categories/",
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
           label: t("Common/Categories"),
+=======
+          label: t("entities.category", { capitalize: true, plural: true }),
+>>>>>>> Stashed changes
 =======
           label: t("entities.category", { capitalize: true, plural: true }),
 >>>>>>> Stashed changes
@@ -84,7 +88,11 @@ const AdminManageNavClient = (props: Props) => {
           href: "/admin/manage/plan/master-plans/import-rules/",
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
           label: t("ImportRules/Import rules"),
+=======
+          label: t("entities.importRules", { capitalize: true }),
+>>>>>>> Stashed changes
 =======
           label: t("entities.importRules", { capitalize: true }),
 >>>>>>> Stashed changes

@@ -202,8 +202,11 @@ const ImportRulesClient = (props: Props) => {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     notify("success", t("ImportRules/Rules saved"));
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     notify(
@@ -213,6 +216,9 @@ const ImportRulesClient = (props: Props) => {
         t("actions.saved", { end: "!" }),
     );
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -239,8 +245,11 @@ const ImportRulesClient = (props: Props) => {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     notify("info", t("ImportRules/Changes reverted"));
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     notify(
@@ -251,6 +260,9 @@ const ImportRulesClient = (props: Props) => {
       4000,
     );
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -297,7 +309,13 @@ const ImportRulesClient = (props: Props) => {
               ? t("ImportRules/Tooltip select a master plan")
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
               : t("ImportRules/Tooltip save rules")
+=======
+              : t("actions.save", { capitalize: true }) +
+                " " +
+                t("common.rules")
+>>>>>>> Stashed changes
 =======
               : t("actions.save", { capitalize: true }) +
                 " " +
@@ -329,7 +347,13 @@ const ImportRulesClient = (props: Props) => {
                 <span className="hidden lg:block">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                   {t("ImportRules/Saving rules")}
+=======
+                  {t("actions.saving", { capitalize: true }) +
+                    " " +
+                    t("common.rules", { end: "..." })}
+>>>>>>> Stashed changes
 =======
                   {t("actions.saving", { capitalize: true }) +
                     " " +
@@ -352,7 +376,13 @@ const ImportRulesClient = (props: Props) => {
                 <span className="hidden lg:block">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                   {t("ImportRules/Save rules")}
+=======
+                  {t("actions.save", { capitalize: true }) +
+                    " " +
+                    t("common.rules")}
+>>>>>>> Stashed changes
 =======
                   {t("actions.save", { capitalize: true }) +
                     " " +
@@ -376,7 +406,13 @@ const ImportRulesClient = (props: Props) => {
               ? t("ImportRules/Tooltip select a master plan")
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
               : t("ImportRules/Tooltip revert changes")
+=======
+              : t("actions.revert", { capitalize: true }) +
+                " " +
+                t("common.changes")
+>>>>>>> Stashed changes
 =======
               : t("actions.revert", { capitalize: true }) +
                 " " +
@@ -404,7 +440,13 @@ const ImportRulesClient = (props: Props) => {
                 <span className="hidden lg:block">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                   {t("ImportRules/Reverting changes")}
+=======
+                  {t("actions.reverting", { capitalize: true }) +
+                    " " +
+                    t("common.changes", { end: "..." })}
+>>>>>>> Stashed changes
 =======
                   {t("actions.reverting", { capitalize: true }) +
                     " " +
@@ -427,7 +469,13 @@ const ImportRulesClient = (props: Props) => {
                 <span className="hidden lg:block">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                   {t("ImportRules/Revert changes")}
+=======
+                  {t("actions.revert", { capitalize: true }) +
+                    " " +
+                    t("common.changes")}
+>>>>>>> Stashed changes
 =======
                   {t("actions.revert", { capitalize: true }) +
                     " " +
@@ -450,9 +498,15 @@ const ImportRulesClient = (props: Props) => {
         <div className="flex items-center justify-between gap-4 px-6 pt-6">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
           <h2 className="text-lg font-semibold whitespace-nowrap">
             {t("ImportRules/Import rules")} {t("Common/for")}{" "}
             {t("Common/master plan")}
+=======
+          <h2 className="text-lg font-semibold">
+            {t("entities.importRules", { capitalize: true })} {t("common.for")}{" "}
+            {t("entities.masterPlan")}
+>>>>>>> Stashed changes
 =======
           <h2 className="text-lg font-semibold">
             {t("entities.importRules", { capitalize: true })} {t("common.for")}{" "}

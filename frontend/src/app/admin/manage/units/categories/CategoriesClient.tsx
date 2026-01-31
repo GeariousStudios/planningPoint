@@ -137,8 +137,11 @@ const CategoriesClient = (props: Props) => {
       await fetchItems();
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Manage/deleted1"), 4000); // <-- Unique.
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       notify(
@@ -147,6 +150,9 @@ const CategoriesClient = (props: Props) => {
         4000,
       ); // <-- Unique.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

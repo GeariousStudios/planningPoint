@@ -6,7 +6,12 @@ import Topbar from "../components/topbar/Topbar";
 import { usePathname } from "next/navigation";
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { useLocale, useTranslations } from "next-intl";
+=======
+import { useLocale } from "next-intl";
+import useTN from "../hooks/useTN";
+>>>>>>> Stashed changes
 =======
 import { useLocale } from "next-intl";
 import useTN from "../hooks/useTN";
@@ -164,9 +169,12 @@ const LayoutWrapper = (props: Props) => {
       // --- General ---
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       manage: { label: t("Common/Manage"), clickable: true },
       "audit-trail": { label: t("Navbar/Audit trail"), clickable: false },
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       manage: {
@@ -178,6 +186,9 @@ const LayoutWrapper = (props: Props) => {
         clickable: false,
       },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -223,6 +234,7 @@ const LayoutWrapper = (props: Props) => {
       "unit-groups": {
         label: t("entities.group", { capitalize: true, plural: true }),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         clickable: true,
       },
       units: {
@@ -237,6 +249,18 @@ const LayoutWrapper = (props: Props) => {
       units: { label: t("Common/Units"), clickable: true },
       categories: { label: t("Common/Categories"), clickable: true },
 =======
+>>>>>>> Stashed changes
+=======
+        clickable: true,
+      },
+      units: {
+        label: t("entities.unit", { capitalize: true, plural: true }),
+        clickable: true,
+      },
+      categories: {
+        label: t("entities.category", { capitalize: true, plural: true }),
+        clickable: true,
+      },
 >>>>>>> Stashed changes
 =======
         clickable: true,
@@ -275,10 +299,13 @@ const LayoutWrapper = (props: Props) => {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       products: { label: t("Common/Products"), clickable: true },
       "planned-stops": { label: t("Common/Planned stops"), clickable: true },
       "import-rules": { label: t("ImportRules/Import rules"), clickable: true },
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       products: {
@@ -294,6 +321,9 @@ const LayoutWrapper = (props: Props) => {
         clickable: true,
       },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

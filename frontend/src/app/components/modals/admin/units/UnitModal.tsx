@@ -236,8 +236,11 @@ const UnitModal = (props: Props) => {
       window.dispatchEvent(new Event("unit-list-updated"));
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Unit") + t("Modal/created1"), 4000);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       notify(
@@ -246,6 +249,9 @@ const UnitModal = (props: Props) => {
         4000,
       );
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -510,8 +516,11 @@ const UnitModal = (props: Props) => {
       window.dispatchEvent(new Event("unit-list-updated"));
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Unit") + t("Modal/updated1"), 4000);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       notify(
@@ -520,6 +529,9 @@ const UnitModal = (props: Props) => {
         4000,
       );
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -841,8 +853,11 @@ const UnitModal = (props: Props) => {
               <MultiDropdown
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 label={t("Common/Categories")}
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                 label={t("entities.category", {
@@ -850,6 +865,9 @@ const UnitModal = (props: Props) => {
                   plural: true,
                 })}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

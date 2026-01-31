@@ -774,7 +774,11 @@ const Topbar = (props: Props) => {
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                       {t("Common/Manage")}
+=======
+                      {t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
 =======
                       {t("common.manage", { capitalize: true })}
 >>>>>>> Stashed changes

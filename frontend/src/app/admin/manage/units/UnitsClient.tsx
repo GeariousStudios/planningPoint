@@ -27,6 +27,10 @@ import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+import useTN from "@/app/hooks/useTN";
+>>>>>>> Stashed changes
 =======
 import useTN from "@/app/hooks/useTN";
 >>>>>>> Stashed changes
@@ -168,8 +172,11 @@ const UnitsClient = (props: Props) => {
       window.dispatchEvent(new Event("unit-list-updated"));
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Unit") + t("Manage/deleted1"), 4000); // <-- Unique.
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       notify(
@@ -178,6 +185,9 @@ const UnitsClient = (props: Props) => {
         4000,
       ); // <-- Unique.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -272,7 +282,11 @@ const UnitsClient = (props: Props) => {
             <span className="w-full font-semibold">
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
               {t("Common/Categories")}:
+=======
+              {t("entities.category", { plural: true })}:
+>>>>>>> Stashed changes
 =======
               {t("entities.category", { plural: true })}:
 >>>>>>> Stashed changes
@@ -480,7 +494,11 @@ const UnitsClient = (props: Props) => {
       key: "categories",
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       label: t("Common/Categories"),
+=======
+      label: t("entities.category", { plural: true }),
+>>>>>>> Stashed changes
 =======
       label: t("entities.category", { plural: true }),
 >>>>>>> Stashed changes
@@ -713,7 +731,11 @@ const UnitsClient = (props: Props) => {
     {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       label: t("Common/Categories"),
+=======
+      label: t("entities.category", { capitalize: true, plural: true }),
+>>>>>>> Stashed changes
 =======
       label: t("entities.category", { capitalize: true, plural: true }),
 >>>>>>> Stashed changes

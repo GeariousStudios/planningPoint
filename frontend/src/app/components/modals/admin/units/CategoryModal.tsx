@@ -171,8 +171,11 @@ const CategoryModal = (props: Props) => {
       props.onItemUpdated();
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Modal/created1"), 4000);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       notify(
@@ -181,6 +184,9 @@ const CategoryModal = (props: Props) => {
         4000,
       );
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -283,8 +289,11 @@ const CategoryModal = (props: Props) => {
       props.onItemUpdated();
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Modal/updated1"), 4000);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       notify(
@@ -293,6 +302,9 @@ const CategoryModal = (props: Props) => {
         4000,
       );
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

@@ -1,6 +1,7 @@
 {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "Common/Administrate": "Administrera",
   "Common/Manage": "Hantera",
   "Common/Categories": "Kategorier",
@@ -147,6 +148,8 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
   "common": {
     "name": {
       "singular": "namn",
@@ -181,6 +184,9 @@
     "settings": "inställningar"
   },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -209,6 +215,7 @@
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "Navbar/Home": "Startsida",
   "Navbar/Report": "Rapportering",
   "Navbar/Plan": "Planering",
@@ -231,6 +238,8 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
   "status": {
     "status": "status",
     "statusAndOther": "status och annat",
@@ -241,6 +250,9 @@
     "noAccess": "du saknar behörighet"
   },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
