@@ -17,7 +17,7 @@ import SingleDropdown from "../../../common/SingleDropdown";
 import MultiDropdown from "../../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../../common/DragDrop";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { unitConstraints } from "@/app/helpers/inputConstraints";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import HoverIcon from "@/app/components/common/HoverIcon";
@@ -61,7 +61,7 @@ type MasterPlanOptions = {
 };
 
 const UnitModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -234,7 +234,15 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
+<<<<<<< Updated upstream
       notify("success", t("Common/Unit") + t("Modal/created1"), 4000);
+=======
+      notify(
+        "success",
+        t("entities.unit", { capitalize: true }) + t("Modal/created1"),
+        4000,
+      );
+>>>>>>> Stashed changes
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -494,7 +502,15 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
+<<<<<<< Updated upstream
       notify("success", t("Common/Unit") + t("Modal/updated1"), 4000);
+=======
+      notify(
+        "success",
+        t("entities.unit", { capitalize: true }) + t("Modal/updated1"),
+        4000,
+      );
+>>>>>>> Stashed changes
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -615,8 +631,12 @@ const UnitModal = (props: Props) => {
             icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/unit")
-                : t("Common/Add") + " " + t("Common/unit")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.unit")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.unit")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -632,7 +652,7 @@ const UnitModal = (props: Props) => {
 
               <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
                 <Input
-                  label={t("Common/Name")}
+                  label={t("common.name", { capitalize: true })}
                   value={name}
                   onChange={(val) => {
                     setName(String(val));
@@ -644,7 +664,7 @@ const UnitModal = (props: Props) => {
 
                 <SingleDropdown
                   id="unitGroup"
-                  label={t("Common/Group")}
+                  label={t("entities.group", { capitalize: true })}
                   value={unitGroup}
                   onChange={(val) => {
                     setUnitGroup(String(val));
@@ -658,7 +678,7 @@ const UnitModal = (props: Props) => {
                 />
 
                 <Input
-                  label={t("Common/Light color")}
+                  label={t("appearance.lightColour", { capitalize: true })}
                   type="color"
                   value={lightColorHex}
                   onChange={(val) => setLightColorHex(String(val))}
@@ -667,7 +687,7 @@ const UnitModal = (props: Props) => {
                 />
 
                 <Input
-                  label={t("Common/Dark color")}
+                  label={t("appearance.darkColour", { capitalize: true })}
                   type="color"
                   value={darkColorHex}
                   onChange={(val) => setDarkColorHex(String(val))}
@@ -730,7 +750,7 @@ const UnitModal = (props: Props) => {
               {isPlannable && (
                 <SingleDropdown
                   id="masterPlan"
-                  label={t("Common/Master plan")}
+                  label={t("entities.masterPlan", { capitalize: true })}
                   value={masterPlan}
                   onChange={(val) => {
                     setMasterPlan(String(val));
@@ -753,7 +773,7 @@ const UnitModal = (props: Props) => {
               </div>
 
               <MultiDropdown
-                label={t("Common/Columns")}
+                label={t("entities.column", { capitalize: true, plural: true })}
                 value={unitColumnIds.map(String)}
                 onChange={(val: string[]) => setUnitColumnIds(val.map(Number))}
                 options={unitColumns.map((c) => ({
@@ -792,7 +812,7 @@ const UnitModal = (props: Props) => {
                   />
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
-                      t("Common/column") +
+                      t("entities.column") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </>
@@ -807,7 +827,14 @@ const UnitModal = (props: Props) => {
               </div>
 
               <MultiDropdown
+<<<<<<< Updated upstream
                 label={t("Common/Categories")}
+=======
+                label={t("entities.category", {
+                  capitalize: true,
+                  plural: true,
+                })}
+>>>>>>> Stashed changes
                 value={categoryIds.map(String)}
                 onChange={(val: string[]) => setCategoryIds(val.map(Number))}
                 options={categories.map((c) => ({
@@ -846,7 +873,7 @@ const UnitModal = (props: Props) => {
                   />
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
-                      t("Common/category") +
+                      t("entities.category") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </>
@@ -862,7 +889,7 @@ const UnitModal = (props: Props) => {
 
               <MultiDropdown
                 scrollContainer={getScrollEl}
-                label={t("Common/Shifts")}
+                label={t("entities.shift", { capitalize: true, plural: true })}
                 value={shiftIds.map(String)}
                 onChange={(val: string[]) => setShiftIds(val.map(Number))}
                 options={shifts.map((c) => ({
@@ -899,7 +926,7 @@ const UnitModal = (props: Props) => {
                   />
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
-                      t("Common/shift") +
+                      t("entities.shift") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </>
@@ -908,7 +935,7 @@ const UnitModal = (props: Props) => {
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Status")}
+                  {t("status.status", { capitalize: true })}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -943,13 +970,14 @@ const UnitModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

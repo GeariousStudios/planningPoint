@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { MasterPlanFilters, MasterPlanItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");

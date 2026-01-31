@@ -12,7 +12,7 @@ import {
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { masterPlanConstraints } from "@/app/helpers/inputConstraints";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "@/app/components/common/DragDrop";
@@ -38,7 +38,7 @@ type MasterPlanFieldOptions = {
 };
 
 const MasterPlanModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -177,7 +177,11 @@ const MasterPlanModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("master-plan-list-updated"));
-      notify("success", t("Common/Master plan") + t("Modal/created1"), 4000);
+      notify(
+        "success",
+        t("entities.masterPlan", { capitalize: true }) + t("Modal/created1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -348,7 +352,11 @@ const MasterPlanModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("master-plan-list-updated"));
-      notify("success", t("Common/Master plan") + t("Modal/updated1"), 4000);
+      notify(
+        "success",
+        t("entities.masterPlan", { capitalize: true }) + t("Modal/updated1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -465,8 +473,12 @@ const MasterPlanModal = (props: Props) => {
             icon={props.itemId ? PencilSquareIcon : PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/master plan")
-                : t("Common/Add") + " " + t("Common/master plan")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.masterPlan")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.masterPlan")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -482,7 +494,7 @@ const MasterPlanModal = (props: Props) => {
 
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
                 <Input
-                  label={t("Common/Name")}
+                  label={t("common.name", { capitalize: true })}
                   value={name}
                   onChange={(val) => setName(String(val))}
                   onModal
@@ -492,7 +504,7 @@ const MasterPlanModal = (props: Props) => {
 
                 <SingleDropdown
                   id="unitGroup"
-                  label={t("Common/Group")}
+                  label={t("entities.group", { capitalize: true })}
                   value={unitGroup}
                   onChange={(val) => {
                     setUnitGroup(String(val));
@@ -515,7 +527,10 @@ const MasterPlanModal = (props: Props) => {
               </div>
 
               <MultiDropdown
-                label={t("Common/Master plan fields")}
+                label={t("entities.masterPlanField", {
+                  capitalize: true,
+                  plural: true,
+                })}
                 value={masterPlanFieldIds.map(String)}
                 onChange={(val: string[]) =>
                   setMasterPlanFieldIds(val.map(Number))
@@ -557,7 +572,7 @@ const MasterPlanModal = (props: Props) => {
                   />
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
-                      t("Common/master plan field") +
+                      t("entities.masterPlanField") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </>
@@ -567,7 +582,7 @@ const MasterPlanModal = (props: Props) => {
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Status and other")}
+                  {t("status.statusAndOther", { capitalize: true })}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -638,13 +653,14 @@ const MasterPlanModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

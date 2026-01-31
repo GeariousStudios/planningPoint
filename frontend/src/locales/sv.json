@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "Common/Administrate": "Administrera",
   "Common/Manage": "Hantera",
   "Common/Categories": "Kategorier",
@@ -142,18 +143,65 @@
   "Common/Undo": "Ångra",
   "Common/Redo": "Gör om",
   "Common/Cancel": "Avbryt",
+=======
+  "common": {
+    "name": {
+      "singular": "namn",
+      "plural": "namn"
+    },
+    "type": {
+      "singular": "typ",
+      "plural": "typer"
+    },
+    "manage": "hantera",
+    "yes": "ja",
+    "no": "nej",
+    "all": "alla",
+    "unknown": "okänt",
+    "for": "för",
+    "by": "av",
+    "is": "är",
+    "and": "och",
+    "page": "sida",
+    "changes": "ändringar",
+    "rules": "regler",
+    "admin": "admin",
+    "developer": "utvecklare",
+    "number": "nummer",
+    "decimal": "decimal",
+    "text": "text",
+    "textField": "textfält",
+    "boolean": "boolean",
+    "left": "vänster",
+    "center": "centrerad",
+    "right": "höger",
+    "settings": "inställningar"
+  },
+>>>>>>> Stashed changes
 
-  "Message/Loading": "Läser in...",
-  "Message/Auth": "Autentiserar...",
-  "Message/Invalid": "Sidan kunde inte hittas.",
-  "Message/Content": "Hämtar innehåll...",
-  "Message/Server": "Ingen kontakt med servern, försök igen senare!",
-  "Message/Lock1": "Sidan är ej tillgänglig för tillfället!",
-  "Message/Lock2": "Försök igen senare.",
-  "Message/Deny1": "Obehörig access!",
-  "Message/Deny2": "Klicka här",
-  "Message/Deny3": "för att logga in.",
+  "actions": {
+    "add": "lägg till",
+    "adding": "lägger till",
+    "edit": "redigera",
+    "editing": "redigerar",
+    "delete": "ta bort",
+    "remove": "ta bort",
+    "save": "spara",
+    "saving": "sparar",
+    "saved": "har sparats",
+    "cancel": "avbryt",
+    "close": "stäng",
+    "search": "sök",
+    "reset": "återställ",
+    "undo": "ångra",
+    "redo": "gör om",
+    "revert": "återställ",
+    "reverting": "återställer",
+    "reverted": "har återställts",
+    "update": "uppdatera"
+  },
 
+<<<<<<< Updated upstream
   "Navbar/Home": "Startsida",
   "Navbar/Report": "Rapportering",
   "Navbar/Plan": "Planering",
@@ -173,13 +221,182 @@
   "Navbar/Audit trail": "Revisionslogg",
   "Navbar/Master planning": "Huvudplanering",
   "Navbar/Operational planning": "Operativ planering",
+=======
+  "status": {
+    "status": "status",
+    "statusAndOther": "status och annat",
+    "created": "skapad",
+    "updated": "uppdaterad",
+    "updating": "uppdaterar",
+    "notImplemented": "ej implementerat",
+    "noAccess": "du saknar behörighet"
+  },
+>>>>>>> Stashed changes
 
-  "Home/Add news": "Lägg till nyhet",
-  "Home/Edit news": "Redigera nyhet",
-  "Home/Delete news": "Ta bort nyhet",
-  "Home/No news": "Det finns inga nyheter för tillfället!",
-  "Home/Welcome": "Välkommen, ",
-  "Home/News and information": "Nyheter och information",
+  "entities": {
+    "category": {
+      "singular": "kategori",
+      "plural": "kategorier"
+    },
+    "subCategory": {
+      "singular": "underkategori",
+      "plural": "underkategorier"
+    },
+    "unit": {
+      "singular": "enhet",
+      "plural": "enheter"
+    },
+    "group": {
+      "singular": "grupp",
+      "plural": "grupper"
+    },
+    "column": {
+      "singular": "kolumn",
+      "plural": "kolumner"
+    },
+    "plannedStop": {
+      "singular": "planerat stopp",
+      "plural": "planerade stopp"
+    },
+    "product": {
+      "singular": "produkt",
+      "plural": "produkter"
+    },
+    "productGroup": {
+      "singular": "produktgrupp",
+      "plural": "produktgrupper"
+    },
+    "masterPlan": {
+      "singular": "huvudplan",
+      "plural": "huvudplaner"
+    },
+    "masterPlanField": {
+      "singular": "fält",
+      "plural": "fält"
+    },
+    "operationalPlan": {
+      "singular": "operativ plan",
+      "plural": "operativa planer"
+    },
+    "newsType": {
+      "singular": "nyhetstyp",
+      "plural": "nyhetstyper"
+    },
+    "news": {
+      "singular": "nyhet",
+      "plural": "nyheter"
+    },
+    "shift": {
+      "singular": "skift",
+      "plural": "skift"
+    },
+    "shiftTeam": {
+      "singular": "lag",
+      "plural": "lag"
+    },
+    "user": {
+      "singular": "användare",
+      "plural": "användare"
+    },
+    "report": {
+      "singular": "rapport",
+      "plural": "rapporter"
+    },
+    "importRules": "importregler",
+    "planningRules": "planeringsregler"
+  },
+
+  "auth": {
+    "login": "logga in",
+    "logout": "logga ut",
+    "username": "användarnamn",
+    "password": "lösenord",
+    "forgotPassword": "glömt ditt lösenord",
+    "userId": "användar-ID"
+  },
+
+  "time": {
+    "day": {
+      "singular": "dag",
+      "plural": "dagar"
+    },
+    "hour": {
+      "singular": "timme",
+      "plural": "timmar"
+    },
+    "minute": {
+      "singular": "minut",
+      "plural": "minuter"
+    },
+    "week": "vecka",
+    "date": "datum",
+    "time": "tid",
+    "start": "start",
+    "stop": "stopp",
+    "startDate": "startdatum",
+    "endDate": "slutdatum",
+    "dateRange": "datumintervall"
+  },
+
+  "weekdays": {
+    "monday": "måndag",
+    "tuesday": "tisdag",
+    "wednesday": "onsdag",
+    "thursday": "torsdag",
+    "friday": "fredag",
+    "saturday": "lördag",
+    "sunday": "söndag"
+  },
+
+  "appearance": {
+    "dark": "mörkt",
+    "light": "ljust",
+    "lightColour": "färg (ljust tema)",
+    "darkColour": "färg (mörkt tema)"
+  },
+
+  "message": {
+    "loading": "läser in",
+    "auth": "autentiserar",
+    "invalid": "sidan kunde inte hittas",
+    "content": "hämtar innehåll",
+    "server": "ingen kontakt med servern, försök igen senare",
+    "lock1": "sidan är ej tillgänglig för tillfället",
+    "lock2": "försök igen senare",
+    "deny1": "obehörig access",
+    "deny2": "klicka här",
+    "deny3": "för att logga in"
+  },
+
+  "navbar": {
+    "favourite": {
+      "singular": "favorit",
+      "plural": "favoriter"
+    },
+    "home": "startsida",
+    "report": "rapportering",
+    "plan": "planering",
+    "pulseBoards": "pulstavlor",
+    "yourDashboard": "din dashboard",
+    "mainMenu": "huvudmeny",
+    "logo": "logga",
+    "sideMenu": "sidomeny",
+    "addedFavourite": "objekt tillagt bland dina favoriter",
+    "removedFavourite": "objekt borttaget från dina favoriter",
+    "setFavourite": "lägg till bland dina favoriter",
+    "removeFavourite": "ta bort från dina favoriter",
+    "editFavourites": "redigera favoriter",
+    "stopEditingFavourites": "sluta redigera favoriter",
+    "auditTrail": "revisionslogg",
+    "masterPlanning": "huvudplanering",
+    "operationalPlanning": "operativ planering"
+  },
+
+  "home": {
+    "noNews": "det finns inga nyheter för tillfället",
+    "welcome": "välkommen",
+    "newsAndInfo": "nyheter och information"
+  },
 
   "Unit/Tooltip this hour": " denna timme",
   "Unit/Tooltip report data": "Rapportera data i en eller flera kolumner",
@@ -342,7 +559,7 @@
   "SettingsModal/Language": "Språk",
   "SettingsModal/Logout user": "Logga ut befintlig användare",
   "SettingsModal/Uneditable": "Ej redigerbar!",
-  "SettingsModal/Welcome": "Välkommen tillbaka,",
+  "SettingsModal/Welcome": "Välkommen tillbaka",
   "SettingsModal/Light theme": "Byt till ljust tema",
   "SettingsModal/Dark theme": "Byt till mörkt tema",
   "SettingsModal/Theme": "Tema",

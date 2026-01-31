@@ -1,7 +1,7 @@
 import { FocusTrap } from "focus-trap-react";
 import { ReactNode, RefObject, useEffect, useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 
 type Props = {
   children: ReactNode;
@@ -12,7 +12,7 @@ type Props = {
 };
 
 const SideMenu = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
   const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ const SideMenu = (props: Props) => {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={t("Navbar/Side menu")}
+        aria-label={t("navbar.sideMenu", { capitalize: true })}
         onMouseDown={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -60,7 +60,7 @@ const SideMenu = (props: Props) => {
           e.stopPropagation();
           props.onClose();
         }}
-        className={`${props.isOpen ? "opacity-100" : "pointer-events-none opacity-0"} z-(--z-overlay) duration-(--slow) fixed inset-0 h-full w-screen bg-black/50 transition-opacity`}
+        className={`${props.isOpen ? "opacity-100" : "pointer-events-none opacity-0"} fixed inset-0 z-(--z-overlay) h-full w-screen bg-black/50 transition-opacity duration-(--slow)`}
       >
         <div
           ref={innerRef}
@@ -72,7 +72,7 @@ const SideMenu = (props: Props) => {
             e.stopPropagation();
             e.preventDefault();
           }}
-          className={`${props.isOpen ? "visible translate-y-0 sm:translate-x-0 sm:translate-y-0" : "invisible translate-y-full sm:translate-x-full sm:translate-y-0"} bg-(--bg-topbar) duration-(--slow) fixed bottom-0 z-[calc(var(--z-modal))] flex h-3/4 w-full flex-col rounded-l-2xl rounded-r-2xl rounded-b-none shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[translate,visibility] sm:top-0 sm:right-0 sm:h-full sm:w-128 sm:!rounded-r-none sm:rounded-b-2xl`}
+          className={`${props.isOpen ? "visible translate-y-0 sm:translate-x-0 sm:translate-y-0" : "invisible translate-y-full sm:translate-x-full sm:translate-y-0"} fixed bottom-0 z-[calc(var(--z-modal))] flex h-3/4 w-full flex-col rounded-l-2xl rounded-r-2xl rounded-b-none bg-(--bg-topbar) shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[translate,visibility] duration-(--slow) sm:top-0 sm:right-0 sm:h-full sm:w-128 sm:!rounded-r-none sm:rounded-b-2xl`}
         >
           <FocusTrap
             active={props.isOpen}
@@ -87,7 +87,7 @@ const SideMenu = (props: Props) => {
                 <span className="text-2xl font-semibold">{props.label}</span>
                 <button
                   onClick={() => props.onClose()}
-                  className="duration-(--fast) hover:text-(--accent-color) h-[32px] w-[32px] cursor-pointer"
+                  className="h-[32px] w-[32px] cursor-pointer duration-(--fast) hover:text-(--accent-color)"
                 >
                   <XMarkIcon />
                 </button>

@@ -58,7 +58,7 @@ import {
 } from "@heroicons/react/24/solid";
 import SideMenu from "../sideMenu/SideMenu";
 import HoverIcon from "../common/HoverIcon";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { useUserPrefsContext } from "@/app/context/UserPrefsContext";
 
 // --- PROPS ---
@@ -173,7 +173,7 @@ const ManageBase = <TItem extends { id: number }>({
 
   filters,
 }: ManageBaseProps<TItem>) => {
-  const t = useTranslations();
+  const t = useTN();
   // --- VARIABLES ---
   // --- States ---
   const [filterAllOpen, setFilterAllOpen] = useState(false);
@@ -366,7 +366,7 @@ const ManageBase = <TItem extends { id: number }>({
         <div className="flex flex-wrap gap-4">
           {/* --- Add item --- */}
           <CustomTooltip
-            content={`${t("Common/Add")} ${" "} ${itemName}`}
+            content={`${t("actions.add", { capitalize: true })} ${" "} ${itemName}`}
             lgHidden
             longDelay
           >
@@ -390,7 +390,7 @@ const ManageBase = <TItem extends { id: number }>({
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("Common/Add")} {itemName}
+                  {t("actions.add", { capitalize: true })} {itemName}
                 </span>
               </div>
             </button>
@@ -402,7 +402,7 @@ const ManageBase = <TItem extends { id: number }>({
               selectedItems.length === 0
                 ? `${t(selectMessage)} ${" "} ${itemName}`
                 : selectedItems.length === 1
-                  ? `${t("Common/Edit")} ${" "} ${itemName}`
+                  ? `${t("actions.edit", { capitalize: true })} ${" "} ${itemName}`
                   : `${t(editLimitMessage)} ${" "} ${itemName} ${" "} ${t("Manage/Edit limit3")}`
             }
             lgHidden={selectedItems.length === 1}
@@ -430,7 +430,7 @@ const ManageBase = <TItem extends { id: number }>({
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("Common/Edit")} {itemName}
+                  {t("actions.edit", { capitalize: true })} {itemName}
                 </span>
               </div>
             </button>
@@ -441,7 +441,7 @@ const ManageBase = <TItem extends { id: number }>({
             content={
               selectedItems.length === 0
                 ? `${t(selectMessage)} ${" "} ${itemName}`
-                : `${t("Common/Delete")} ${" "} ${itemName} ${" "} (${selectedItems.length})`
+                : `${t("actions.delete", { capitalize: true })} ${" "} ${itemName} ${" "} (${selectedItems.length})`
             }
             lgHidden={selectedItems.length > 0}
             showOnTouch={selectedItems.length === 0}
@@ -466,7 +466,7 @@ const ManageBase = <TItem extends { id: number }>({
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("Common/Delete")} {itemName}
+                  {t("actions.delete", { capitalize: true })} {itemName}
                   <span>
                     {selectedItems.length > 0
                       ? ` (${selectedItems.length})`
@@ -487,7 +487,7 @@ const ManageBase = <TItem extends { id: number }>({
             <div className="flex w-full items-center justify-start">
               <Input
                 icon={<MagnifyingGlassIcon />}
-                placeholder={`${t("Common/Search")} ${itemName}...`}
+                placeholder={`${t("actions.search", { capitalize: true })} ${itemName}...`}
                 value={searchTerm}
                 onChange={(val) => onSearchChange(String(val).toLowerCase())}
               />

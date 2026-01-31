@@ -11,7 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { Quill } from "react-quill-new";
 
 const QuillWrapper = dynamic(() => import("../../helpers/QuillWrapper"), {
@@ -45,7 +45,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     { value, name, required, onReady, onChange, shouldAutoFocus, singleLine },
     ref,
   ) => {
-    const t = useTranslations();
+    const t = useTN();
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isEditorReady, setIsEditorReady] = useState(false);

@@ -10,7 +10,7 @@ import {
   buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import ModalBase from "./ModalBase";
 import Message from "../common/Message";
 
@@ -21,7 +21,7 @@ type Props = {
 };
 
 const HandbookModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- States ---
@@ -41,7 +41,9 @@ const HandbookModal = (props: Props) => {
         ul: (chunks) => <ul className="list-disc pl-6">{chunks}</ul>,
         li: (chunks) => <li className="my-2">{chunks}</li>,
         br: () => <br />,
-        hr: () => <hr className="w-[calc(100%+2rem)] text-(--border-tertiary) my-4 -mx-4" />,
+        hr: () => (
+          <hr className="-mx-4 my-4 w-[calc(100%+2rem)] text-(--border-tertiary)" />
+        ),
         danger: (chunks: React.ReactNode) => (
           <span className="text-(--locked)">{chunks}</span>
         ),

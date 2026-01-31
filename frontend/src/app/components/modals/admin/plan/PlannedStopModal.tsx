@@ -13,7 +13,7 @@ import {
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { plannedStopConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
@@ -34,7 +34,7 @@ type MasterPlanOption = {
 };
 
 const PlannedStopModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -165,7 +165,11 @@ const PlannedStopModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Planned stop") + t("Modal/created1"), 4000);
+      notify(
+        "success",
+        t("entities.plannedStop", { capitalize: true }) + t("Modal/created1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -318,7 +322,11 @@ const PlannedStopModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Planned stop") + t("Modal/updated1"), 4000);
+      notify(
+        "success",
+        t("entities.plannedStop", { capitalize: true }) + t("Modal/updated1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -347,7 +355,7 @@ const PlannedStopModal = (props: Props) => {
   }) => {
     return (
       <div
-        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-(--bg-modal-link) px-4 transition-transform duration-(--fast) !cursor-default`}
+        className={`${roundedButtonClass} flex w-auto !cursor-default items-center gap-2 !bg-(--bg-modal-link) px-4 transition-transform duration-(--fast)`}
       >
         <span className="truncate font-semibold select-none">{label}</span>
 
@@ -423,8 +431,12 @@ const PlannedStopModal = (props: Props) => {
             icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/planned stop")
-                : t("Common/Add") + " " + t("Common/planned stop")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.plannedStop")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.plannedStop")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -441,7 +453,7 @@ const PlannedStopModal = (props: Props) => {
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
                 <div className="xs:col-span-2">
                   <Input
-                    label={t("Common/Name")}
+                    label={t("common.name", { capitalize: true })}
                     value={name}
                     onChange={(val) => {
                       setName(String(val));
@@ -453,7 +465,7 @@ const PlannedStopModal = (props: Props) => {
                 </div>
 
                 <Input
-                  label={t("Common/Light color")}
+                  label={t("appearance.lightColour", { capitalize: true })}
                   type="color"
                   value={lightColorHex}
                   onChange={(val) => setLightColorHex(String(val))}
@@ -462,7 +474,7 @@ const PlannedStopModal = (props: Props) => {
                 />
 
                 <Input
-                  label={t("Common/Dark color")}
+                  label={t("appearance.darkColour", { capitalize: true })}
                   type="color"
                   value={darkColorHex}
                   onChange={(val) => setDarkColorHex(String(val))}
@@ -506,7 +518,10 @@ const PlannedStopModal = (props: Props) => {
 
               <MultiDropdown
                 scrollContainer={getScrollEl}
-                label={t("Common/Master plans")}
+                label={t("entities.masterPlan", {
+                  capitalize: true,
+                  plural: true,
+                })}
                 options={masterPlanOptions.map((mp) => ({
                   value: String(mp.id),
                   label: mp.name,
@@ -518,27 +533,29 @@ const PlannedStopModal = (props: Props) => {
 
               {masterPlanIds.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {masterPlanIds.sort((a, b) => a - b).map((id) => {
-                    const label =
-                      masterPlanOptions.find((mp) => mp.id === id)?.name ??
-                      `#${id}`;
+                  {masterPlanIds
+                    .sort((a, b) => a - b)
+                    .map((id) => {
+                      const label =
+                        masterPlanOptions.find((mp) => mp.id === id)?.name ??
+                        `#${id}`;
 
-                    return (
-                      <MasterPlanChip
-                        key={id}
-                        id={id}
-                        label={label}
-                        onDelete={() => deleteMasterPlan(id)}
-                      />
-                    );
-                  })}
+                      return (
+                        <MasterPlanChip
+                          key={id}
+                          id={id}
+                          label={label}
+                          onDelete={() => deleteMasterPlan(id)}
+                        />
+                      );
+                    })}
                 </div>
               )}
 
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Status")}
+                  {t("status.status", { capitalize: true })}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -575,13 +592,14 @@ const PlannedStopModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

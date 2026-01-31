@@ -11,7 +11,7 @@ import {
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import SingleDropdown from "../../common/SingleDropdown";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import LoadingSpinner from "../../common/LoadingSpinner";
 
 type Props = {
@@ -30,7 +30,7 @@ type UnitColumnOptions = {
 };
 
 const UnitCellModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -254,7 +254,13 @@ const UnitCellModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Changes saved"), 4000);
+      notify(
+        "success",
+        t("common.changes", { capitalize: true }) +
+          " " +
+          t("common.saved", { end: "!" }),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -373,7 +379,7 @@ const UnitCellModal = (props: Props) => {
                   <Input
                     type="date"
                     id="selectedDate"
-                    label={t("Common/Date")}
+                    label={t("time.date", { capitalize: true })}
                     value={tempDate}
                     onChange={(val) => setTempDate(String(val))}
                     onBlur={(e) => handleDateChange(e.target.value)}
@@ -403,7 +409,7 @@ const UnitCellModal = (props: Props) => {
                   scrollContainer={getScrollEl}
                   customSpace={0}
                   id="selectedHour"
-                  label={t("Common/Hour")}
+                  label={t("time.hour", { capitalize: true })}
                   value={selectedHour}
                   onChange={(val) => setSelectedHour(String(val))}
                   onModal
@@ -436,8 +442,14 @@ const UnitCellModal = (props: Props) => {
                           label={col.name}
                           value={String(value)}
                           options={[
-                            { label: t("Common/Yes"), value: "true" },
-                            { label: t("Common/No"), value: "false" },
+                            {
+                              label: t("common.yes", { capitalize: true }),
+                              value: "true",
+                            },
+                            {
+                              label: t("common.no", { capitalize: true }),
+                              value: "false",
+                            },
                           ]}
                           onChange={(val) =>
                             setUnitCells((prev) => ({

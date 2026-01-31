@@ -12,7 +12,7 @@ import {
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { operationalPlanConstraints } from "@/app/helpers/inputConstraints";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
@@ -36,7 +36,7 @@ type MasterPlanOptions = {
 };
 
 const OperationalPlanModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -175,7 +175,8 @@ const OperationalPlanModal = (props: Props) => {
       window.dispatchEvent(new Event("operational-plan-list-updated"));
       notify(
         "success",
-        t("Common/Operational plan") + t("Modal/created1"),
+        t("entities.operationalPlan", { capitalize: true }) +
+          t("Modal/created1"),
         4000,
       );
     } catch (err) {
@@ -348,7 +349,8 @@ const OperationalPlanModal = (props: Props) => {
       window.dispatchEvent(new Event("operational-plan-list-updated"));
       notify(
         "success",
-        t("Common/Operational plan") + t("Modal/updated1"),
+        t("entities.operationalPlan", { capitalize: true }) +
+          t("Modal/updated1"),
         4000,
       );
     } catch (err) {
@@ -465,8 +467,12 @@ const OperationalPlanModal = (props: Props) => {
             icon={props.itemId ? PencilSquareIcon : PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/operational plan")
-                : t("Common/Add") + " " + t("Common/operational plan")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.operationalPlan")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.operationalPlan")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -482,7 +488,7 @@ const OperationalPlanModal = (props: Props) => {
 
               <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
                 <Input
-                  label={t("Common/Name")}
+                  label={t("common.name", { capitalize: true })}
                   value={name}
                   onChange={(val) => setName(String(val))}
                   onModal
@@ -492,7 +498,7 @@ const OperationalPlanModal = (props: Props) => {
 
                 <SingleDropdown
                   id="unitGroup"
-                  label={t("Common/Group")}
+                  label={t("entities.group", { capitalize: true })}
                   value={unitGroup}
                   onChange={(val) => {
                     setUnitGroup(String(val));
@@ -508,7 +514,7 @@ const OperationalPlanModal = (props: Props) => {
                 <div className="col-span-full">
                   <SingleDropdown
                     id="masterPlan"
-                    label={t("Common/Master plan")}
+                    label={t("entities.masterPlan", { capitalize: true })}
                     value={masterPlan}
                     onChange={(val) => {
                       setMasterPlan(String(val));
@@ -580,13 +586,14 @@ const OperationalPlanModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

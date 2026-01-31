@@ -28,7 +28,7 @@ import {
   iconButtonPrimaryClass,
 } from "./styles/buttonClasses";
 import HoverIcon from "./components/common/HoverIcon";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { utcIsoToLocalDateTime } from "./helpers/timeUtils";
 import TrendingPanel from "./components/pulse/TrendingPanel";
 import DragDrop from "./components/common/DragDrop";
@@ -63,7 +63,7 @@ type Unit = {
 };
 
 const HomeClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- States: News ---
@@ -98,7 +98,11 @@ const HomeClient = (props: Props) => {
   useEffect(() => {
     const message = localStorage.getItem("postLoginToast");
     if (message) {
-      notify("info", t("Home/Welcome") + message + "!", 6000);
+      notify(
+        "info",
+        t("home.welcome", { capitalize: true, end: "," }) + " " + message,
+        6000,
+      );
       localStorage.removeItem("postLoginToast");
     }
   }, []);
@@ -567,7 +571,7 @@ const HomeClient = (props: Props) => {
                         className="h-6 min-h-6 w-6 min-w-6"
                       />
                       <span className="hidden md:block">
-                        {t("Common/Cancel")}
+                        {t("actions.cancel", { capitalize: true })}
                       </span>
                     </div>
                   </button>
@@ -651,7 +655,9 @@ const HomeClient = (props: Props) => {
             <div className="flex w-full flex-col lg:w-1/3 lg:min-w-80">
               {/* --- Login header --- */}
               <div className="flex h-[40px] items-center rounded-t border border-(--border-main) bg-(--bg-grid-header) px-3 py-2">
-                <span className="font-semibold">{t("Common/Login")}</span>
+                <span className="font-semibold">
+                  {t("auth.login", { capitalize: true })}
+                </span>
               </div>
               {/* --- Login content --- */}
               <div className="flex max-h-144 min-h-144 items-center justify-center rounded-b border border-t-0 border-(--border-main) bg-(--bg-grid) p-2">
@@ -664,7 +670,7 @@ const HomeClient = (props: Props) => {
                     <Input
                       id="username"
                       type="text"
-                      label={t("Common/Username")}
+                      label={t("auth.username", { capitalize: true })}
                       onChange={(val) => setUsername(String(val))}
                       inGrid
                       required
@@ -672,7 +678,7 @@ const HomeClient = (props: Props) => {
                     <Input
                       id="password"
                       type="password"
-                      label={t("Common/Password")}
+                      label={t("auth.password", { capitalize: true })}
                       onChange={(val) => setPassword(String(val))}
                       inGrid
                       required
@@ -682,17 +688,26 @@ const HomeClient = (props: Props) => {
                       className={`${buttonPrimaryClass} w-full`}
                       disabled={isSubmitting}
                     >
-                      {t("Common/Login")}
+                      {t("auth.login", { capitalize: true })}
                     </button>
                     <span className="-mt-4 flex justify-center text-center">
                       <button
                         type="button"
                         onClick={() =>
-                          notify("error", t("Common/Not implemented"))
+                          notify(
+                            "error",
+                            t("status.notImplemented", {
+                              capitalize: true,
+                              end: "!",
+                            }),
+                          )
                         }
                         className={`${hyperLinkButtonClass} `}
                       >
-                        {t("Common/Forgot password")}
+                        {t("auth.forgotPassword", {
+                          capitalize: true,
+                          end: "?",
+                        })}
                       </button>
                       {/* <Link href="/" className={`${hyperLinkButtonClass} `}>
                       Glömt ditt lösenord?
@@ -717,11 +732,11 @@ const HomeClient = (props: Props) => {
             {/* --- News header --- */}
             <div className="flex h-[40px] items-center justify-between rounded-t border border-(--border-main) bg-(--bg-grid-header) px-3 py-2">
               <span className="truncate font-semibold">
-                {t("Home/News and information")}
+                {t("home.newsAndInfo", { capitalize: true })}
               </span>
 
               {props.isLoggedIn !== false && props.isAdmin && (
-                // <CustomTooltip content={t("Home/Add news")} hideOnClick>
+                // <CustomTooltip content={t("actions.add", { capitalize: true }) + " " + t("entities.news")} hideOnClick>
                 <button
                   type="button"
                   className={`${iconButtonPrimaryClass} min-h-6 min-w-6`}
@@ -762,7 +777,7 @@ const HomeClient = (props: Props) => {
                           {props.isLoggedIn !== false && props.isAdmin && (
                             <div className="mr-2 hidden gap-2 group-hover/newsItem:flex">
                               {/* <CustomTooltip
-                              content={t("Home/Edit news")}
+                              content={t("actions.edit", { capitalize: true }) + " " + t("entities.news")}
                               hideOnClick
                             > */}
                               <button
@@ -779,7 +794,7 @@ const HomeClient = (props: Props) => {
                               {/* </CustomTooltip> */}
 
                               {/* <CustomTooltip
-                              content={t("Home/Delete news")}
+                              content={t("actions.delete", { capitalize: true }) + " " + t("entities.news")}
                               hideOnClick
                             > */}
                               <button
@@ -806,9 +821,9 @@ const HomeClient = (props: Props) => {
                           dangerouslySetInnerHTML={{ __html: item.content }}
                         />
                         <small className="mt-4 text-(--text-secondary) italic">
-                          {t("Common/Updated")}{" "}
+                          {t("status.updated", { capitalize: true }) + ":"}{" "}
                           {utcIsoToLocalDateTime(item.updateDate)}{" "}
-                          {t("Common/by")} {item.updatedBy}
+                          {t("common.by")} {item.updatedBy}
                         </small>
                       </article>
                       {index !== newsItems.length - 1 && (
@@ -818,7 +833,9 @@ const HomeClient = (props: Props) => {
                   ))}
                 </div>
               ) : props.isConnected ? (
-                <Message content={t("Home/No news")} />
+                <Message
+                  content={t("home.noNews", { capitalize: true, end: "!" })}
+                />
               ) : (
                 <Message icon="server" content="server" />
               )}

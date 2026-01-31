@@ -17,7 +17,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
 
@@ -26,7 +26,7 @@ type Props = {
 };
 
 const ProductGroupsClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -89,7 +89,8 @@ const ProductGroupsClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/product groups"),
+          err.message ||
+            t("Manage/Failed to fetch") + t("entities.productGroup", "p"),
         ); // <-- Unique.
         return {
           items: [],
@@ -107,9 +108,7 @@ const ProductGroupsClient = (props: Props) => {
 
   // --- FETCH MASTER PLANS & PRODUCTS INITIALIZATION (Unique) ---
   const [masterPlans, setMasterPlans] = useState<MasterPlanOption[]>([]);
-  const [products, setProducts] = useState<
-    ProductOption[]
-  >([]);
+  const [products, setProducts] = useState<ProductOption[]>([]);
   useEffect(() => {
     fetchMasterPlans()
       .then(setMasterPlans)
@@ -138,7 +137,11 @@ const ProductGroupsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Product group") + t("Manage/deleted2"), 4000); // <-- Unique.
+      notify(
+        "success",
+        t("entities.productGroup", { capitalize: true }) + t("Manage/deleted2"),
+        4000,
+      ); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -177,7 +180,7 @@ const ProductGroupsClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Common/Products")}:
+              {t("entities.product", { capitalize: true, plural: true })}:
             </span>
             {item.products.length === 0 ? (
               <span className="-mt-2">-</span>
@@ -193,7 +196,9 @@ const ProductGroupsClient = (props: Props) => {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span className="w-full font-semibold">
+              {t("status.status", { capitalize: true })}:
+            </span>
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
@@ -207,8 +212,10 @@ const ProductGroupsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: ProductGroupItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -217,8 +224,10 @@ const ProductGroupsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: ProductGroupItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -229,10 +238,10 @@ const ProductGroupsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: ProductGroupItem) => (
         <div className="flex items-center gap-4">{item.name}</div>
       ),
@@ -260,7 +269,7 @@ const ProductGroupsClient = (props: Props) => {
     },
     {
       key: "products",
-      label: t("Common/Products"),
+      label: t("entities.product", { capitalize: true, plural: true }),
       sortingItem: "productcount",
       labelAsc: t("Manage/product amount") + t("Manage/ascending"),
       labelDesc: t("Manage/product amount") + t("Manage/descending"),
@@ -280,7 +289,7 @@ const ProductGroupsClient = (props: Props) => {
     },
     {
       key: "isHidden",
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       sortingItem: "visibilitycount",
       labelAsc: t("Products/visible products"),
       labelDesc: t("Products/hidden products"),
@@ -331,9 +340,7 @@ const ProductGroupsClient = (props: Props) => {
         ...prev,
         productIds: val
           ? [...(prev.productIds ?? []), productId]
-          : (prev.productIds ?? []).filter(
-              (id) => id !== productId,
-            ),
+          : (prev.productIds ?? []).filter((id) => id !== productId),
       }));
     },
   };
@@ -341,7 +348,7 @@ const ProductGroupsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       breakpoint: "ml",
       options: [
         {
@@ -374,14 +381,12 @@ const ProductGroupsClient = (props: Props) => {
       }),
     },
     {
-      label: t("Common/Products"),
+      label: t("entities.product", { capitalize: true, plural: true }),
       breakpoint: "xl",
       options: products.map((product) => {
         return {
           label: product.name,
-          isSelected: filterControls.selectedProducts.includes(
-            product.id,
-          ),
+          isSelected: filterControls.selectedProducts.includes(product.id),
           setSelected: (val: boolean) =>
             filterControls.setProductSelected(product.id, val),
           count: counts?.productCount?.[product.id],
@@ -407,7 +412,7 @@ const ProductGroupsClient = (props: Props) => {
   return (
     <>
       <ManageBase<ProductGroupItem> // <-- Unique.
-        itemName={t("Common/product group")} // <-- Unique.
+        itemName={t("entities.productGroup")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

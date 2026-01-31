@@ -16,7 +16,7 @@ import {
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import {
   shiftConstraints,
   shiftTeamConstraints,
@@ -53,7 +53,7 @@ type WeeklyTime = {
 };
 
 const ShiftModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -109,13 +109,13 @@ const ShiftModal = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const dayOptions = useMemo(
     () => [
-      { label: t("Common/Monday"), value: 0 },
-      { label: t("Common/Tuesday"), value: 1 },
-      { label: t("Common/Wednesday"), value: 2 },
-      { label: t("Common/Thursday"), value: 3 },
-      { label: t("Common/Friday"), value: 4 },
-      { label: t("Common/Saturday"), value: 5 },
-      { label: t("Common/Sunday"), value: 6 },
+      { label: t("weekdays.monday", { capitalize: true }), value: 0 },
+      { label: t("weekdays.tuesday", { capitalize: true }), value: 1 },
+      { label: t("weekdays.wednesday", { capitalize: true }), value: 2 },
+      { label: t("weekdays.thursday", { capitalize: true }), value: 3 },
+      { label: t("weekdays.friday", { capitalize: true }), value: 4 },
+      { label: t("weekdays.saturday", { capitalize: true }), value: 5 },
+      { label: t("weekdays.sunday", { capitalize: true }), value: 6 },
     ],
     [t],
   );
@@ -247,7 +247,11 @@ const ShiftModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift") + t("Modal/created2"), 4000);
+      notify(
+        "success",
+        t("entities.shift", { capitalize: true }) + t("Modal/created2"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -446,7 +450,11 @@ const ShiftModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift") + t("Modal/updated2"), 4000);
+      notify(
+        "success",
+        t("entities.shift", { capitalize: true }) + t("Modal/updated2"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -676,8 +684,12 @@ const ShiftModal = (props: Props) => {
             icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/shift")
-                : t("Common/Add") + " " + t("Common/shift")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.shift")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.shift")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -694,7 +706,7 @@ const ShiftModal = (props: Props) => {
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
                 <div className="xs:col-span-2">
                   <Input
-                    label={t("Common/Name")}
+                    label={t("common.name", { capitalize: true })}
                     value={name}
                     onChange={(val) => {
                       setName(String(val));
@@ -706,7 +718,7 @@ const ShiftModal = (props: Props) => {
                 </div>
 
                 <Input
-                  label={t("Common/Light color")}
+                  label={t("appearance.lightColour", { capitalize: true })}
                   type="color"
                   value={lightColorHex}
                   onChange={(val) => setLightColorHex(String(val))}
@@ -715,7 +727,7 @@ const ShiftModal = (props: Props) => {
                 />
 
                 <Input
-                  label={t("Common/Dark color")}
+                  label={t("appearance.darkColour", { capitalize: true })}
                   type="color"
                   value={darkColorHex}
                   onChange={(val) => setDarkColorHex(String(val))}
@@ -790,7 +802,10 @@ const ShiftModal = (props: Props) => {
               <MultiDropdown
                 addSpacer={shiftTeamIds.length === 0 && shiftTeams.length > 3}
                 scrollContainer={getScrollEl}
-                label={t("Common/Shift teams")}
+                label={t("entities.shiftTeam", {
+                  capitalize: true,
+                  plural: true,
+                })}
                 value={shiftTeamIds.map(String)}
                 onChange={(vals: string[]) => {
                   const ids = vals.map(Number);
@@ -889,7 +904,11 @@ const ShiftModal = (props: Props) => {
                                   return n;
                                 });
                               }}
-                              aria-label={t("Common/Remove") + " " + team.name}
+                              aria-label={
+                                t("actions.remove", { capitalize: true }) +
+                                " " +
+                                team.name
+                              }
                             >
                               <XMarkIcon className="h-6 min-h-6 w-6 min-w-6" />
                             </button>
@@ -912,7 +931,7 @@ const ShiftModal = (props: Props) => {
 
                           <div className="grid grid-cols-2 gap-6">
                             <SingleDropdown
-                              label={t("Common/Week")}
+                              label={t("time.week", { capitalize: true })}
                               value={String(sel.weekIndex)}
                               options={Array.from(
                                 { length: cycleLengthWeeks },
@@ -933,7 +952,7 @@ const ShiftModal = (props: Props) => {
                               inChip
                             />
                             <SingleDropdown
-                              label={t("Common/Day")}
+                              label={t("time.day", { capitalize: true })}
                               value={String(sel.dayOfWeek)}
                               options={dayOptions.map((d) => ({
                                 label: d.label,
@@ -983,7 +1002,9 @@ const ShiftModal = (props: Props) => {
                                   >
                                     <Input
                                       type="time"
-                                      label={t("Common/Start")}
+                                      label={t("time.start", {
+                                        capitalize: true,
+                                      })}
                                       value={wt.start}
                                       onChange={(val) =>
                                         setWeeklyTimes((prev) =>
@@ -1003,7 +1024,9 @@ const ShiftModal = (props: Props) => {
                                     <div className="flex flex-col gap-6">
                                       <Input
                                         type="time"
-                                        label={t("Common/Stop")}
+                                        label={t("time.stop", {
+                                          capitalize: true,
+                                        })}
                                         value={wt.end}
                                         onChange={(val) =>
                                           setWeeklyTimes((prev) =>
@@ -1030,7 +1053,9 @@ const ShiftModal = (props: Props) => {
                                         )
                                       }
                                     >
-                                      {t("Common/Remove")}
+                                      {t("actions.remove", {
+                                        capitalize: true,
+                                      })}
                                     </button>
                                   </div>
                                 ))}
@@ -1062,7 +1087,7 @@ const ShiftModal = (props: Props) => {
                   />
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
-                      t("Common/shift team") +
+                      t("entities.shiftTeam") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </div>
@@ -1071,7 +1096,7 @@ const ShiftModal = (props: Props) => {
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Status")}
+                  {t("status.status", { capitalize: true })}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -1106,13 +1131,14 @@ const ShiftModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               {validationError && (

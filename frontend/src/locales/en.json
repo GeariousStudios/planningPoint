@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "Common/Administrate": "Administrate",
   "Common/Manage": "Manage",
   "Common/Categories": "Categories",
@@ -141,6 +142,185 @@
   "Common/Undo": "Undo",
   "Common/Redo": "Redo",
   "Common/Cancel": "Cancel",
+=======
+  "common": {
+    "manage": "manage",
+    "category": {
+      "s": "category",
+      "p": "categories"
+    },
+    "subCategory": {
+      "s": "sub category",
+      "p": "sub categories"
+    },
+    "unit": {
+      "s": "unit",
+      "p": "units"
+    },
+    "group": {
+      "s": "group",
+      "p": "groups"
+    },
+    "column": {
+      "s": "column",
+      "p": "columns"
+    },
+    "plannedStop": {
+      "s": "planned stop",
+      "p": "planned stops"
+    },
+    "product": {
+      "s": "product",
+      "p": "products"
+    },
+    "productGroup": {
+      "s": "product group",
+      "p": "product groups"
+    },
+    "masterPlan": {
+      "s": "master plan",
+      "p": "master plans"
+    },
+    "masterPlanField": {
+      "s": "field",
+      "p": "fields"
+    },
+    "operationalPlan": {
+      "s": "operational plan",
+      "p": "operational plans"
+    },
+    "newsType": {
+      "s": "news type",
+      "p": "news types"
+    },
+    "shift": {
+      "s": "shift",
+      "p": "shifts"
+    },
+    "shiftTeam": {
+      "s": "team",
+      "p": "teams"
+    },
+    "user": {
+      "s": "user",
+      "p": "users"
+    },
+    "type": {
+      "s": "type",
+      "p": "types"
+    },
+    "admin": {
+      "s": "admin",
+      "p": "admin"
+    },
+    "developer": {
+      "s": "developer",
+      "p": "developers"
+    },
+    "news": {
+      "s": "news",
+      "p": "news"
+    },
+
+    "name": {
+      "s": "name",
+      "p": "names"
+    },
+
+    "report": {
+      "s": "report",
+      "p": "reports"
+    },
+
+    "day": {
+      "s": "day",
+      "p": "days"
+    },
+
+    "hour": {
+      "s": "hour",
+      "p": "hours"
+    },
+
+    "minute": {
+      "s": "minute",
+      "p": "minutes"
+    },
+
+    "userId": "user ID",
+    "login": "login",
+    "logout": "logout",
+    "username": "username",
+    "password": "password",
+    "forgotPassword": "forgot your password?",
+    "notImplemented": "not implemented!",
+    "updated": "updated:",
+    "created": "created:",
+    "by": "by",
+    "is": "is",
+    "week": "week",
+    "noAccess": "you're not authorized!",
+    "updating": "updating...",
+    "adding": "adding...",
+    "yes": "yes",
+    "no": "no",
+    "search": "search",
+    "date": "date",
+    "settings": "settings",
+    "dark": "dark",
+    "light": "light",
+    "changesSaved": "changes saved!",
+    "close": "close",
+    "status": "status",
+    "statusAndOther": "status and other",
+    "number": "number",
+    "decimal": "decimal",
+    "text": "text",
+    "textField": "text field",
+    "boolean": "boolean",
+    "add": "add",
+    "start": "start",
+    "stop": "stop",
+    "delete": "delete",
+    "edit": "edit",
+    "remove": "remove",
+    "monday": "monday",
+    "tuesday": "tuesday",
+    "wednesday": "wednesday",
+    "thursday": "thursday",
+    "friday": "friday",
+    "saturday": "saturday",
+    "sunday": "sunday",
+    "time": "time",
+    "color": "colour",
+    "lightColor": "colour (light theme)",
+    "darkColor": "colour (dark theme)",
+    "unknown": "unknown",
+    "all": "all",
+    "reset": "reset",
+    "startDate": "start date",
+    "endDate": "end date",
+    "dateRange": "date range",
+    "updatePage": "update page",
+    "editing": "editing",
+    "left": "left",
+    "center": "center",
+    "right": "right",
+    "for": "for",
+    "activities": "activities",
+    "undo": "undo",
+    "redo": "redo",
+    "cancel": "cancel",
+    "saveRules": "save rules",
+    "savingRules": "saving rules...",
+    "rulesSaved": "rules have been saved!",
+    "revertChanges": "revert changes",
+    "revertingChanges": "reverting changes...",
+    "changesReverted": "changes have been reverted!",
+    "tooltipSaveRules": "save rules",
+    "tooltipRevertChanges": "revert changes"
+  },
+>>>>>>> Stashed changes
 
   "Message/Loading": "Loading...",
   "Message/Auth": "Authenticating...",

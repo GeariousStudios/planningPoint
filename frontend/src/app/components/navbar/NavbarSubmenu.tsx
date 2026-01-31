@@ -7,7 +7,7 @@ import HoverIcon from "../common/HoverIcon";
 import { StarIcon as OutlineStarIcon } from "@heroicons/react/24/outline";
 import { StarIcon as SolidStarIcon } from "@heroicons/react/24/solid";
 import CustomTooltip from "../common/CustomTooltip";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 
 // --- PROPS ---
 type SubmenuItem = {
@@ -57,7 +57,7 @@ type Props = {
 };
 
 const NavbarSubmenu = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -271,9 +271,9 @@ const NavbarSubmenu = (props: Props) => {
                     <CustomTooltip
                       content={
                         props.isFavourite && !props.favouriteDisabled
-                          ? t("Navbar/Remove favourite")
+                          ? t("navbar.removeFavourite", { capitalize: true })
                           : !props.isFavourite && !props.favouriteDisabled
-                            ? t("Navbar/Set favourite")
+                            ? t("navbar.setFavourite", { capitalize: true })
                             : ""
                       }
                       longDelay

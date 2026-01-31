@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import Input from "@/app/components/common/Input";
 import {
   buttonDeletePrimaryClass,
@@ -55,7 +55,7 @@ type Props = {
 };
 
 const MasterPlanClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
   const { masterPlanId } = useParams();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token =
@@ -130,7 +130,8 @@ const MasterPlanClient = (props: Props) => {
             <div className="fixed inset-0 z-[calc(var(--z-edit)-2)] bg-(--bg-main) opacity-90" />
             <div className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)] border-6 border-(--edit-mode)" />
             <div className="pointer-events-none fixed top-0 left-0 z-[calc(var(--z-edit)+2)] w-full bg-(--edit-mode) py-2 text-center text-lg font-semibold tracking-wide text-(--text-main-reverse)">
-              {t("Common/Editing")} {t("Common/master plan")}
+              {t("actions.editing", { capitalize: true })}{" "}
+              {t("entities.masterPlan")}
             </div>
           </>
         )}
@@ -400,7 +401,7 @@ const MasterPlanClient = (props: Props) => {
                       {/* --- Undo/Redo --- */}
                       <div className="flex gap-4">
                         <CustomTooltip
-                          content={t("Common/Undo")}
+                          content={t("actions.undo", { capitalize: true })}
                           showOnTouch
                           longDelay
                         >
@@ -416,13 +417,13 @@ const MasterPlanClient = (props: Props) => {
                               className="h-6 w-6"
                             />
                             <span className="hidden 2xl:block">
-                              {t("Common/Undo")}
+                              {t("actions.undo", { capitalize: true })}
                             </span>
                           </button>
                         </CustomTooltip>
 
                         <CustomTooltip
-                          content={t("Common/Redo")}
+                          content={t("actions.redo", { capitalize: true })}
                           showOnTouch
                           longDelay
                         >
@@ -438,7 +439,7 @@ const MasterPlanClient = (props: Props) => {
                               className="h-6 w-6"
                             />
                             <span className="hidden 2xl:block">
-                              {t("Common/Redo")}
+                              {t("actions.redo", { capitalize: true })}
                             </span>
                           </button>
                         </CustomTooltip>
@@ -537,7 +538,7 @@ const MasterPlanClient = (props: Props) => {
                                 className="h-6 w-6"
                               />
                               <span className="2xs:hidden block">
-                                {t("Common/Add")}
+                                {t("actions.add", { capitalize: true })}
                               </span>
                               <span className="2xs:block hidden">
                                 {t("MasterPlan/Add element")}
@@ -580,7 +581,7 @@ const MasterPlanClient = (props: Props) => {
                           autoWidth
                         >
                           {c.isProductListLoading ? (
-                            <span>{t("Message/Loading")}</span>
+                            <span>{t("message.loading")}</span>
                           ) : c.filteredProductList.length === 0 ? (
                             <div className="flex flex-col gap-4">
                               <div className="flex items-center gap-2 truncate">
@@ -596,7 +597,7 @@ const MasterPlanClient = (props: Props) => {
                                     c.setProductTab("all");
                                   }}
                                 >
-                                  {t("Common/All")}
+                                  {t("common.all", { capitalize: true })}
                                 </button>
 
                                 <span className="opacity-40">|</span>
@@ -613,7 +614,10 @@ const MasterPlanClient = (props: Props) => {
                                     c.setProductTab("products");
                                   }}
                                 >
-                                  {t("Common/Products")}
+                                  {t("entities.product", {
+                                    capitalize: true,
+                                    plural: true,
+                                  })}
                                 </button>
 
                                 <span className="opacity-40">|</span>
@@ -630,23 +634,35 @@ const MasterPlanClient = (props: Props) => {
                                     c.setProductTab("product-groups");
                                   }}
                                 >
-                                  {t("Common/Product groups")}
+                                  {t("entities.productGroup", {
+                                    capitalize: true,
+                                    plural: true,
+                                  })}
                                 </button>
                               </div>
 
                               <Input
                                 placeholder={`${
                                   c.productTab === "products"
-                                    ? t("Common/Search") +
+                                    ? t("actions.search", {
+                                        capitalize: true,
+                                      }) +
                                       " " +
-                                      t("Common/products") +
+                                      t("entities.product", { plural: true }) +
                                       "..."
                                     : c.productTab === "product-groups"
-                                      ? t("Common/Search") +
+                                      ? t("actions.search", {
+                                          capitalize: true,
+                                        }) +
                                         " " +
-                                        t("Common/product groups") +
+                                        t("entities.productGroup", {
+                                          plural: true,
+                                        }) +
                                         "..."
-                                      : t("Common/Search") + "..."
+                                      : t("actions.search", {
+                                          capitalize: true,
+                                          end: "...",
+                                        })
                                 }`}
                                 value={c.productSearch}
                                 onChange={(val) =>
@@ -670,7 +686,7 @@ const MasterPlanClient = (props: Props) => {
                                     c.setProductTab("all");
                                   }}
                                 >
-                                  {t("Common/All")}
+                                  {t("common.all", { capitalize: true })}
                                 </button>
 
                                 <span className="opacity-40">|</span>
@@ -687,7 +703,10 @@ const MasterPlanClient = (props: Props) => {
                                     c.setProductTab("products");
                                   }}
                                 >
-                                  {t("Common/Products")}
+                                  {t("entities.product", {
+                                    capitalize: true,
+                                    plural: true,
+                                  })}
                                 </button>
 
                                 <span className="opacity-40">|</span>
@@ -704,23 +723,35 @@ const MasterPlanClient = (props: Props) => {
                                     c.setProductTab("product-groups");
                                   }}
                                 >
-                                  {t("Common/Product groups")}
+                                  {t("entities.productGroup", {
+                                    capitalize: true,
+                                    plural: true,
+                                  })}
                                 </button>
                               </div>
 
                               <Input
                                 placeholder={`${
                                   c.productTab === "products"
-                                    ? t("Common/Search") +
+                                    ? t("actions.search", {
+                                        capitalize: true,
+                                      }) +
                                       " " +
-                                      t("Common/products") +
+                                      t("entities.product", { plural: true }) +
                                       "..."
                                     : c.productTab === "product-groups"
-                                      ? t("Common/Search") +
+                                      ? t("actions.search", {
+                                          capitalize: true,
+                                        }) +
                                         " " +
-                                        t("Common/product groups") +
+                                        t("entities.productGroup", {
+                                          plural: true,
+                                        }) +
                                         "..."
-                                      : t("Common/Search") + "..."
+                                      : t("actions.search", {
+                                          capitalize: true,
+                                          end: "...",
+                                        })
                                 }`}
                                 value={c.productSearch}
                                 onChange={(val) =>
@@ -977,7 +1008,7 @@ const MasterPlanClient = (props: Props) => {
                   <div className="flex w-full items-center justify-start">
                     <Input
                       icon={<SmallerSolid.MagnifyingGlassIcon />}
-                      placeholder={`${t("Common/Search")}...`}
+                      placeholder={`${t("actions.search", { capitalize: true })}...`}
                       value={c.searchTerm}
                       onChange={(val) => c.setSearchTerm(String(val))}
                     />
@@ -1116,7 +1147,7 @@ const MasterPlanClient = (props: Props) => {
                   <ThCell
                     label={
                       <div className="flex items-center gap-2">
-                        <span>{t("Common/Status")}</span>
+                        <span>{t("status.status", { capitalize: true })}</span>
 
                         <CustomTooltip
                           content={t("MasterPlan/Tooltip status")}
@@ -1162,10 +1193,7 @@ const MasterPlanClient = (props: Props) => {
                         colSpan={c.fieldOptions.length + 2 || 1}
                         className="h-57 text-center text-(--text-secondary)"
                       >
-                        <Message
-                          icon="loading"
-                          content={t("Message/Content")}
-                        />
+                        <Message icon="loading" content="content" />
                       </td>
                     </tr>
                   ) : (
@@ -1174,10 +1202,7 @@ const MasterPlanClient = (props: Props) => {
                         colSpan={c.fieldOptions.length + 1 || 1}
                         className="h-57 text-center text-(--text-secondary)"
                       >
-                        <Message
-                          icon="loading"
-                          content={t("Message/Content")}
-                        />
+                        <Message icon="loading" content="content" />
                       </td>
                     </tr>
                   )

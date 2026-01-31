@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../components/toast/ToastProvider";
@@ -57,8 +57,13 @@ type ShiftChange = {
   newShiftId: number;
 };
 
+<<<<<<< Updated upstream:frontend/src/app/hooks/useClient.ts
 const useClient = (props: Props) => {
   const t = useTranslations();
+=======
+const useUnitClient = (props: Props) => {
+  const t = useTN();
+>>>>>>> Stashed changes:frontend/src/app/hooks/useUnitClient.ts
 
   // --- VARIABLES ---
   // --- Other ---
@@ -321,7 +326,7 @@ const useClient = (props: Props) => {
   const getShiftLabel = (shiftId: number) => {
     const s = shiftNames.find((x) => x.id === shiftId);
     if (!s) {
-      return t("Common/Unknown");
+      return t("common.unknown", { capitalize: true });
     }
 
     if (s.systemKey) {
@@ -999,7 +1004,13 @@ const useClient = (props: Props) => {
       });
 
       if (response.ok) {
-        notify("success", t("Common/Changes saved"));
+        notify(
+          "success",
+          t("common.changes", { capitalize: true }) +
+            " " +
+            t("common.saved", { end: "!" }),
+          4000,
+        );
         setEditingCell(null);
         setRefetchData(true);
       } else {

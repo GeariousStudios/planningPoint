@@ -13,7 +13,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import { useToast } from "../toast/ToastProvider";
 import ModalBase, { ModalBaseHandle } from "./ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import LoadingSpinner from "../common/LoadingSpinner";
 
 type Props = {
@@ -29,7 +29,7 @@ type NewsTypeOptions = {
 };
 
 const NewsModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -334,8 +334,12 @@ const NewsModal = (props: Props) => {
             icon={props.newsId ? PencilSquareIcon : PlusIcon}
             label={
               props.newsId
-                ? t("Common/Edit") + " " + t("NewsModal/news item")
-                : t("Common/Add") + " " + t("NewsModal/news item")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("NewsModal/news item")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("NewsModal/news item")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -346,7 +350,7 @@ const NewsModal = (props: Props) => {
                   <Input
                     id="date"
                     type="date"
-                    label={t("Common/Date")}
+                    label={t("time.date", { capitalize: true })}
                     value={date}
                     onChange={(val) => setDate(String(val))}
                     onModal
@@ -354,7 +358,7 @@ const NewsModal = (props: Props) => {
                   />
 
                   <SingleDropdown
-                    label={t("Common/News type")}
+                    label={t("entities.newsType", { capitalize: true })}
                     value={typeId}
                     onChange={setTypeId}
                     options={[
@@ -408,13 +412,14 @@ const NewsModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.newsId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

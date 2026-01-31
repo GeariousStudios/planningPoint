@@ -4,7 +4,12 @@ import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "../components/navbar/Navbar";
 import Topbar from "../components/topbar/Topbar";
 import { usePathname } from "next/navigation";
+<<<<<<< Updated upstream
 import { useLocale, useTranslations } from "next-intl";
+=======
+import { useLocale } from "next-intl";
+import useTN from "../hooks/useTN";
+>>>>>>> Stashed changes
 
 type Props = {
   children: ReactNode;
@@ -29,7 +34,7 @@ const sameCrumbs = (a?: Breadcrumb[], b?: Breadcrumb[]) =>
   JSON.stringify(a) === JSON.stringify(b);
 
 const LayoutWrapper = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- REFS ---
   const lastPathRef = useRef<string>("");
@@ -152,54 +157,137 @@ const LayoutWrapper = (props: Props) => {
   const breadcrumbTranslation = useMemo<CrumbMap>(
     () => ({
       // --- General ---
+<<<<<<< Updated upstream
       manage: { label: t("Common/Manage"), clickable: true },
       "audit-trail": { label: t("Navbar/Audit trail"), clickable: false },
+=======
+      manage: {
+        label: t("common.manage", { capitalize: true }),
+        clickable: true,
+      },
+      "audit-trail": {
+        label: t("navbar.auditTrail", { capitalize: true }),
+        clickable: false,
+      },
+>>>>>>> Stashed changes
 
       // --- Report ---
-      report: { label: t("Navbar/Report"), clickable: true },
-      unit: { label: t("Common/Units"), clickable: false },
+      report: {
+        label: t("navbar.report", { capitalize: true }),
+        clickable: true,
+      },
+      unit: {
+        label: t("entities.unit", { capitalize: true, plural: true }),
+        clickable: false,
+      },
 
       // --- Plan ---
-      plan: { label: t("Navbar/Plan"), clickable: true },
-      "admin/manage/plan": { label: t("Navbar/Plan"), clickable: false },
-      "master-plans": { label: t("Common/Master plans"), clickable: true },
+      plan: { label: t("navbar.plan", { capitalize: true }), clickable: true },
+      "admin/manage/plan": {
+        label: t("navbar.plan", { capitalize: true }),
+        clickable: false,
+      },
+      "master-plans": {
+        label: t("entities.masterPlan", { capitalize: true, plural: true }),
+        clickable: true,
+      },
       "operational-plans": {
-        label: t("Common/Operational plans"),
+        label: t("entities.operationalPlan", {
+          capitalize: true,
+          plural: true,
+        }),
+        clickable: true,
+      },
+      "planning-rules": {
+        label: t("entities.planningRules", { capitalize: true }),
         clickable: true,
       },
 
       // --- Admin ---
-      admin: { label: t("Common/Admin"), clickable: false },
+      admin: {
+        label: t("common.admin", { capitalize: true }),
+        clickable: false,
+      },
 
       "unit-groups": {
-        label: t("Common/Groups"),
+        label: t("entities.group", { capitalize: true, plural: true }),
         clickable: true,
       },
+      units: {
+        label: t("entities.unit", { capitalize: true, plural: true }),
+        clickable: true,
+      },
+      categories: {
+        label: t("entities.category", { capitalize: true, plural: true }),
+        clickable: true,
+      },
+<<<<<<< Updated upstream
       units: { label: t("Common/Units"), clickable: true },
       categories: { label: t("Common/Categories"), clickable: true },
+=======
+>>>>>>> Stashed changes
       "unit-columns": {
-        label: t("Common/Columns"),
+        label: t("entities.column", { capitalize: true, plural: true }),
         clickable: true,
       },
 
-      news: { label: t("Common/News"), clickable: false },
-      "news-types": { label: t("Common/News types"), clickable: true },
+      news: {
+        label: t("entities.news", { capitalize: true, plural: true }),
+        clickable: false,
+      },
+      "news-types": {
+        label: t("entities.newsType", { capitalize: true, plural: true }),
+        clickable: true,
+      },
 
-      shifts: { label: t("Common/Shifts"), clickable: true },
-      "shift-teams": { label: t("Common/Shift teams"), clickable: true },
+      shifts: {
+        label: t("entities.shift", { capitalize: true, plural: true }),
+        clickable: true,
+      },
+      "shift-teams": {
+        label: t("entities.shiftTeam", { capitalize: true, plural: true }),
+        clickable: true,
+      },
 
+<<<<<<< Updated upstream
       products: { label: t("Common/Products"), clickable: true },
       "planned-stops": { label: t("Common/Planned stops"), clickable: true },
       "import-rules": { label: t("ImportRules/Import rules"), clickable: true },
-      "master-plan-fields": {
-        label: t("Common/Master plan fields"),
+=======
+      products: {
+        label: t("entities.product", { capitalize: true, plural: true }),
         clickable: true,
       },
-      "product-groups": { label: t("Common/Product groups"), clickable: true },
+      "planned-stops": {
+        label: t("entities.plannedStop", { capitalize: true, plural: true }),
+        clickable: true,
+      },
+      "import-rules": {
+        label: t("entities.importRules", { capitalize: true }),
+        clickable: true,
+      },
+>>>>>>> Stashed changes
+      "master-plan-fields": {
+        label: t("entities.masterPlanField", {
+          capitalize: true,
+          plural: true,
+        }),
+        clickable: true,
+      },
+      "product-groups": {
+        label: t("entities.productGroup", { capitalize: true, plural: true }),
+        clickable: true,
+      },
 
       // --- Developer ---
-      developer: { label: t("Common/Developer"), clickable: false },
-      users: { label: t("Common/Users"), clickable: true },
+      developer: {
+        label: t("common.developer", { capitalize: true }),
+        clickable: false,
+      },
+      users: {
+        label: t("entities.user", { capitalize: true, plural: true }),
+        clickable: true,
+      },
     }),
     [t],
   );
@@ -376,7 +464,7 @@ const LayoutWrapper = (props: Props) => {
     if (crumbs.length < filteredParts.length) {
       return [
         {
-          label: t("Message/Invalid"),
+          label: t("message.invalid", { capitalize: true, end: "." }),
           href: "/",
           clickable: false,
           isActive: true,
@@ -479,7 +567,7 @@ const LayoutWrapper = (props: Props) => {
       const next = isMismatch
         ? [
             {
-              label: t("Message/Invalid"),
+              label: t("message.invalid", { capitalize: true, end: "." }),
               href: "/",
               clickable: false,
               isActive: true,

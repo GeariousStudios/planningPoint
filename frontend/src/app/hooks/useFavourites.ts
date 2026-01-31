@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/toast/ToastProvider";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 
 type FavouriteItem = {
   href: string;
@@ -9,7 +9,7 @@ type FavouriteItem = {
 };
 
 const useFavourites = () => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- States ---
@@ -126,7 +126,7 @@ const useFavourites = () => {
       }
 
       setFavourites((prev) => prev.filter((f) => f.href !== href));
-      notify("info", t("Navbar/Added favourite"));
+      notify("info", t("navbar.addedFavourite", { capitalize: true }));
 
       fetchUserFavourites();
       window.dispatchEvent(new Event("favourites-updated"));
@@ -157,7 +157,7 @@ const useFavourites = () => {
       }
 
       setFavourites((prev) => prev.filter((f) => f.href !== href));
-      notify("info", t("Navbar/Removed favourite"));
+      notify("info", t("navbar.removedFavourite", { capitalize: true }));
 
       fetchUserFavourites();
       window.dispatchEvent(new Event("favourites-updated"));

@@ -36,7 +36,11 @@ import {
 } from "@/app/helpers/timeUtils";
 import { start } from "repl";
 import DeleteModal from "../DeleteModal";
+<<<<<<< Updated upstream
 import { useTranslations } from "next-intl";
+=======
+import useTN from "@/app/hooks/useTN";
+>>>>>>> Stashed changes
 
 type Props = {
   isOpen: boolean;
@@ -78,7 +82,7 @@ type Category = {
 };
 
 const ReportModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -204,7 +208,7 @@ const ReportModal = (props: Props) => {
         setBackupEditedReport({ ...result, id: String(result.id) });
         setHiddenReportId(result.id);
       } catch (err) {
-        notify("error", t("Manage/Failed to fetch") + t("Common/report"));
+        notify("error", t("Manage/Failed to fetch") + t("entities.report"));
       }
     };
 
@@ -458,7 +462,13 @@ const ReportModal = (props: Props) => {
     event.preventDefault();
     props.onClose();
     props.onItemUpdated();
-    notify("success", t("Common/Changes saved"), 4000);
+    notify(
+      "success",
+      t("common.changes", { capitalize: true }) +
+        " " +
+        t("common.saved", { end: "!" }),
+      4000,
+    );
   };
 
   // const handleSaveClick = () => {
@@ -722,7 +732,7 @@ const ReportModal = (props: Props) => {
                     <Input
                       type="date"
                       id="selectedDate"
-                      label={t("Common/Date")}
+                      label={t("time.date", { capitalize: true })}
                       value={tempDate}
                       onChange={(val) => setTempDate(String(val))}
                       onBlur={(e) => handleDateChange(e.target.value)}
@@ -754,7 +764,7 @@ const ReportModal = (props: Props) => {
                     scrollContainer={getScrollEl}
                     // customSpace={3}
                     id="selectedHour"
-                    label={t("Common/Hour")}
+                    label={t("time.hour", { capitalize: true })}
                     value={selectedHour}
                     onChange={(val) => setSelectedHour(String(val))}
                     onModal
@@ -930,15 +940,15 @@ const ReportModal = (props: Props) => {
                                       const parts: string[] = [];
                                       if (diffDays > 0)
                                         parts.push(
-                                          `${diffDays} ${diffDays === 1 ? t("Common/day") : t("Common/days")}`,
+                                          `${diffDays} ${diffDays === 1 ? t("time.day") : t("time.day", { plural: true })}`,
                                         );
                                       if (diffHours > 0)
                                         parts.push(
-                                          `${diffHours} ${diffHours === 1 ? t("Common/hour") : t("Common/hours")}`,
+                                          `${diffHours} ${diffHours === 1 ? t("time.hour") : t("time.hour", { plural: true })}`,
                                         );
                                       if (diffMinutes > 0 || parts.length === 0)
                                         parts.push(
-                                          `${diffMinutes} ${diffMinutes === 1 ? t("Common/minute") : t("Common/minutes")}`,
+                                          `${diffMinutes} ${diffMinutes === 1 ? t("time.minute") : t("time.minute", { plural: true })}`,
                                         );
 
                                       const duration = parts.join(" ");
@@ -1020,21 +1030,25 @@ const ReportModal = (props: Props) => {
                                   {report.creationDate && (
                                     <div>
                                       <span className="font-semibold">
-                                        {t("Common/Created")}
+                                        {t("status.created", {
+                                          capitalize: true,
+                                        }) + ":"}
                                       </span>{" "}
                                       {utcIsoToLocalDateTime(
                                         report.creationDate,
                                       )}{" "}
-                                      {t("Common/by")} {report.createdBy}
+                                      {t("common.by")} {report.createdBy}
                                     </div>
                                   )}
                                   {report.updateDate && (
                                     <div>
                                       <span className="font-semibold">
-                                        {t("Common/Updated")}
+                                        {t("status.updated", {
+                                          capitalize: true,
+                                        }) + ":"}
                                       </span>{" "}
                                       {utcIsoToLocalDateTime(report.updateDate)}{" "}
-                                      {t("Common/by")} {report.updatedBy}
+                                      {t("common.by")} {report.updatedBy}
                                     </div>
                                   )}
                                 </div>
@@ -1052,7 +1066,13 @@ const ReportModal = (props: Props) => {
                           >
                             <SingleDropdown
                               id="category"
+<<<<<<< Updated upstream
                               label={t("Common/Category")}
+=======
+                              label={t("entities.category", {
+                                capitalize: true,
+                              })}
+>>>>>>> Stashed changes
                               value={
                                 currentReport.categoryId
                                   ? String(currentReport.categoryId)
@@ -1093,7 +1113,13 @@ const ReportModal = (props: Props) => {
                               return subs.length > 0 ? (
                                 <SingleDropdown
                                   id="subCategory"
+<<<<<<< Updated upstream
                                   label={t("Common/Sub category")}
+=======
+                                  label={t("entities.subCategory", {
+                                    capitalize: true,
+                                  })}
+>>>>>>> Stashed changes
                                   value={
                                     currentReport.subCategoryId
                                       ? String(currentReport.subCategoryId)
@@ -1258,7 +1284,7 @@ const ReportModal = (props: Props) => {
                             />
                             {currentReport.id
                               ? t("Modal/Save")
-                              : t("Common/Add")}
+                              : t("actions.add", { capitalize: true })}
                           </button>
 
                           <button
@@ -1313,7 +1339,7 @@ const ReportModal = (props: Props) => {
                   onClick={() => modalRef.current?.requestClose()}
                   className={`${buttonSecondaryClass} col-span-3`}
                 >
-                  {t("Common/Close")}
+                  {t("actions.close", { capitalize: true })}
                 </button>
               </ModalBase.Footer>
             </ModalBase>

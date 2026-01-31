@@ -8,7 +8,7 @@ import ManageBase from "@/app/components/manage/ManageBase";
 import NewsTypeModal from "@/app/components/modals/admin/news/NewsTypeModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { useEffect } from "react";
 import { useHandbook } from "@/app/context/HandbookContext";
@@ -18,7 +18,7 @@ type Props = {
 };
 
 const NewsTypesClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -81,7 +81,9 @@ const NewsTypesClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/news types"),
+          err.message ||
+            t("Manage/Failed to fetch") +
+              t("entities.newsType", { capitalize: true, plural: true }),
         ); // <-- Unique.
         return {
           items: [],
@@ -115,7 +117,11 @@ const NewsTypesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/News type") + t("Manage/deleted1"), 4000); // <-- Unique.
+      notify(
+        "success",
+        t("entities.newsType", { capitalize: true }) + t("Manage/deleted1"),
+        4000,
+      ); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -142,8 +148,10 @@ const NewsTypesClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: NewsTypeItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -152,8 +160,10 @@ const NewsTypesClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: NewsTypeItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -164,10 +174,10 @@ const NewsTypesClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: NewsTypeItem) => item.name,
       responsivePriority: 0,
     },
@@ -183,7 +193,7 @@ const NewsTypesClient = (props: Props) => {
   return (
     <>
       <ManageBase<NewsTypeItem> // <-- Unique.
-        itemName={t("Common/news type")} // <-- Unique.
+        itemName={t("entities.newsType")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

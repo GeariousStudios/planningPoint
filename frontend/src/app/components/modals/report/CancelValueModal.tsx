@@ -5,7 +5,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import ModalBase from "./../ModalBase";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 
 type Props = {
   isOpen: boolean;
@@ -14,7 +14,7 @@ type Props = {
 };
 
 const CancelValueModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- States ---
@@ -51,7 +51,7 @@ const CancelValueModal = (props: Props) => {
               onClick={requestDelete}
               className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
             >
-              {t("Common/Cancel")}
+              {t("actions.cancel", { capitalize: true })}
             </button>
           </ModalBase.Footer>
         </ModalBase>

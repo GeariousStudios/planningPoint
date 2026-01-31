@@ -15,7 +15,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
 
@@ -24,7 +24,7 @@ type Props = {
 };
 
 const CategoriesClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -87,7 +87,8 @@ const CategoriesClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/categories"),
+          err.message ||
+            t("Manage/Failed to fetch") + t("entities.category", "p"),
         ); // <-- Unique.
         return {
           items: [],
@@ -134,7 +135,15 @@ const CategoriesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Manage/deleted1"), 4000); // <-- Unique.
+=======
+      notify(
+        "success",
+        capitalize(t("entities.category")) + t("Manage/deleted1"),
+        4000,
+      ); // <-- Unique.
+>>>>>>> Stashed changes
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -228,8 +237,10 @@ const CategoriesClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: CategoryItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -238,8 +249,10 @@ const CategoriesClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: CategoryItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -250,10 +263,10 @@ const CategoriesClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: CategoryItem) => item.name,
       responsivePriority: 0,
     },
@@ -417,7 +430,7 @@ const CategoriesClient = (props: Props) => {
   return (
     <>
       <ManageBase<CategoryItem> // <-- Unique.
-        itemName={t("Common/category")} // <-- Unique.
+        itemName={t("entities.category")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

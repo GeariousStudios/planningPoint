@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import NavbarLink from "@/app/components/navbar/NavbarLink";
 import { useEffect, useState } from "react";
 import Message from "../components/common/Message";
@@ -31,7 +31,7 @@ type LinkSection = {
 };
 
 const ReportNavClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   const [sections, setSections] = useState<LinkSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +64,9 @@ const ReportNavClient = (props: Props) => {
 
       const grouped = items.reduce(
         (acc: Record<string, Link[]>, unit: Unit) => {
-          const groupName = unit.unitGroupName || t("Common/Groups");
+          const groupName =
+            unit.unitGroupName ||
+            t("entities.group", { capitalize: true, plural: true });
 
           if (!acc[groupName]) {
             acc[groupName] = [];
@@ -112,7 +114,7 @@ const ReportNavClient = (props: Props) => {
     <NavPage
       sections={sections}
       variant="single-grouped"
-      pageLabel={t("Common/Units")}
+      pageLabel={t("entities.unit", { capitalize: true, plural: true })}
     />
   );
 };

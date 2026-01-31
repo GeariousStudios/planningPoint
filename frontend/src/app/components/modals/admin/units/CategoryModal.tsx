@@ -17,7 +17,7 @@ import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import MultiDropdown from "../../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../../common/DragDrop";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { categoryConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
@@ -34,7 +34,7 @@ type SubCategoryDto = {
 };
 
 const CategoryModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -169,7 +169,15 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Modal/created1"), 4000);
+=======
+      notify(
+        "success",
+        t("entities.category", { capitalize: true }) + t("Modal/created1"),
+        4000,
+      );
+>>>>>>> Stashed changes
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -267,7 +275,15 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Modal/updated1"), 4000);
+=======
+      notify(
+        "success",
+        t("entities.category", { capitalize: true }) + t("Modal/updated1"),
+        4000,
+      );
+>>>>>>> Stashed changes
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -521,8 +537,12 @@ const CategoryModal = (props: Props) => {
             icon={props.itemId ? PencilSquareIcon : PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/category")
-                : t("Common/Add") + " " + t("Common/category")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.category")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.category")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -539,7 +559,7 @@ const CategoryModal = (props: Props) => {
               <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
                 <div className="w-full">
                   <Input
-                    label={t("Common/Name")}
+                    label={t("common.name", { capitalize: true })}
                     value={name}
                     onChange={(val) => setName(String(val))}
                     onModal
@@ -570,7 +590,10 @@ const CategoryModal = (props: Props) => {
                   }}
                   // placeholder={t("CategoryModal/Placeholder text")}
                   label={
-                    t("Common/Add") + " " + t("Common/sub category") + "..."
+                    t("actions.add", { capitalize: true }) +
+                    " " +
+                    t("entities.subCategory") +
+                    "..."
                   }
                   {...categoryConstraints.subCategoryName}
                 />
@@ -636,7 +659,7 @@ const CategoryModal = (props: Props) => {
 
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
-                      t("Common/sub category") +
+                      t("entities.subCategory") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </>
@@ -659,13 +682,14 @@ const CategoryModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

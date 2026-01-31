@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { TdCell, ThCell } from "@/app/components/manage/ManageComponents";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
 import ExcelAutocomplete from "@/app/components/manage/ExcelAutoComplete";
@@ -29,7 +29,7 @@ type Props = {
 };
 
 const ImportRulesClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- States ---
@@ -200,7 +200,16 @@ const ImportRulesClient = (props: Props) => {
       return;
     }
 
+<<<<<<< Updated upstream
     notify("success", t("ImportRules/Rules saved"));
+=======
+    notify(
+      "success",
+      t("common.rules", { capitalize: true }) +
+        " " +
+        t("actions.saved", { end: "!" }),
+    );
+>>>>>>> Stashed changes
     setIsSaving(false);
 
     setOriginalMapping(columnMapping);
@@ -222,7 +231,17 @@ const ImportRulesClient = (props: Props) => {
     setReplaceOnImport(originalReplaceOnImport);
     setSkipRowOne(originalSkipRowOne);
 
+<<<<<<< Updated upstream
     notify("info", t("ImportRules/Changes reverted"));
+=======
+    notify(
+      "success",
+      t("common.changes", { capitalize: true }) +
+        " " +
+        t("common.saved", { end: "!" }),
+      4000,
+    );
+>>>>>>> Stashed changes
     setIsReverting(false);
   };
 
@@ -264,7 +283,13 @@ const ImportRulesClient = (props: Props) => {
           content={
             fields.length === 0
               ? t("ImportRules/Tooltip select a master plan")
+<<<<<<< Updated upstream
               : t("ImportRules/Tooltip save rules")
+=======
+              : t("actions.save", { capitalize: true }) +
+                " " +
+                t("common.rules")
+>>>>>>> Stashed changes
           }
           showOnTouch
           longDelay
@@ -284,7 +309,13 @@ const ImportRulesClient = (props: Props) => {
               <div className="flex items-center justify-center gap-2">
                 <LoadingSpinner />
                 <span className="hidden lg:block">
+<<<<<<< Updated upstream
                   {t("ImportRules/Saving rules")}
+=======
+                  {t("actions.saving", { capitalize: true }) +
+                    " " +
+                    t("common.rules", { end: "..." })}
+>>>>>>> Stashed changes
                 </span>
               </div>
             ) : (
@@ -295,7 +326,13 @@ const ImportRulesClient = (props: Props) => {
                   className="h-6 w-6"
                 />
                 <span className="hidden lg:block">
+<<<<<<< Updated upstream
                   {t("ImportRules/Save rules")}
+=======
+                  {t("actions.save", { capitalize: true }) +
+                    " " +
+                    t("common.rules")}
+>>>>>>> Stashed changes
                 </span>
               </div>
             )}
@@ -307,7 +344,13 @@ const ImportRulesClient = (props: Props) => {
           content={
             fields.length === 0
               ? t("ImportRules/Tooltip select a master plan")
+<<<<<<< Updated upstream
               : t("ImportRules/Tooltip revert changes")
+=======
+              : t("actions.revert", { capitalize: true }) +
+                " " +
+                t("common.changes")
+>>>>>>> Stashed changes
           }
           showOnTouch
           longDelay
@@ -323,7 +366,13 @@ const ImportRulesClient = (props: Props) => {
               <div className="flex items-center justify-center gap-2">
                 <LoadingSpinner />
                 <span className="hidden lg:block">
+<<<<<<< Updated upstream
                   {t("ImportRules/Reverting changes")}
+=======
+                  {t("actions.reverting", { capitalize: true }) +
+                    " " +
+                    t("common.changes", { end: "..." })}
+>>>>>>> Stashed changes
                 </span>
               </div>
             ) : (
@@ -334,7 +383,13 @@ const ImportRulesClient = (props: Props) => {
                   className="h-6 w-6"
                 />
                 <span className="hidden lg:block">
+<<<<<<< Updated upstream
                   {t("ImportRules/Revert changes")}
+=======
+                  {t("actions.revert", { capitalize: true }) +
+                    " " +
+                    t("common.changes")}
+>>>>>>> Stashed changes
                 </span>
               </div>
             )}
@@ -345,9 +400,15 @@ const ImportRulesClient = (props: Props) => {
       {/* --- MASTER PLAN SELECTION --- */}
       <div className="grid w-full rounded-2xl bg-(--bg-modal)">
         <div className="flex items-center justify-between gap-4 px-6 pt-6">
+<<<<<<< Updated upstream
           <h2 className="text-lg font-semibold whitespace-nowrap">
             {t("ImportRules/Import rules")} {t("Common/for")}{" "}
             {t("Common/master plan")}
+=======
+          <h2 className="text-lg font-semibold">
+            {t("entities.importRules", { capitalize: true })} {t("common.for")}{" "}
+            {t("entities.masterPlan")}
+>>>>>>> Stashed changes
           </h2>
         </div>
 
@@ -364,7 +425,7 @@ const ImportRulesClient = (props: Props) => {
             </div>
 
             <SingleDropdown
-              label={t("Common/Master plan")}
+              label={t("entities.masterPlan", { capitalize: true })}
               options={masterPlans.map((p) => ({
                 label: p.name,
                 value: String(p.id),

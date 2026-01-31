@@ -5,7 +5,7 @@ import CustomTooltip from "../common/CustomTooltip";
 import HoverIcon from "../common/HoverIcon";
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 
 type IconName = keyof typeof Solid;
 
@@ -24,7 +24,7 @@ type Props = {
 };
 
 const NavbarLink = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Other ---
@@ -93,9 +93,9 @@ const NavbarLink = (props: Props) => {
             <CustomTooltip
               content={
                 props.isFavourite && !props.disabled
-                  ? t("Navbar/Remove favourite")
+                  ? t("navbar.removeFavourite", { capitalize: true })
                   : !props.isFavourite && !props.disabled
-                    ? t("Navbar/Set favourite")
+                    ? t("navbar.setFavourite", { capitalize: true })
                     : ""
               }
               longDelay

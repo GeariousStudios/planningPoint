@@ -12,7 +12,7 @@ import {
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { productGroupConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 import { XMarkIcon } from "@heroicons/react/20/solid";
@@ -68,7 +68,7 @@ type ProductGroupFetchResult = {
 };
 
 const ProductGroupModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -233,7 +233,11 @@ const ProductGroupModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Product group") + t("Modal/created1"), 4000);
+      notify(
+        "success",
+        t("entities.productGroup", { capitalize: true }) + t("Modal/created1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -567,7 +571,11 @@ const ProductGroupModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Product group") + t("Modal/updated1"), 4000);
+      notify(
+        "success",
+        t("entities.productGroup", { capitalize: true }) + t("Modal/updated1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -732,7 +740,8 @@ const ProductGroupModal = (props: Props) => {
       <>
         {parts.map((p) => (
           <p className="text-(--note-error)" key={p.mpId}>
-            {t("Common/Master plan")} <b>{mpName(p.mpId)}</b>{" "}
+            {t("entities.masterPlan", { capitalize: true })}{" "}
+            <b>{mpName(p.mpId)}</b>{" "}
             {t("ProductGroupModal/needs to be assigned")}{" "}
             <span className="text-(--text-main)">{p.names}</span>
           </p>
@@ -890,8 +899,12 @@ const ProductGroupModal = (props: Props) => {
             icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/product group")
-                : t("Common/Add") + " " + t("Common/product group")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.productGroup")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.productGroup")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -908,7 +921,7 @@ const ProductGroupModal = (props: Props) => {
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
                 <div className="xs:col-span-2">
                   <Input
-                    label={t("Common/Name")}
+                    label={t("common.name", { capitalize: true })}
                     value={name}
                     onChange={(val) => {
                       setName(String(val));
@@ -930,7 +943,10 @@ const ProductGroupModal = (props: Props) => {
 
               <MultiDropdown
                 scrollContainer={getScrollEl}
-                label={t("Common/Master plans")}
+                label={t("entities.masterPlan", {
+                  capitalize: true,
+                  plural: true,
+                })}
                 options={masterPlanOptions.map((mp) => ({
                   value: String(mp.id),
                   label: mp.name,
@@ -972,7 +988,10 @@ const ProductGroupModal = (props: Props) => {
 
               <MultiDropdown
                 scrollContainer={getScrollEl}
-                label={t("Common/Products")}
+                label={t("entities.product", {
+                  capitalize: true,
+                  plural: true,
+                })}
                 options={productOptions.map((p) => ({
                   value: String(p.id),
                   label: p.name,
@@ -1007,7 +1026,7 @@ const ProductGroupModal = (props: Props) => {
 
                   <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
-                      t("Common/product") +
+                      t("entities.product") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </div>
@@ -1188,7 +1207,7 @@ const ProductGroupModal = (props: Props) => {
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Status")}
+                  {t("status.status", { capitalize: true })}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -1225,13 +1244,14 @@ const ProductGroupModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

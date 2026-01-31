@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import SingleDropdown from "../common/SingleDropdown";
 import Message from "../common/Message";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import CustomTooltip from "../common/CustomTooltip";
 import HoverIcon from "../common/HoverIcon";
 import * as Outline from "@heroicons/react/24/outline";
@@ -132,7 +132,7 @@ const TrendingPanel: React.FC<Props> = ({
   onPanelChange,
   resetTrigger,
 }) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- Variables ---
   // --- Refs ---
@@ -885,7 +885,10 @@ const TrendingPanel: React.FC<Props> = ({
                     });
                 }}
                 options={[
-                  { value: "ALL", label: t("Common/All") },
+                  {
+                    value: "ALL",
+                    label: t("common.all", { capitalize: true }),
+                  },
                   ...unitColumns.map((c) => ({
                     value: String(c.id),
                     label: c.name,
@@ -948,7 +951,7 @@ const TrendingPanel: React.FC<Props> = ({
                 <div className="flex flex-col gap-6">
                   <Input
                     type="date"
-                    label={t("Common/Start date")}
+                    label={t("time.startDate", { capitalize: true })}
                     value={customStart ?? ""}
                     min={unitCreationDate?.toISOString().slice(0, 10)}
                     max={todayStr()}
@@ -983,7 +986,7 @@ const TrendingPanel: React.FC<Props> = ({
                   />
                   <Input
                     type="date"
-                    label={t("Common/End date")}
+                    label={t("time.endDate", { capitalize: true })}
                     value={customEnd ?? ""}
                     min={
                       customStart ??
@@ -1021,7 +1024,7 @@ const TrendingPanel: React.FC<Props> = ({
       </div>
 
       <div className="col-span-2">
-        <div className="flex flex-col overflow-y-auto rounded-b border border-t-0 border-(--border-main) px-2 pt-1 bg-(--bg-grid)">
+        <div className="flex flex-col overflow-y-auto rounded-b border border-t-0 border-(--border-main) bg-(--bg-grid) px-2 pt-1">
           {panelViewMode === "LineChart" ? (
             // --- LINE CHART ---
             <div className="mt-2 overflow-hidden">
@@ -1173,7 +1176,7 @@ const TrendingPanel: React.FC<Props> = ({
                       <Line
                         type="monotone"
                         dataKey="ALL"
-                        name={t("Common/All")}
+                        name={t("common.all", { capitalize: true })}
                         dot={false}
                         strokeWidth={2}
                         stroke="var(--text-main)"
@@ -1310,7 +1313,7 @@ const TrendingPanel: React.FC<Props> = ({
 
                       <Bar
                         dataKey="ALL"
-                        name={t("Common/All")}
+                        name={t("common.all", { capitalize: true })}
                         fill="var(--text-main)"
                       />
 
@@ -1647,7 +1650,7 @@ const TrendingPanel: React.FC<Props> = ({
                     </span>
                     <span className="font-medium">
                       {selectedColumnId === "ALL"
-                        ? t("Common/All")
+                        ? t("common.all", { capitalize: true })
                         : (unitColumns.find((c) => c.id === selectedColumnId)
                             ?.name ?? t("TrendingPanel/No data"))}
                     </span>
@@ -1668,7 +1671,7 @@ const TrendingPanel: React.FC<Props> = ({
                   {/* --- Units to trend --- */}
                   <div className="-mx-2 flex justify-between px-2 py-1">
                     <span className="text-(--text-secondary)">
-                      {t("Common/Units")}
+                      {t("entities.unit", { capitalize: true, plural: true })}
                     </span>
                     <span className="max-w-[60%] text-right font-medium">
                       {sortedUnits.length > 0
@@ -1702,7 +1705,7 @@ const TrendingPanel: React.FC<Props> = ({
                   {/* --- Date range --- */}
                   <div className="-mx-2 flex justify-between px-2 py-1">
                     <span className="text-(--text-secondary)">
-                      {t("Common/Date range")}
+                      {t("time.dateRange", { capitalize: true })}
                     </span>
                     <span className="font-medium">
                       {days === "Custom"

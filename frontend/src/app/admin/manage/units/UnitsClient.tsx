@@ -23,16 +23,19 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { useEffect, useState } from "react";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
+<<<<<<< Updated upstream
+=======
+import useTN from "@/app/hooks/useTN";
+>>>>>>> Stashed changes
 
 type Props = {
   isConnected: boolean | null;
 };
 
 const UnitsClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -95,7 +98,8 @@ const UnitsClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/units"),
+          err.message ||
+            t("Manage/Failed to fetch") + t("entities.unit", { plural: true }),
         ); // <-- Unique.
         return {
           items: [],
@@ -158,7 +162,15 @@ const UnitsClient = (props: Props) => {
       await deleteContent(id);
       await fetchItems();
       window.dispatchEvent(new Event("unit-list-updated"));
+<<<<<<< Updated upstream
       notify("success", t("Common/Unit") + t("Manage/deleted1"), 4000); // <-- Unique.
+=======
+      notify(
+        "success",
+        t("entities.unit", { capitalize: true }) + t("Manage/deleted1"),
+        4000,
+      ); // <-- Unique.
+>>>>>>> Stashed changes
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -221,7 +233,9 @@ const UnitsClient = (props: Props) => {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Columns")}:</span>
+            <span className="w-full font-semibold">
+              {t("entities.column", { capitalize: true, plural: true })}:
+            </span>
             <>
               {item.unitColumnIds.length === 0 ? (
                 <span className="-mt-2">-</span>
@@ -246,7 +260,11 @@ const UnitsClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
+<<<<<<< Updated upstream
               {t("Common/Categories")}:
+=======
+              {t("entities.category", { plural: true })}:
+>>>>>>> Stashed changes
             </span>
             <>
               {categories.filter((cat) => item.categoryIds.includes(cat.id))
@@ -272,7 +290,9 @@ const UnitsClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Shifts")}:</span>
+            <span className="w-full font-semibold">
+              {t("entities.shift", { plural: true })}:
+            </span>
             <>
               {shifts.filter((shift) => item.shiftIds.includes(shift.id))
                 .length === 0 ? (
@@ -319,7 +339,9 @@ const UnitsClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span className="w-full font-semibold">
+              {t("status.status", { capitalize: true })}:
+            </span>
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
@@ -333,8 +355,10 @@ const UnitsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: UnitItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -343,8 +367,10 @@ const UnitsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: UnitItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -355,10 +381,10 @@ const UnitsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: UnitItem) => (
         <div className="flex items-center gap-4">
           <span
@@ -395,8 +421,8 @@ const UnitsClient = (props: Props) => {
       key: "unitGroupName",
       label: t("Units/Belongs to group"),
       sortingItem: "unitgroupname",
-      labelAsc: t("Common/group") + " Ö-A",
-      labelDesc: t("Common/group") + " A-Ö",
+      labelAsc: t("entities.group") + " Ö-A",
+      labelDesc: t("entities.group") + " A-Ö",
       getValue: (item: UnitItem) => item.unitGroupName,
       responsivePriority: 2,
     },
@@ -404,14 +430,14 @@ const UnitsClient = (props: Props) => {
       key: "masterPlanName",
       label: t("Units/Belongs to master plan"),
       sortingItem: "masterplanname",
-      labelAsc: t("Common/master plan") + " Ö-A",
-      labelDesc: t("Common/master plan") + " A-Ö",
+      labelAsc: t("entities.masterPlan") + " Ö-A",
+      labelDesc: t("entities.masterPlan") + " A-Ö",
       getValue: (item: UnitItem) => item.masterPlanName,
       responsivePriority: 3,
     },
     {
       key: "unitColumns",
-      label: t("Common/Columns"),
+      label: t("entities.column", { capitalize: true, plural: true }),
       sortingItem: "unitcolumncount",
       labelAsc: t("Units/column amount") + t("Manage/ascending"),
       labelDesc: t("Units/column amount") + t("Manage/descending"),
@@ -438,7 +464,11 @@ const UnitsClient = (props: Props) => {
     },
     {
       key: "categories",
+<<<<<<< Updated upstream
       label: t("Common/Categories"),
+=======
+      label: t("entities.category", { plural: true }),
+>>>>>>> Stashed changes
       sortingItem: "categorycount",
       labelAsc: t("Units/category amount") + t("Manage/ascending"),
       labelDesc: t("Units/category amount") + t("Manage/descending"),
@@ -465,7 +495,7 @@ const UnitsClient = (props: Props) => {
     },
     {
       key: "shifts",
-      label: t("Common/Shifts"),
+      label: t("entities.shift", { capitalize: true, plural: true }),
       sortingItem: "shiftcount",
       labelAsc: t("Units/shift amount") + t("Manage/ascending"),
       labelDesc: t("Units/shift amount") + t("Manage/descending"),
@@ -514,7 +544,7 @@ const UnitsClient = (props: Props) => {
     },
     {
       key: "isHidden",
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       sortingItem: "visibilitycount",
       labelAsc: t("Units/visible units"),
       labelDesc: t("Units/hidden units"),
@@ -606,7 +636,7 @@ const UnitsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       breakpoint: "ml",
       options: [
         {
@@ -652,7 +682,7 @@ const UnitsClient = (props: Props) => {
       })),
     },
     {
-      label: t("Common/Columns"),
+      label: t("entities.column", { capitalize: true, plural: true }),
       breakpoint: "2xl",
       options: unitColumns.map((col) => ({
         label: col.name,
@@ -663,7 +693,11 @@ const UnitsClient = (props: Props) => {
       })),
     },
     {
+<<<<<<< Updated upstream
       label: t("Common/Categories"),
+=======
+      label: t("entities.category", { capitalize: true, plural: true }),
+>>>>>>> Stashed changes
       breakpoint: "2xl",
       options: categories.map((cat) => ({
         label: cat.name,
@@ -674,7 +708,7 @@ const UnitsClient = (props: Props) => {
       })),
     },
     {
-      label: t("Common/Shifts"),
+      label: t("entities.shift", { capitalize: true, plural: true }),
       breakpoint: "2xl",
       options: shifts.map((shift) => ({
         label: shift.name,
@@ -696,7 +730,7 @@ const UnitsClient = (props: Props) => {
   return (
     <>
       <ManageBase<UnitItem> // <-- Unique.
-        itemName={t("Common/unit")} // <-- Unique.
+        itemName={t("entities.unit")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

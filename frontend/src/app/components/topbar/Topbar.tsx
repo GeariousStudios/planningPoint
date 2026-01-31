@@ -15,7 +15,7 @@ import useTheme from "@/app/hooks/useTheme";
 import SettingsModal from "../modals/SettingsModal";
 import Link from "next/link";
 import useLanguage from "@/app/hooks/useLanguage";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { badgeClass } from "../manage/ManageClasses";
 import HandbookModal from "../modals/HandbookModal";
 import { useHandbook } from "@/app/context/HandbookContext";
@@ -46,7 +46,7 @@ type Props = {
 };
 
 const Topbar = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -105,7 +105,7 @@ const Topbar = (props: Props) => {
   // --- SCROLL HORIZONTALLY ---
   useEffect(() => {
     const el = breadcrumbsRef.current;
-    
+
     if (!el) {
       return;
     }
@@ -580,7 +580,6 @@ const Topbar = (props: Props) => {
                     <span className="font-semibold text-(--accent-color)">
                       {firstName ? firstName : username}
                     </span>
-                    !
                   </div>
                 </div>
               ) : (
@@ -773,7 +772,11 @@ const Topbar = (props: Props) => {
                   <div>
                     {/* <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-(--border-tertiary)" /> */}
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
+<<<<<<< Updated upstream
                       {t("Common/Manage")}
+=======
+                      {t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
                     </span>
                     <TopbarLink
                       onClick={toggleTheme}
@@ -798,7 +801,7 @@ const Topbar = (props: Props) => {
                             closeAllMenus();
                             setIsSettingsModalOpen(true);
                           }}
-                          label={t("Common/Settings")}
+                          label={t("common.settings", { capitalize: true })}
                           icon={Outline.Cog6ToothIcon}
                           iconHover={Solid.Cog6ToothIcon}
                         />
@@ -811,8 +814,10 @@ const Topbar = (props: Props) => {
                           }}
                           label={
                             props.isEditingFavourites
-                              ? t("Navbar/Stop editing favourites")
-                              : t("Navbar/Edit favourites")
+                              ? t("navbar.stopEditingFavourites", {
+                                  capitalize: true,
+                                })
+                              : t("navbar.editFavourites", { capitalize: true })
                           }
                           icon={Outline.StarIcon}
                           iconHover={Solid.StarIcon}
@@ -829,14 +834,14 @@ const Topbar = (props: Props) => {
                     {isLoggedIn ? (
                       <TopbarLink
                         onClick={handleLogout}
-                        label={t("Common/Logout")}
+                        label={t("auth.logout", { capitalize: true })}
                         icon={Outline.ArrowLeftEndOnRectangleIcon}
                         iconHover={Solid.ArrowLeftEndOnRectangleIcon}
                       />
                     ) : (
                       <TopbarLink
                         href="/"
-                        label={t("Common/Login")}
+                        label={t("auth.login", { capitalize: true })}
                         icon={Outline.ArrowRightEndOnRectangleIcon}
                         iconHover={Solid.ArrowRightEndOnRectangleIcon}
                       />

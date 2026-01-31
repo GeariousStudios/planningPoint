@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { NewsTypeFilters, NewsTypeItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
@@ -67,15 +67,6 @@ export const deleteContent = async (id: number): Promise<void> => {
   }
 
   if (!response.ok) {
-    // const t = useTranslations();
-    // let errorMessage = t("Api/Failed to delete") + t("Common/type");
-    // try {
-    //   const errorData = await response.json();
-    //   errorMessage = errorData.message || errorMessage;
-    // } catch {
-    //   errorMessage = await response.text();
-    // }
-    // throw new Error(errorMessage);
     let message = "Unknown error";
     try {
       const data = await response.json();

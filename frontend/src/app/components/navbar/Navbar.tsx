@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
 import useTheme from "../../hooks/useTheme";
@@ -8,7 +8,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Message from "../common/Message";
 import { useAuth } from "@/app/context/AuthContext";
-import CustomTooltip from "../common/CustomTooltip";
 import { useToast } from "../toast/ToastProvider";
 import { iconButtonPrimaryClass } from "@/app/styles/buttonClasses";
 import { FocusTrap } from "focus-trap-react";
@@ -16,7 +15,6 @@ import useIsDesktop from "@/app/hooks/useIsDesktop";
 import useFavourites from "@/app/hooks/useFavourites";
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
-import type { ElementType } from "react";
 import DragDrop from "../common/DragDrop";
 
 type Props = {
@@ -47,7 +45,7 @@ type SubmenuGroup = {
 };
 
 const Navbar = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -402,120 +400,155 @@ const Navbar = (props: Props) => {
   // --- LOOK UP LABELS AND ICONS ---
   const getMenuLookup = () => {
     const staticEntries: SubmenuItem[] = [
-      { href: "/", label: t("Navbar/Home"), icon: "HomeIcon" },
+      {
+        href: "/",
+        label: t("navbar.home", { capitalize: true }),
+        icon: "HomeIcon",
+      },
       {
         href: "/developer/manage/",
+<<<<<<< Updated upstream
         label: t("Common/Developer") + " / " + t("Common/Manage"),
+=======
+        label:
+          t("common.developer", { capitalize: true }) +
+          " / " +
+          t("common.manage", { capitalize: true }),
+>>>>>>> Stashed changes
         icon: "WrenchIcon",
       },
       {
         href: "/developer/manage/users/",
-        label: t("Common/Users"),
+        label: t("entities.user", { capitalize: true, plural: true }),
         icon: "UserGroupIcon",
       },
       {
         href: "/admin/manage/",
+<<<<<<< Updated upstream
         label: t("Common/Admin") + " / " + t("Common/Manage"),
+=======
+        label:
+          t("common.admin", { capitalize: true }) +
+          " / " +
+          t("common.manage", { capitalize: true }),
+>>>>>>> Stashed changes
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/categories/",
+<<<<<<< Updated upstream
         label: t("Common/Categories"),
+=======
+        label: t("entities.category", { capitalize: true, plural: true }),
+>>>>>>> Stashed changes
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/",
-        label: t("Common/Units"),
+        label: t("entities.unit", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/unit-groups/",
-        label: t("Common/Groups"),
+        label: t("entities.group", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/unit-columns/",
-        label: t("Common/Columns"),
+        label: t("entities.column", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/plan/master-plans/",
-        label: t("Common/Master plans"),
+        label: t("entities.masterPlan", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/plan/master-plans/import-rules/",
+<<<<<<< Updated upstream
         label: t("ImportRules/Import rules"),
+=======
+        label: t("entities.importRules", { capitalize: true }),
+>>>>>>> Stashed changes
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/plan/master-plans/master-plan-fields/",
-        label: t("Common/Master plan fields"),
+        label: t("entities.masterPlanField", {
+          capitalize: true,
+          plural: true,
+        }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/plan/planned-stops/",
-        label: t("Common/Planned stops"),
+        label: t("entities.plannedStop", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/plan/products/",
-        label: t("Common/Products"),
+        label: t("entities.product", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/plan/products/product-groups/",
-        label: t("Common/Product groups"),
+        label: t("entities.productGroup", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/plan/operational-plans/",
-        label: t("Common/Operational plans"),
+        label: t("entities.operationalPlan", {
+          capitalize: true,
+          plural: true,
+        }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/news/news-types/",
-        label: t("Common/News types"),
+        label: t("entities.newsType", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/shifts/",
-        label: t("Common/Shifts"),
+        label: t("entities.shift", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/shifts/shift-teams/",
-        label: t("Common/Shift teams"),
+        label: t("entities.shiftTeam", { capitalize: true, plural: true }),
         icon: "WrenchIcon",
       },
       {
         href: "/audit-trail/",
-        label: t("Navbar/Audit trail"),
+        label: t("navbar.auditTrail", { capitalize: true }),
         icon: "BookOpenIcon",
       },
       {
         href: "/plan/",
-        label: t("Navbar/Plan"),
+        label: t("navbar.plan", { capitalize: true }),
         icon: "CalendarIcon",
       },
       {
         href: "/plan/master-plans/",
-        label: t("Common/Master plans"),
+        label: t("entities.masterPlan", { capitalize: true, plural: true }),
         icon: "CalendarIcon",
       },
       {
         href: "/plan/operational-plans/",
-        label: t("Common/Operational plans"),
+        label: t("entities.operationalPlan", {
+          capitalize: true,
+          plural: true,
+        }),
         icon: "CalendarIcon",
       },
       {
         href: "/report/",
-        label: t("Navbar/Report"),
+        label: t("navbar.report", { capitalize: true }),
         icon: "ChatBubbleBottomCenterTextIcon",
       },
       {
         href: "/report/units/",
-        label: t("Common/Units"),
+        label: t("entities.unit", { capitalize: true, plural: true }),
         icon: "ChatBubbleBottomCenterTextIcon",
       },
     ];
@@ -717,7 +750,7 @@ const Navbar = (props: Props) => {
                     ref={innerRef}
                     id="navbar-menu"
                     role="navigation"
-                    aria-label={t("Navbar/Main menu")}
+                    aria-label={t("navbar.mainMenu", { capitalize: true })}
                     className={
                       "flex h-full flex-col gap-4 overflow-x-hidden p-4"
                     }
@@ -727,11 +760,11 @@ const Navbar = (props: Props) => {
                         <Link
                           href={`/`}
                           className="mt-2.25 -ml-2.25 flex h-15 max-w-17 min-w-40"
-                          aria-label={t("Navbar/Home")}
+                          aria-label={t("navbar.home", { capitalize: true })}
                         >
                           <img
                             src={`${prefix}/images/logo_expnd_${currentTheme === "dark" ? "dark" : "light"}.svg`}
-                            alt={t("Navbar/Logo")}
+                            alt={t("navbar.logo", { capitalize: true })}
                             className="h-full w-full"
                           />
                         </Link>
@@ -750,7 +783,10 @@ const Navbar = (props: Props) => {
                       {resolvedFavourites.length > 0 && (
                         <div>
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                            {t("Navbar/Favourites")}
+                            {t("navbar.favourite", {
+                              capitalize: true,
+                              plural: true,
+                            })}
                           </span>
 
                           {props.isEditingFavourites ? (
@@ -803,22 +839,32 @@ const Navbar = (props: Props) => {
                       {isDev && (
                         <div>
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                            {t("Common/Developer")}
+                            {t("common.developer", { capitalize: true })}
                           </span>
 
                           <span className="2xs:block hidden">
                             <NavbarSubmenu
+<<<<<<< Updated upstream
                               label={t("Common/Manage")}
+=======
+                              label={t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
                               icon={Outline.WrenchIcon}
                               iconHover={Solid.WrenchIcon}
                               hasScrollbar={props.hasScrollbar}
                               menus={[
                                 {
-                                  label: t("Common/Users"),
+                                  label: t("entities.user", {
+                                    capitalize: true,
+                                    plural: true,
+                                  }),
                                   items: [
                                     {
                                       href: "/developer/manage/users/",
-                                      label: t("Common/Users"),
+                                      label: t("entities.user", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
                                           ? onToggleFavourite
@@ -844,7 +890,11 @@ const Navbar = (props: Props) => {
                           <span className="2xs:hidden block">
                             <NavbarLink
                               href="/developer/manage/"
+<<<<<<< Updated upstream
                               label={t("Common/Manage")}
+=======
+                              label={t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
                               icon="WrenchIcon"
                               // isFavourite={favourites.some(
                               //   (f) => f.href === "/developer/manage/",
@@ -859,12 +909,12 @@ const Navbar = (props: Props) => {
                       )}
 
                       <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                        {t("Navbar/Your dashboard")}
+                        {t("navbar.yourDashboard", { capitalize: true })}
                       </span>
 
                       <NavbarLink
                         href="/"
-                        label={t("Navbar/Home")}
+                        label={t("navbar.home", { capitalize: true })}
                         icon="HomeIcon"
                         isFavourite={favourites.some((f) => f.href === "/")}
                         onToggleFavourite={
@@ -876,7 +926,7 @@ const Navbar = (props: Props) => {
 
                       <span className="2xs:block hidden">
                         <NavbarSubmenu
-                          label={t("Navbar/Report")}
+                          label={t("navbar.report", { capitalize: true })}
                           icon={Outline.ChatBubbleBottomCenterTextIcon}
                           iconHover={Solid.ChatBubbleBottomCenterTextIcon}
                           hasScrollbar={props.hasScrollbar}
@@ -885,7 +935,10 @@ const Navbar = (props: Props) => {
                               .length > 0
                               ? [
                                   {
-                                    label: t("Common/Units"),
+                                    label: t("entities.unit", {
+                                      capitalize: true,
+                                      plural: true,
+                                    }),
                                     items: unitItemsResolved.filter(
                                       (u) => !u.isHidden,
                                     ),
@@ -906,7 +959,7 @@ const Navbar = (props: Props) => {
                       <span className="2xs:hidden block">
                         <NavbarLink
                           href="/report/"
-                          label={t("Navbar/Report")}
+                          label={t("navbar.report", { capitalize: true })}
                           icon="ChatBubbleBottomCenterTextIcon"
                           // isFavourite={favourites.some((f) => f.href === "/report/")}
                           // onToggleFavourite={
@@ -917,7 +970,7 @@ const Navbar = (props: Props) => {
 
                       <span className="2xs:block hidden">
                         <NavbarSubmenu
-                          label={t("Navbar/Plan")}
+                          label={t("navbar.plan", { capitalize: true })}
                           icon={Outline.CalendarIcon}
                           iconHover={Solid.CalendarIcon}
                           hasScrollbar={props.hasScrollbar}
@@ -927,7 +980,10 @@ const Navbar = (props: Props) => {
                             ).length > 0
                               ? [
                                   {
-                                    label: t("Common/Master plans"),
+                                    label: t("entities.masterPlan", {
+                                      capitalize: true,
+                                      plural: true,
+                                    }),
                                     items: masterPlanItemsResolved.filter(
                                       (mp) => !mp.isHidden,
                                     ),
@@ -939,7 +995,10 @@ const Navbar = (props: Props) => {
                             ).length > 0
                               ? [
                                   {
-                                    label: t("Common/Operational plans"),
+                                    label: t("entities.operationalPlan", {
+                                      capitalize: true,
+                                      plural: true,
+                                    }),
                                     items: operationalPlanItemsResolved.filter(
                                       (op) => !op.isHidden,
                                     ),
@@ -960,7 +1019,7 @@ const Navbar = (props: Props) => {
                       <span className="2xs:hidden block">
                         <NavbarLink
                           href="/plan/"
-                          label={t("Navbar/Plan")}
+                          label={t("navbar.plan", { capitalize: true })}
                           icon="CalendarIcon"
                           // isFavourite={favourites.some((f) => f.href === "/plan/")}
                           // onToggleFavourite={
@@ -970,10 +1029,13 @@ const Navbar = (props: Props) => {
                       </span>
 
                       <NavbarLink
-                        tooltip={t("Common/Not implemented")}
+                        tooltip={t("status.notImplemented", {
+                          capitalize: true,
+                          end: "!",
+                        })}
                         disabled
                         href="#"
-                        label={t("Navbar/Pulse boards")}
+                        label={t("navbar.pulseBoards", { capitalize: true })}
                         icon="PresentationChartLineIcon"
                         // isFavourite={favourites.some((f) => f.href === "#")}
                         // onToggleFavourite={onToggleFavourite}
@@ -982,7 +1044,7 @@ const Navbar = (props: Props) => {
                       {(isAdmin || isDev || isReporter) && (
                         <NavbarLink
                           href="/audit-trail/"
-                          label={t("Navbar/Audit trail")}
+                          label={t("navbar.auditTrail", { capitalize: true })}
                           icon="BookOpenIcon"
                           isFavourite={favourites.some(
                             (f) => f.href === "/audit-trail/",
@@ -1000,22 +1062,31 @@ const Navbar = (props: Props) => {
                           <hr className="mt-4 mb-7 rounded-full text-(--border-main)" />
 
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                            {t("Common/Admin")}
+                            {t("common.admin", { capitalize: true })}
                           </span>
                           <span className="2xs:block hidden">
                             <NavbarSubmenu
+<<<<<<< Updated upstream
                               label={t("Common/Manage")}
+=======
+                              label={t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
                               icon={Outline.WrenchIcon}
                               iconHover={Solid.WrenchIcon}
                               // requiresAdmin
                               menus={[
                                 {
-                                  label: t("Common/Units"),
+                                  label: t("entities.unit", {
+                                    capitalize: true,
+                                    plural: true,
+                                  }),
                                   items: [
                                     {
                                       href: "/admin/manage/units/",
-                                      label: t("Common/Units"),
-
+                                      label: t("entities.unit", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
                                           ? onToggleFavourite
@@ -1027,7 +1098,10 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       href: "/admin/manage/units/unit-groups/",
-                                      label: t("Common/Groups"),
+                                      label: t("entities.group", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
                                           ? onToggleFavourite
@@ -1039,9 +1113,18 @@ const Navbar = (props: Props) => {
                                       ),
                                     },
                                     {
-                                      title: t("Navbar/Report"),
+                                      title: t("navbar.report", {
+                                        capitalize: true,
+                                      }),
                                       href: "/admin/manage/units/categories/",
+<<<<<<< Updated upstream
                                       label: t("Common/Categories"),
+=======
+                                      label: t("entities.category", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
+>>>>>>> Stashed changes
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1055,7 +1138,10 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       href: "/admin/manage/units/unit-columns/",
-                                      label: t("Common/Columns"),
+                                      label: t("entities.column", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1070,11 +1156,14 @@ const Navbar = (props: Props) => {
                                   ],
                                 },
                                 {
-                                  label: t("Navbar/Plan"),
+                                  label: t("navbar.plan", { capitalize: true }),
                                   items: [
                                     {
                                       href: "/admin/manage/plan/planned-stops/",
-                                      label: t("Common/Planned stops"),
+                                      label: t("entities.plannedStop", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1088,7 +1177,10 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       href: "/admin/manage/plan/products/",
-                                      label: t("Common/Products"),
+                                      label: t("entities.product", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1102,7 +1194,10 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       href: "/admin/manage/plan/products/product-groups/",
-                                      label: t("Common/Product groups"),
+                                      label: t("entities.productGroup", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1115,9 +1210,14 @@ const Navbar = (props: Props) => {
                                       ),
                                     },
                                     {
-                                      title: t("Navbar/Master planning"),
+                                      title: t("navbar.masterPlanning", {
+                                        capitalize: true,
+                                      }),
                                       href: "/admin/manage/plan/master-plans/",
-                                      label: t("Common/Master plans"),
+                                      label: t("entities.masterPlan", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1131,7 +1231,10 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       href: "/admin/manage/plan/master-plans/master-plan-fields/",
-                                      label: t("Common/Master plan fields"),
+                                      label: t("entities.masterPlanField", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1145,7 +1248,13 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       href: "/admin/manage/plan/master-plans/import-rules/",
+<<<<<<< Updated upstream
                                       label: t("ImportRules/Import rules"),
+=======
+                                      label: t("entities.importRules", {
+                                        capitalize: true,
+                                      }),
+>>>>>>> Stashed changes
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1158,9 +1267,14 @@ const Navbar = (props: Props) => {
                                       ),
                                     },
                                     {
-                                      title: t("Navbar/Operational planning"),
+                                      title: t("navbar.operationalPlanning", {
+                                        capitalize: true,
+                                      }),
                                       href: "/admin/manage/plan/operational-plans/",
-                                      label: t("Common/Operational plans"),
+                                      label: t("entities.operationalPlan", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1172,14 +1286,39 @@ const Navbar = (props: Props) => {
                                           "/admin/manage/plan/operational-plans/",
                                       ),
                                     },
+<<<<<<< Updated upstream
+=======
+                                    {
+                                      href: "/admin/manage/plan/operational-plans/planning-rules/",
+                                      label: t("entities.planningRules", {
+                                        capitalize: true,
+                                      }),
+
+                                      onToggleFavourite:
+                                        isLoggedIn && props.isEditingFavourites
+                                          ? onToggleFavourite
+                                          : undefined,
+                                      isFavourite: favourites.some(
+                                        (f) =>
+                                          f.href ===
+                                          "/admin/manage/plan/operational-plans/planning-rules/",
+                                      ),
+                                    },
+>>>>>>> Stashed changes
                                   ],
                                 },
                                 {
-                                  label: t("Common/Shifts"),
+                                  label: t("entities.shift", {
+                                    capitalize: true,
+                                    plural: true,
+                                  }),
                                   items: [
                                     {
                                       href: "/admin/manage/shifts/",
-                                      label: t("Common/Shifts"),
+                                      label: t("entities.shift", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1192,7 +1331,10 @@ const Navbar = (props: Props) => {
                                     },
                                     {
                                       href: "/admin/manage/shifts/shift-teams/",
-                                      label: t("Common/Shift teams"),
+                                      label: t("entities.shiftTeam", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1207,11 +1349,17 @@ const Navbar = (props: Props) => {
                                   ],
                                 },
                                 {
-                                  label: t("Common/News"),
+                                  label: t("entities.news", {
+                                    capitalize: true,
+                                    plural: true,
+                                  }),
                                   items: [
                                     {
                                       href: "/admin/manage/news/news-types/",
-                                      label: t("Common/News types"),
+                                      label: t("entities.newsType", {
+                                        capitalize: true,
+                                        plural: true,
+                                      }),
 
                                       onToggleFavourite:
                                         isLoggedIn && props.isEditingFavourites
@@ -1240,7 +1388,11 @@ const Navbar = (props: Props) => {
                           <span className="2xs:hidden block">
                             <NavbarLink
                               href="/admin/manage/"
+<<<<<<< Updated upstream
                               label={t("Common/Manage")}
+=======
+                              label={t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
                               icon="WrenchIcon"
                               // isFavourite={favourites.some(
                               //   (f) => f.href === "/admin/manage/",

@@ -9,7 +9,7 @@ import {
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { newsTypeConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
@@ -21,7 +21,7 @@ type Props = {
 };
 
 const NewsTypeModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -115,7 +115,11 @@ const NewsTypeModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Type") + t("Modal/created1"), 4000);
+      notify(
+        "success",
+        t("common.type", { capitalize: true }) + t("Modal/created1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -217,7 +221,11 @@ const NewsTypeModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Type") + t("Modal/updated1"), 4000);
+      notify(
+        "success",
+        t("common.type", { capitalize: true }) + t("Modal/updated1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -258,8 +266,12 @@ const NewsTypeModal = (props: Props) => {
             icon={props.itemId ? PencilSquareIcon : PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/type")
-                : t("Common/Add") + " " + t("Common/type")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("common.type")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("common.type")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -275,7 +287,7 @@ const NewsTypeModal = (props: Props) => {
 
               <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
                 <Input
-                  label={t("Common/Name")}
+                  label={t("common.name", { capitalize: true })}
                   value={name}
                   onChange={(val) => {
                     setName(String(val));
@@ -301,13 +313,14 @@ const NewsTypeModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

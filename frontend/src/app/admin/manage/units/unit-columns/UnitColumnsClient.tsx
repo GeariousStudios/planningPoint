@@ -20,7 +20,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
 
@@ -29,7 +29,7 @@ type Props = {
 };
 
 const UnitColumnsClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -92,7 +92,9 @@ const UnitColumnsClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/columns"),
+          err.message ||
+            t("Manage/Failed to fetch") +
+              t("entities.column", { plural: true }),
         ); // <-- Unique.
         return {
           items: [],
@@ -139,7 +141,11 @@ const UnitColumnsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Column") + t("Manage/deleted1"), 4000); // <-- Unique.
+      notify(
+        "success",
+        t("entities.column", { capitalize: true }) + t("Manage/deleted1"),
+        4000,
+      ); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -163,7 +169,9 @@ const UnitColumnsClient = (props: Props) => {
             <span className="w-full font-semibold">
               {t("MasterPlanFieldModal/Data type")}:
             </span>
-            <span className="-mt-2">{t("Common/" + item.dataType)}</span>
+            <span className="-mt-2">
+              {t("common." + item.dataType.toLowerCase())}
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
@@ -220,7 +228,9 @@ const UnitColumnsClient = (props: Props) => {
             <span
               className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
-              {item.hasData ? t("Common/Yes") : t("Common/No")}
+              {item.hasData
+                ? t("common.yes", { capitalize: true })
+                : t("common.no", { capitalize: true })}
             </span>
           </div>
         </div>
@@ -230,8 +240,10 @@ const UnitColumnsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: UnitColumnItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -240,8 +252,10 @@ const UnitColumnsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: UnitColumnItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -252,10 +266,10 @@ const UnitColumnsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: UnitColumnItem) => item.name,
       responsivePriority: 0,
     },
@@ -272,7 +286,7 @@ const UnitColumnsClient = (props: Props) => {
       labelAsc: t("Columns/data type") + " Ö-A",
       labelDesc: t("Columns/data type") + " A-Ö",
       getValue: (item: UnitColumnItem) => (
-        <span>{t("Common/" + item.dataType)}</span>
+        <span>{t("common." + item.dataType.toLowerCase())}</span>
       ),
       responsivePriority: 1,
     },
@@ -339,7 +353,9 @@ const UnitColumnsClient = (props: Props) => {
         <span
           className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
-          {item.hasData ? t("Common/Yes") : t("Common/No")}
+          {item.hasData
+            ? t("common.yes", { capitalize: true })
+            : t("common.no", { capitalize: true })}
         </span>
       ),
       responsivePriority: 3,
@@ -430,13 +446,13 @@ const UnitColumnsClient = (props: Props) => {
       breakpoint: "xl",
       options: [
         {
-          label: t("Common/Yes"),
+          label: t("common.yes", { capitalize: true }),
           isSelected: filterControls.showHasData,
           setSelected: filterControls.setShowHasData,
           count: counts?.hasData?.["True"] ?? 0,
         },
         {
-          label: t("Common/No"),
+          label: t("common.no", { capitalize: true }),
           isSelected: filterControls.showNoData,
           setSelected: filterControls.setShowNoData,
           count: counts?.hasData?.["False"] ?? 0,
@@ -469,7 +485,7 @@ const UnitColumnsClient = (props: Props) => {
   return (
     <>
       <ManageBase<UnitColumnItem> // <-- Unique.
-        itemName={t("Common/column")} // <-- Unique.
+        itemName={t("entities.column")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

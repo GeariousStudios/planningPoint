@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import NavbarLink from "@/app/components/navbar/NavbarLink";
 import NavPage from "@/app/components/navbar/NavPage";
 
@@ -21,12 +21,17 @@ type LinkSection = {
 };
 
 const DeveloperManageNavClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   const sections: LinkSection[] = [
     {
-      sectionLabel: t("Common/Users"),
-      items: [{ href: "/developer/manage/users/", label: t("Common/Users") }],
+      sectionLabel: t("entities.user", { capitalize: true, plural: true }),
+      items: [
+        {
+          href: "/developer/manage/users/",
+          label: t("entities.user", { capitalize: true, plural: true }),
+        },
+      ],
     },
   ];
 
@@ -34,7 +39,7 @@ const DeveloperManageNavClient = (props: Props) => {
     <NavPage
       sections={sections}
       variant="single-grouped"
-      pageLabel={t("Common/Users")}
+      pageLabel={t("entities.user", { capitalize: true, plural: true })}
     />
   );
 };

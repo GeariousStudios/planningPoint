@@ -27,7 +27,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useRef, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
 import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
@@ -38,7 +38,7 @@ type Props = {
 };
 
 const MasterPlansClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -101,7 +101,9 @@ const MasterPlansClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/master plans"),
+          err.message ||
+            t("Manage/Failed to fetch") +
+              t("entities.masterPlan", { capitalize: true, plural: true }),
         ); // <-- Unique.
         return {
           items: [],
@@ -164,7 +166,9 @@ const MasterPlansClient = (props: Props) => {
     item: MasterPlanItem,
   ) => {
     listTriggerRef.current = e.currentTarget as HTMLElement;
-    setListTitle(`${t("Common/Products")} - ${item.name}`);
+    setListTitle(
+      `${t("entities.product", { capitalize: true, plural: true })} - ${item.name}`,
+    );
     setListItems([]);
     setIsListOpen(true);
 
@@ -179,7 +183,9 @@ const MasterPlansClient = (props: Props) => {
     item: MasterPlanItem,
   ) => {
     listTriggerRef.current = e.currentTarget as HTMLElement;
-    setListTitle(`${t("Common/Planned stops")} - ${item.name}`);
+    setListTitle(
+      `${t("entities.plannedStop", { capitalize: true, plural: true })} - ${item.name}`,
+    );
     setListItems([]);
     setIsListOpen(true);
 
@@ -207,7 +213,11 @@ const MasterPlansClient = (props: Props) => {
       await deleteContent(id);
       await fetchItems();
       window.dispatchEvent(new Event("master-plan-list-updated"));
-      notify("success", t("Common/Master plan") + t("Manage/deleted1"), 4000); // <-- Unique.
+      notify(
+        "success",
+        t("entities.masterPlan", { capitalize: true }) + t("Manage/deleted1"),
+        4000,
+      ); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -229,7 +239,7 @@ const MasterPlansClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Common/Products")}:
+              {t("entities.product", { capitalize: true, plural: true })}:
             </span>
             <CustomTooltip content={t("MasterPlans/Click to view products")}>
               <button
@@ -248,7 +258,7 @@ const MasterPlansClient = (props: Props) => {
 
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Common/Planned stops")}:
+              {t("entities.plannedStop", { capitalize: true, plural: true })}:
             </span>
             <CustomTooltip
               content={t("MasterPlans/Click to view planned stops")}
@@ -268,7 +278,11 @@ const MasterPlansClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Common/Master plan fields")}:
+              {t("entities.masterPlanField", {
+                capitalize: true,
+                plural: true,
+              })}
+              :
             </span>
             <>
               {item.fields.length === 0 ? (
@@ -379,7 +393,9 @@ const MasterPlansClient = (props: Props) => {
             <span className="-mt-2">{item.unitGroupName}</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span className="w-full font-semibold">
+              {t("status.status", { capitalize: true })}:
+            </span>
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
@@ -393,8 +409,10 @@ const MasterPlansClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: MasterPlanItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -403,8 +421,10 @@ const MasterPlansClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: MasterPlanItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -415,10 +435,10 @@ const MasterPlansClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: MasterPlanItem) => (
         <div className="flex items-center gap-4">{item.name}</div>
       ),
@@ -426,10 +446,10 @@ const MasterPlansClient = (props: Props) => {
     },
     {
       key: "productCount",
-      label: t("Common/Products"),
+      label: t("entities.product", { capitalize: true, plural: true }),
       sortingItem: "productcount",
-      labelAsc: t("Common/products") + " " + t("Manage/ascending"),
-      labelDesc: t("Common/products") + " " + t("Manage/descending"),
+      labelAsc: t("entities.product", "p") + " " + t("Manage/ascending"),
+      labelDesc: t("entities.product", "p") + " " + t("Manage/descending"),
       classNameAddition: "w-[140px] min-w-[140px]",
       childClassNameAddition: "w-fit",
       getValue: (item: MasterPlanItem) => (
@@ -454,10 +474,10 @@ const MasterPlansClient = (props: Props) => {
     },
     {
       key: "plannedStopCount",
-      label: t("Common/Planned stops"),
+      label: t("entities.plannedStop", { capitalize: true, plural: true }),
       sortingItem: "plannedstopcount",
-      labelAsc: t("Common/planned stops") + " " + t("Manage/ascending"),
-      labelDesc: t("Common/planned stops") + " " + t("Manage/descending"),
+      labelAsc: t("entities.plannedStop", "p") + " " + t("Manage/ascending"),
+      labelDesc: t("entities.plannedStop", "p") + " " + t("Manage/descending"),
       classNameAddition: "w-[160px] min-w-[160px]",
       childClassNameAddition: "w-fit",
       getValue: (item: MasterPlanItem) => (
@@ -482,7 +502,7 @@ const MasterPlansClient = (props: Props) => {
     },
     {
       key: "fields",
-      label: t("Common/Master plan fields"),
+      label: t("entities.masterPlanField", { capitalize: true, plural: true }),
       sortingItem: "fieldcount",
       labelAsc:
         t("MasterPlans/master plan field amount") + t("Manage/ascending"),
@@ -614,14 +634,14 @@ const MasterPlansClient = (props: Props) => {
       key: "unitGroupName",
       label: t("Units/Belongs to group"),
       sortingItem: "unitgroupname",
-      labelAsc: t("Common/group") + " Ö-A",
-      labelDesc: t("Common/group") + " A-Ö",
+      labelAsc: t("entities.group") + " Ö-A",
+      labelDesc: t("entities.group") + " A-Ö",
       getValue: (item: MasterPlanItem) => item.unitGroupName,
       responsivePriority: 7,
     },
     {
       key: "isHidden",
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       sortingItem: "visibilitycount",
       labelAsc: t("MasterPlans/visible master plans"),
       labelDesc: t("MasterPlans/hidden master plans"),
@@ -745,7 +765,7 @@ const MasterPlansClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       breakpoint: "ml",
       options: [
         {
@@ -763,7 +783,7 @@ const MasterPlansClient = (props: Props) => {
       ],
     },
     {
-      label: t("Common/Products"),
+      label: t("entities.product", { capitalize: true, plural: true }),
       breakpoint: "lg",
       options: products.map((p) => ({
         label: p.name,
@@ -774,7 +794,7 @@ const MasterPlansClient = (props: Props) => {
       })),
     },
     {
-      label: t("Common/Planned stops"),
+      label: t("entities.plannedStop", { capitalize: true, plural: true }),
       breakpoint: "lg",
       options: plannedStops.map((ps) => ({
         label: ps.name,
@@ -785,7 +805,7 @@ const MasterPlansClient = (props: Props) => {
       })),
     },
     {
-      label: t("Common/Master plan fields"),
+      label: t("entities.masterPlanField", { capitalize: true, plural: true }),
       breakpoint: "xl",
       options: masterPlanFields.map((field) => ({
         label: field.name,
@@ -899,7 +919,7 @@ const MasterPlansClient = (props: Props) => {
   return (
     <>
       <ManageBase<MasterPlanItem> // <-- Unique.
-        itemName={t("Common/master plan")} // <-- Unique.
+        itemName={t("entities.masterPlan")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

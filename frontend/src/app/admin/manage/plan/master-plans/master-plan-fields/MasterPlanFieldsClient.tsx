@@ -22,7 +22,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { count } from "console";
 import { useHandbook } from "@/app/context/HandbookContext";
@@ -32,7 +32,7 @@ type Props = {
 };
 
 const MasterPlanFieldsClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -96,7 +96,8 @@ const MasterPlanFieldsClient = (props: Props) => {
         notify(
           "error",
           err.message ||
-            t("Manage/Failed to fetch") + t("Common/master plan fields"),
+            t("Manage/Failed to fetch") +
+              t("entities.masterPlanField", { plural: true }),
         ); // <-- Unique.
         return {
           items: [],
@@ -140,7 +141,8 @@ const MasterPlanFieldsClient = (props: Props) => {
       await fetchItems();
       notify(
         "success",
-        t("Common/Master plan field") + t("Manage/deleted2"),
+        t("entities.masterPlanField", { capitalize: true }) +
+          t("Manage/deleted2"),
         4000,
       ); // <-- Unique.
     } catch (err: any) {
@@ -166,17 +168,17 @@ const MasterPlanFieldsClient = (props: Props) => {
             <span className="w-full font-semibold">
               {t("MasterPlanFieldModal/Data type")}:
             </span>
-            <span className="-mt-2">{t("Common/" + item.dataType)}</span>
+            <span className="-mt-2">{t("common." + item.dataType)}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
               {t("MasterPlanFieldModal/Alignment")}:
             </span>
-            <span className="-mt-2">{t("Common/" + item.alignment)}</span>
+            <span className="-mt-2">{t("common." + item.alignment)}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Common/Master plans")}:
+              {t("entities.masterPlan", { capitalize: true, plural: true })}:
             </span>
             <>
               {item.masterPlanIds.length === 0 ? (
@@ -197,7 +199,9 @@ const MasterPlanFieldsClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span className="w-full font-semibold">
+              {t("status.status", { capitalize: true })}:
+            </span>
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
@@ -211,8 +215,10 @@ const MasterPlanFieldsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: MasterPlanFieldItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -221,8 +227,10 @@ const MasterPlanFieldsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: MasterPlanFieldItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -233,10 +241,10 @@ const MasterPlanFieldsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: MasterPlanFieldItem) => (
         <div className="flex items-center gap-4">{item.name}</div>
       ),
@@ -249,7 +257,9 @@ const MasterPlanFieldsClient = (props: Props) => {
       labelAsc: t("MasterPlanFieldModal/data type") + " Ö-A",
       labelDesc: t("MasterPlanFieldModal/data type") + " A-Ö",
       getValue: (item: MasterPlanFieldItem) => (
-        <span>{t("Common/" + item.dataType)}</span>
+        <span>
+          {t("common." + item.dataType.toLowerCase(), { capitalize: true })}
+        </span>
       ),
       responsivePriority: 2,
     },
@@ -260,16 +270,18 @@ const MasterPlanFieldsClient = (props: Props) => {
       labelAsc: t("MasterPlanFieldModal/alignment") + " Ö-A",
       labelDesc: t("MasterPlanFieldModal/alignment") + " A-Ö",
       getValue: (item: MasterPlanFieldItem) => (
-        <span>{t("Common/" + item.alignment)}</span>
+        <span>
+          {t("common." + item.alignment.toLowerCase(), { capitalize: true })}
+        </span>
       ),
       responsivePriority: 3,
     },
     {
       key: "masterPlanCount",
-      label: t("Common/Master plans"),
+      label: t("entities.masterPlan", { capitalize: true, plural: true }),
       sortingItem: "masterplancount",
-      labelAsc: t("Common/master plan") + t("Manage/ascending"),
-      labelDesc: t("Common/master plan") + t("Manage/descending"),
+      labelAsc: t("entities.masterPlan") + t("Manage/ascending"),
+      labelDesc: t("entities.masterPlan") + t("Manage/descending"),
       getValue: (item: MasterPlanFieldItem) => (
         <div className="flex flex-wrap gap-2">
           {item.masterPlanIds.map((id, i) => {
@@ -289,7 +301,7 @@ const MasterPlanFieldsClient = (props: Props) => {
     },
     {
       key: "isHidden",
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       sortingItem: "visibilitycount",
       labelAsc: t("MasterPlanFields/visible master plan fields"),
       labelDesc: t("MasterPlanFields/hidden master plan fields"),
@@ -364,7 +376,7 @@ const MasterPlanFieldsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       breakpoint: "ml",
       options: [
         {
@@ -415,7 +427,7 @@ const MasterPlanFieldsClient = (props: Props) => {
       ),
     },
     {
-      label: t("Common/Master plans"),
+      label: t("entities.masterPlan", { capitalize: true, plural: true }),
       breakpoint: "2xl",
       options: masterPlans.map((masterPlan) => ({
         label: masterPlan.name,
@@ -444,7 +456,7 @@ const MasterPlanFieldsClient = (props: Props) => {
   return (
     <>
       <ManageBase<MasterPlanFieldItem> // <-- Unique.
-        itemName={t("Common/master plan field")} // <-- Unique.
+        itemName={t("entities.masterPlanField")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

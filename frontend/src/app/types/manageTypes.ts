@@ -1,4 +1,5 @@
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
+import { TranslateFn } from "../helpers/textUtils";
 
 // --- developer/manage/users/UsersClient.tsx ---
 export type UserItem = {
@@ -50,26 +51,31 @@ export type CategoryFilters = {
 };
 
 // --- admin/manage/units/unit-columns/UnitColumnsClient.tsx ---
-export type UnitColumnDataType = "Number" | "Decimal" | "Text" | "TextField" | "Boolean";
-export const getUnitColumnDataTypeOptions = (t: (key: string) => string) => [
+export type UnitColumnDataType =
+  | "Number"
+  | "Decimal"
+  | "Text"
+  | "TextField"
+  | "Boolean";
+export const getUnitColumnDataTypeOptions = (t: TranslateFn) => [
   {
-    label: t("Common/Number"),
+    label: t("common.number", { capitalize: true }),
     value: "Number" as UnitColumnDataType,
   },
   {
-    label: t("Common/Decimal"),
+    label: t("common.decimal", { capitalize: true }),
     value: "Decimal" as UnitColumnDataType,
   },
   {
-    label: t("Common/Text"),
+    label: t("common.text", { capitalize: true }),
     value: "Text" as UnitColumnDataType,
   },
   {
-    label: t("Common/TextField"),
+    label: t("common.textField", { capitalize: true }),
     value: "TextField" as UnitColumnDataType,
   },
   // {
-  //   label: t("Common/Boolean"),
+  //   label: t("common.boolean", { capitalize: true }),
   //   value: "Boolean" as UnitColumnDataType,
   // },
 ];
@@ -332,46 +338,47 @@ export type MasterPlanFieldFilters = {
   isHidden?: boolean;
 };
 
-export type MasterPlanFieldDataType = "Number" | "Decimal" | "Text" | "Boolean" | "Date";
-export const getMasterPlanFieldDataTypeOptions = (
-  t: (key: string) => string,
-) => [
+export type MasterPlanFieldDataType =
+  | "Number"
+  | "Decimal"
+  | "Text"
+  | "Boolean"
+  | "Date";
+export const getMasterPlanFieldDataTypeOptions = (t: TranslateFn) => [
   {
-    label: t("Common/Number"),
+    label: t("common.number", { capitalize: true }),
     value: "Number" as MasterPlanFieldDataType,
   },
   {
-    label: t("Common/Decimal"),
+    label: t("common.decimal", { capitalize: true }),
     value: "Decimal" as MasterPlanFieldDataType,
   },
   {
-    label: t("Common/Text"),
+    label: t("common.text", { capitalize: true }),
     value: "Text" as MasterPlanFieldDataType,
   },
   // {
-  //   label: t("Common/Boolean"),
+  //   label: t("common.boolean", { capitalize: true }),
   //   value: "Boolean" as MasterPlanFieldDataType,
   // },
   {
-    label: t("Common/Date"),
+    label: t("time.date", { capitalize: true }),
     value: "Date" as MasterPlanFieldDataType,
   },
 ];
 
 export type MasterPlanFieldAlignment = "Left" | "Center" | "Right";
-export const getMasterPlanFieldAlignmentOptions = (
-  t: (key: string) => string,
-) => [
+export const getMasterPlanFieldAlignmentOptions = (t: TranslateFn) => [
   {
-    label: t("Common/Left"),
+    label: t("common.left", { capitalize: true }),
     value: "Left" as MasterPlanFieldAlignment,
   },
   {
-    label: t("Common/Center"),
+    label: t("common.center", { capitalize: true }),
     value: "Center" as MasterPlanFieldAlignment,
   },
   {
-    label: t("Common/Right"),
+    label: t("common.right", { capitalize: true }),
     value: "Right" as MasterPlanFieldAlignment,
   },
 ];

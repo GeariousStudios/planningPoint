@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { useEffect, useState } from "react";
 import Message from "../../components/common/Message";
 import NavPage from "../../components/navbar/NavPage";
@@ -30,7 +30,7 @@ type LinkSection = {
 };
 
 const PlanMasterPlansNavClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   const [sections, setSections] = useState<LinkSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,12 +41,15 @@ const PlanMasterPlansNavClient = (props: Props) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch(`${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=asc`, {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       const result = await response.json();
 
@@ -60,7 +63,9 @@ const PlanMasterPlansNavClient = (props: Props) => {
 
       const grouped = items.reduce(
         (acc: Record<string, Link[]>, masterPlan: MasterPlan) => {
-          const groupName = masterPlan.unitGroupName || t("Common/Groups");
+          const groupName =
+            masterPlan.unitGroupName ||
+            t("entities.group", { capitalize: true, plural: true });
 
           if (!acc[groupName]) {
             acc[groupName] = [];
@@ -111,7 +116,7 @@ const PlanMasterPlansNavClient = (props: Props) => {
     <NavPage
       sections={sections}
       variant="single-grouped"
-      pageLabel={t("Common/Master plans")}
+      pageLabel={t("entities.masterPlan", { capitalize: true, plural: true })}
     />
   );
 };

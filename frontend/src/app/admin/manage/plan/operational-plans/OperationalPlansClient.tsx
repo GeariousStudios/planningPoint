@@ -20,7 +20,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
 
@@ -29,7 +29,7 @@ type Props = {
 };
 
 const OperationalPlansClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -93,7 +93,8 @@ const OperationalPlansClient = (props: Props) => {
         notify(
           "error",
           err.message ||
-            t("Manage/Failed to fetch") + t("Common/operational plans"),
+            t("Manage/Failed to fetch") +
+              t("entities.operationalPlan", { plural: true }),
         ); // <-- Unique.
         return {
           items: [],
@@ -143,7 +144,8 @@ const OperationalPlansClient = (props: Props) => {
       window.dispatchEvent(new Event("operational-plan-list-updated"));
       notify(
         "success",
-        t("Common/Operational plan") + t("Manage/deleted1"),
+        t("entities.operationalPlan", { capitalize: true }) +
+          t("Manage/deleted1"),
         4000,
       ); // <-- Unique.
     } catch (err: any) {
@@ -183,7 +185,9 @@ const OperationalPlansClient = (props: Props) => {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span className="w-full font-semibold">
+              {t("status.status", { capitalize: true })}:
+            </span>
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
@@ -197,8 +201,10 @@ const OperationalPlansClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: OperationalPlanItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -207,8 +213,10 @@ const OperationalPlansClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: OperationalPlanItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -219,10 +227,10 @@ const OperationalPlansClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: OperationalPlanItem) => (
         <div className="flex items-center gap-4">{item.name}</div>
       ),
@@ -232,8 +240,8 @@ const OperationalPlansClient = (props: Props) => {
       key: "unitGroupName",
       label: t("Units/Belongs to group"),
       sortingItem: "unitgroupname",
-      labelAsc: t("Common/group") + " Ö-A",
-      labelDesc: t("Common/group") + " A-Ö",
+      labelAsc: t("entities.group") + " Ö-A",
+      labelDesc: t("entities.group") + " A-Ö",
       getValue: (item: OperationalPlanItem) => item.unitGroupName,
       responsivePriority: 2,
     },
@@ -241,14 +249,14 @@ const OperationalPlansClient = (props: Props) => {
       key: "masterPlanName",
       label: t("OperationalPlans/Belongs to master plan"),
       sortingItem: "masterplanname",
-      labelAsc: t("Common/master plan") + " Ö-A",
-      labelDesc: t("Common/master plan") + " A-Ö",
+      labelAsc: t("entities.masterPlan") + " Ö-A",
+      labelDesc: t("entities.masterPlan") + " A-Ö",
       getValue: (item: OperationalPlanItem) => item.masterPlanName,
       responsivePriority: 3,
     },
     {
       key: "isHidden",
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       sortingItem: "visibilitycount",
       labelAsc: t("OperationalPlans/visible operational plans"),
       labelDesc: t("OperationalPlans/hidden operational plans"),
@@ -313,7 +321,7 @@ const OperationalPlansClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       breakpoint: "ml",
       options: [
         {
@@ -383,7 +391,7 @@ const OperationalPlansClient = (props: Props) => {
   return (
     <>
       <ManageBase<OperationalPlanItem> // <-- Unique.
-        itemName={t("Common/operational plan")} // <-- Unique.
+        itemName={t("entities.operationalPlan")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

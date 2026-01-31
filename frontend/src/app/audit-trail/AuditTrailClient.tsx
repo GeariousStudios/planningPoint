@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import Input from "@/app/components/common/Input";
 import MultiDropdown from "@/app/components/common/MultiDropdown";
@@ -32,7 +32,7 @@ type Props = {
 };
 
 const AuditTrailClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- States ---
@@ -127,7 +127,7 @@ const AuditTrailClient = (props: Props) => {
 
         const data = await response.json();
         setUserOptions([
-          { label: t("Common/All"), value: "All" },
+          { label: t("common.all", { capitalize: true }), value: "All" },
           ...data.map((u: any) => ({
             label: u.label,
             value: u.value,
@@ -377,7 +377,7 @@ const AuditTrailClient = (props: Props) => {
 
                     {/* --- User --- */}
                     <MultiDropdown
-                      label={t("Common/User")}
+                      label={t("entities.user", { capitalize: true })}
                       options={userOptions}
                       value={selectedUsers}
                       onChange={setSelectedUsers}
@@ -391,7 +391,7 @@ const AuditTrailClient = (props: Props) => {
                     <div className="flex items-center gap-2">
                       <hr className="w-12 text-(--border-tertiary)" />
                       <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                        {t("Common/Date range")}
+                        {t("time.dateRange", { capitalize: true })}
                       </h3>
                       <hr className="w-full text-(--border-tertiary)" />
                     </div>
@@ -401,7 +401,7 @@ const AuditTrailClient = (props: Props) => {
                         className={`${showAllDates ? "cursor-not-allowed opacity-25" : ""} grid grid-cols-1 gap-6 sm:grid-cols-2`}
                       >
                         <Input
-                          label={t("Common/Start date")}
+                          label={t("time.startDate", { capitalize: true })}
                           type="date"
                           value={dateFrom}
                           onChange={(v) => setDateFrom(v as string)}
@@ -412,7 +412,7 @@ const AuditTrailClient = (props: Props) => {
                         />
 
                         <Input
-                          label={t("Common/End date")}
+                          label={t("time.endDate", { capitalize: true })}
                           type="date"
                           value={dateTo}
                           onChange={(v) => setDateTo(v as string)}
@@ -457,7 +457,7 @@ const AuditTrailClient = (props: Props) => {
                         (!dateTo && !showAllDates)
                       }
                     >
-                      {t("Common/Search")}
+                      {t("actions.search", { capitalize: true })}
                     </button>
 
                     <button
@@ -475,7 +475,7 @@ const AuditTrailClient = (props: Props) => {
                         setHasSearched(false);
                       }}
                     >
-                      {t("Common/Reset")}
+                      {t("actions.reset", { capitalize: true })}
                     </button>
                   </div>
                 </div>
@@ -531,18 +531,18 @@ const AuditTrailClient = (props: Props) => {
               />
               <ThCell
                 sortingItem="user"
-                label={t("Common/User")}
-                labelAsc={`${t("Common/user")} Ö-A`}
-                labelDesc={`${t("Common/user")} A-Ö`}
+                label={t("entities.user", { capitalize: true })}
+                labelAsc={`${t("entities.user")} Ö-A`}
+                labelDesc={`${t("entities.user")} A-Ö`}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
               />
               <ThCell
                 sortingItem="userId"
-                label={t("Common/User ID")}
-                labelAsc={`${t("Common/user ID")} ${t("Manage/descending")}`}
-                labelDesc={`${t("Common/user ID")} ${t("Manage/ascending")}`}
+                label={t("auth.userId", { capitalize: true })}
+                labelAsc={`${t("auth.userId", { capitalize: true })} ${t("Manage/descending")}`}
+                labelDesc={`${t("auth.userId", { capitalize: true })} ${t("Manage/ascending")}`}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
@@ -559,7 +559,13 @@ const AuditTrailClient = (props: Props) => {
                   className="h-57 text-center text-(--text-secondary)"
                 >
                   {isLoading ? (
-                    <Message icon="loading" content={t("Message/Content")} />
+                    <Message
+                      icon="loading"
+                      content={t("message.content", {
+                        capitalize: true,
+                        end: "...",
+                      })}
+                    />
                   ) : (
                     <Message icon="search" content={t("Manage/No content")} />
                   )}

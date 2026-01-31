@@ -6,7 +6,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FocusTrap } from "focus-trap-react";
 import { motion, useDragControls } from "framer-motion";
 import { get } from "http";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import {
   ElementType,
   forwardRef,
@@ -45,7 +45,7 @@ export type ModalBaseHandle = {
 };
 
 const ModalBase = forwardRef((props: BaseProps, ref) => {
-  const t = useTranslations();
+  const t = useTN();
 
   useImperativeHandle(ref, () => ({
     requestClose,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { hyperLinkButtonClass } from "@/app/styles/buttonClasses";
 import {
   ArrowPathIcon,
@@ -29,7 +29,7 @@ type Props = {
 };
 
 const Message = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   const [Icon, setIcon] = useState<ElementType | null>(null);
 
@@ -49,34 +49,34 @@ const Message = (props: Props) => {
   };
 
   const contentMap: Record<string, ReactNode> = {
-    loading: t("Message/Loading"),
-    auth:  t("Message/Auth"),
+    loading: t("message.loading", { capitalize: true, end: "..." }),
+    auth: t("message.auth", { capitalize: true, end: "..." }),
     deny: (
       <div className="flex flex-col">
-        <span>{t("Message/Deny1")}</span>{" "}
+        <span>{t("message.deny1", { capitalize: true, end: "!" })}</span>{" "}
         <span>
           <Link href="/" className={`${hyperLinkButtonClass}`}>
-            {t("Message/Deny2")}
+            {t("message.deny2", { capitalize: true })}
           </Link>{" "}
-          {t("Message/Deny3")}
+          {t("message.deny3", { end: "." })}
         </span>
       </div>
     ),
-    server: t("Message/Server"),
+    server: t("message.server", { capitalize: true, end: "!" }),
     lock: (
       <div className="flex flex-col">
-        <span>{t("Message/Lock1")}</span>
-        <span>{t("Message/Lock2")}</span>
+        <span>{t("message.lock1", { capitalize: true, end: "!" })}</span>
+        <span>{t("message.lock2", { capitalize: true, end: "." })}</span>
       </div>
     ),
     invalid: (
       <div className="flex flex-col">
-        <span>{t("Message/Invalid")}</span>
+        <span>{t("message.invalid", { capitalize: true, end: "." })}</span>
       </div>
     ),
     content: (
       <div className="flex flex-col">
-        <span>{t("Message/Content")}</span>
+        <span>{t("message.content", { capitalize: true, end: "..." })}</span>
       </div>
     ),
   };

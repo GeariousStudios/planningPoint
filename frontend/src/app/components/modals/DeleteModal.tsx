@@ -8,7 +8,7 @@ import {
 import ModalBase from "./ModalBase";
 import { ReactNode, useState } from "react";
 import { request } from "http";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 
 type Props = {
   isOpen: boolean;
@@ -21,7 +21,7 @@ type Props = {
 };
 
 const DeleteModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- States ---

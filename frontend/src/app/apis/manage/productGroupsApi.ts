@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { ProductGroupFilters, ProductGroupItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
@@ -127,19 +127,14 @@ export type ProductOption = {
   name: string;
 };
 
-export const fetchProducts = async (): Promise<
-  ProductOption[]
-> => {
-  const response = await fetch(
-    `${apiUrl}/product?sortBy=name&sortOrder=asc`,
-    {
-      headers: {
-        "X-User-Language": localStorage.getItem("language") || "sv",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+export const fetchProducts = async (): Promise<ProductOption[]> => {
+  const response = await fetch(`${apiUrl}/product?sortBy=name&sortOrder=asc`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
 
   if (response.status === 401) {
     localStorage.removeItem("token");

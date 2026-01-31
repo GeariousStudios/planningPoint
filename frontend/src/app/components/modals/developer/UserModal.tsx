@@ -12,7 +12,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import MultiDropdown from "../../common/MultiDropdown";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { userConstraints } from "@/app/helpers/inputConstraints";
 import LoadingSpinner from "../../common/LoadingSpinner";
 
@@ -24,7 +24,7 @@ type Props = {
 };
 
 const UserModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -156,7 +156,11 @@ const UserModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/User") + t("Modal/created1"), 4000);
+      notify(
+        "success",
+        t("entities.user", { capitalize: true }) + t("Modal/created1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -282,7 +286,11 @@ const UserModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/User") + t("Modal/updated1"), 4000);
+      notify(
+        "success",
+        t("entities.user", { capitalize: true }) + t("Modal/updated1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -360,8 +368,12 @@ const UserModal = (props: Props) => {
             icon={props.itemId ? PencilSquareIcon : PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/user")
-                : t("Common/Add") + " " + t("Common/user")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.user")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.user")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -378,7 +390,7 @@ const UserModal = (props: Props) => {
               <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
                 <Input
                   id="username"
-                  label={t("Common/Username")}
+                  label={t("auth.username", { capitalize: true })}
                   value={username}
                   onChange={(val) => setUsername(String(val))}
                   onModal
@@ -391,7 +403,7 @@ const UserModal = (props: Props) => {
                   <Input
                     type="password"
                     id="password"
-                    label={t("Common/Password")}
+                    label={t("auth.password", { capitalize: true })}
                     value={password}
                     placeholder="•••••••••"
                     onChange={(val) => setPassword(String(val))}
@@ -402,7 +414,7 @@ const UserModal = (props: Props) => {
                   <Input
                     type="password"
                     id="password"
-                    label={t("Common/Password")}
+                    label={t("auth.password", { capitalize: true })}
                     value={password}
                     onChange={(val) => setPassword(String(val))}
                     onModal
@@ -511,13 +523,14 @@ const UserModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 
 const usePageTitle = (key: string) => {
-  const t = useTranslations();
+  const t = useTN();
 
   useEffect(() => {
     document.title = t(key);

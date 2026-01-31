@@ -15,7 +15,7 @@ import {
   getMasterPlanFieldDataTypeOptions,
 } from "@/app/types/manageTypes";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { masterPlanFieldConstraints } from "@/app/helpers/inputConstraints";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
 import LoadingSpinner from "@/app/components/common/LoadingSpinner";
@@ -41,7 +41,7 @@ type MasterPlanFieldDto = {
 };
 
 const MasterPlanFieldModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -189,7 +189,8 @@ const MasterPlanFieldModal = (props: Props) => {
       props.onItemUpdated();
       notify(
         "success",
-        t("Common/Master plan field") + t("Modal/created2"),
+        t("entities.masterPlanField", { capitalize: true }) +
+          t("Modal/created2"),
         4000,
       );
     } catch (err) {
@@ -322,7 +323,8 @@ const MasterPlanFieldModal = (props: Props) => {
       props.onItemUpdated();
       notify(
         "success",
-        t("Common/Master plan field") + t("Modal/updated2"),
+        t("entities.masterPlanField", { capitalize: true }) +
+          t("Modal/updated2"),
         4000,
       );
     } catch (err) {
@@ -394,8 +396,12 @@ const MasterPlanFieldModal = (props: Props) => {
             icon={props.itemId ? PencilSquareIcon : PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/master plan field")
-                : t("Common/Add") + " " + t("Common/master plan field")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.masterPlanField")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.masterPlanField")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -411,7 +417,7 @@ const MasterPlanFieldModal = (props: Props) => {
 
               <div className="mb-8 grid grid-cols-1 gap-6">
                 <Input
-                  label={t("Common/Name")}
+                  label={t("common.name", { capitalize: true })}
                   value={name}
                   onChange={(val) => setName(String(val))}
                   onModal
@@ -452,9 +458,18 @@ const MasterPlanFieldModal = (props: Props) => {
                     setAlignment(val as "Left" | "Center" | "Right")
                   }
                   options={[
-                    { label: t("Common/Left"), value: "Left" },
-                    { label: t("Common/Center"), value: "Center" },
-                    { label: t("Common/Right"), value: "Right" },
+                    {
+                      label: t("common.left", { capitalize: true }),
+                      value: "Left",
+                    },
+                    {
+                      label: t("common.center", { capitalize: true }),
+                      value: "Center",
+                    },
+                    {
+                      label: t("common.right", { capitalize: true }),
+                      value: "Right",
+                    },
                   ]}
                   required
                   onModal
@@ -544,7 +559,7 @@ const MasterPlanFieldModal = (props: Props) => {
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-(--border-tertiary)" />
                 <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
-                  {t("Common/Status")}
+                  {t("status.status", { capitalize: true })}
                 </h3>
                 <hr className="w-full text-(--border-tertiary)" />
               </div>
@@ -581,13 +596,14 @@ const MasterPlanFieldModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

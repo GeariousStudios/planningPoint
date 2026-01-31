@@ -16,7 +16,7 @@ import {
   UnitColumnDataType,
 } from "@/app/types/manageTypes";
 import SingleDropdown from "../../../common/SingleDropdown";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { unitColumnConstraints } from "@/app/helpers/inputConstraints";
 import UnitColumns from "@/app/admin/manage/units/unit-columns/page";
 import { get } from "http";
@@ -30,7 +30,7 @@ type Props = {
 };
 
 const UnitColumnModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- Refs ---
@@ -148,7 +148,11 @@ const UnitColumnModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Column") + t("Modal/created1"), 4000);
+      notify(
+        "success",
+        t("entities.column", { capitalize: true }) + t("Modal/created1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -266,7 +270,11 @@ const UnitColumnModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Column") + t("Modal/updated1"), 4000);
+      notify(
+        "success",
+        t("entities.column", { capitalize: true }) + t("Modal/updated1"),
+        4000,
+      );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     } finally {
@@ -324,8 +332,12 @@ const UnitColumnModal = (props: Props) => {
             icon={props.itemId ? PencilSquareIcon : PlusIcon}
             label={
               props.itemId
-                ? t("Common/Edit") + " " + t("Common/column")
-                : t("Common/Add") + " " + t("Common/column")
+                ? t("actions.edit", { capitalize: true }) +
+                  " " +
+                  t("entities.column")
+                : t("actions.add", { capitalize: true }) +
+                  " " +
+                  t("entities.column")
             }
             confirmOnClose
             isDirty={isDirty}
@@ -341,7 +353,7 @@ const UnitColumnModal = (props: Props) => {
 
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
                 <Input
-                  label={t("Common/Name")}
+                  label={t("common.name", { capitalize: true })}
                   value={name}
                   onChange={(val) => setName(String(val))}
                   onModal
@@ -464,13 +476,14 @@ const UnitColumnModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner /> {t("Common/Adding")}
+                      <LoadingSpinner />{" "}
+                      {t("common.adding", { capitalize: true, end: "..." })}
                     </div>
                   )
                 ) : props.itemId ? (
                   t("Modal/Save")
                 ) : (
-                  t("Common/Add")
+                  t("actions.add", { capitalize: true })
                 )}
               </button>
               <button

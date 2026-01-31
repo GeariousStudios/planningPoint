@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import NavbarLink from "@/app/components/navbar/NavbarLink";
 import { useEffect, useState } from "react";
 import Message from "../components/common/Message";
@@ -39,7 +39,7 @@ type LinkSection = {
 };
 
 const PlanNavClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   const [masterPlanSections, setMasterPlanSections] = useState<LinkSection[]>(
     [],
@@ -57,12 +57,15 @@ const PlanNavClient = (props: Props) => {
     try {
       setIsLoadingMasterPlans(true);
 
-      const response = await fetch(`${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=asc`, {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${apiUrl}/master-plan?sortBy=unitGroupName&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       const result = await response.json();
 
@@ -76,7 +79,9 @@ const PlanNavClient = (props: Props) => {
 
       const grouped = items.reduce(
         (acc: Record<string, Link[]>, masterPlan: MasterPlan) => {
-          const groupName = masterPlan.unitGroupName || t("Common/Groups");
+          const groupName =
+            masterPlan.unitGroupName ||
+            t("entities.group", { capitalize: true, plural: true });
 
           if (!acc[groupName]) {
             acc[groupName] = [];
@@ -94,7 +99,10 @@ const PlanNavClient = (props: Props) => {
 
       const nextSections: LinkSection[] = [
         {
-          sectionLabel: t("Common/Master plans"),
+          sectionLabel: t("entities.masterPlan", {
+            capitalize: true,
+            plural: true,
+          }),
           items: Object.entries(grouped).flatMap(([groupName, links]) =>
             links.map((l, index) => ({
               ...l,
@@ -114,12 +122,15 @@ const PlanNavClient = (props: Props) => {
     try {
       setIsLoadingOperationalPlans(true);
 
-      const response = await fetch(`${apiUrl}/operational-plan?sortBy=unitGroupName&sortOrder=asc`, {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${apiUrl}/operational-plan?sortBy=unitGroupName&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       const result = await response.json();
 
@@ -133,7 +144,9 @@ const PlanNavClient = (props: Props) => {
 
       const grouped = items.reduce(
         (acc: Record<string, Link[]>, operationalPlan: OperationalPlan) => {
-          const groupName = operationalPlan.unitGroupName || t("Common/Groups");
+          const groupName =
+            operationalPlan.unitGroupName ||
+            t("entities.group", { capitalize: true, plural: true });
 
           if (!acc[groupName]) {
             acc[groupName] = [];
@@ -151,7 +164,10 @@ const PlanNavClient = (props: Props) => {
 
       const nextSections: LinkSection[] = [
         {
-          sectionLabel: t("Common/Operational plans"),
+          sectionLabel: t("entities.operationalPlan", {
+            capitalize: true,
+            plural: true,
+          }),
           items: Object.entries(grouped).flatMap(([groupName, links]) =>
             links.map((l, index) => ({
               ...l,

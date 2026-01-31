@@ -11,7 +11,7 @@ import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { LockClosedIcon, WifiIcon } from "@heroicons/react/20/solid";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { useEffect } from "react";
 import { useHandbook } from "@/app/context/HandbookContext";
 
@@ -20,7 +20,7 @@ type Props = {
 };
 
 const UsersClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
   // <--- Unique.
   // --- VARIABLES ---
   const {
@@ -82,7 +82,7 @@ const UsersClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/users"),
+          err.message || t("Manage/Failed to fetch") + t("entities.user", "p"),
         ); // <-- Unique.
         return {
           items: [],
@@ -136,7 +136,11 @@ const UsersClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/User") + t("Manage/deleted1"), 4000); // <-- Unique.
+      notify(
+        "success",
+        t("entities.user", { capitalize: true }) + t("Manage/deleted1"),
+        4000,
+      ); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -163,8 +167,8 @@ const UsersClient = (props: Props) => {
                   <span>
                     <span className="font-extrabold">{item.username}</span>{" "}
                     {item.isOnline
-                      ? t("Common/is") + " online"
-                      : t("Common/is") + " offline"}
+                      ? t("common.is") + " online"
+                      : t("common.is") + " offline"}
                   </span>
                 }
                 showOnTouch
@@ -200,7 +204,9 @@ const UsersClient = (props: Props) => {
       key: "creationDate",
       getValue: (item: UserItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")} </span>
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}{" "}
+          </span>
           {utcIsoToLocalDateTime(item.creationDate)}
         </p>
       ),
@@ -220,10 +226,10 @@ const UsersClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "username",
-      label: t("Common/Username"),
+      label: t("auth.username", { capitalize: true }),
       sortingItem: "username",
-      labelAsc: t("Common/username") + " Ö-A",
-      labelDesc: t("Common/username") + " A-Ö",
+      labelAsc: t("auth.username", { capitalize: true }) + " Ö-A",
+      labelDesc: t("auth.username", { capitalize: true }) + " A-Ö",
       getValue: (item: UserItem) => item.username,
       responsivePriority: 0,
     },
@@ -276,7 +282,7 @@ const UsersClient = (props: Props) => {
     },
     {
       key: "isLocked",
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       sortingItem: "status",
       labelAsc: t("Users/locked users"),
       labelDesc: t("Users/locked users"),
@@ -400,7 +406,7 @@ const UsersClient = (props: Props) => {
       ],
     },
     {
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       breakpoint: "lg",
       options: [
         {
@@ -429,7 +435,7 @@ const UsersClient = (props: Props) => {
   return (
     <>
       <ManageBase<UserItem> // <-- Unique.
-        itemName={t("Common/user")} // <-- Unique.
+        itemName={t("entities.user")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

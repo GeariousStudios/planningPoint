@@ -15,7 +15,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
 
@@ -24,7 +24,7 @@ type Props = {
 };
 
 const PlannedStopsClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -88,7 +88,7 @@ const PlannedStopsClient = (props: Props) => {
         notify(
           "error",
           err.message ||
-            t("Manage/Failed to fetch") + t("Common/planned stops"),
+            t("Manage/Failed to fetch") + t("entities.plannedStop", "p"),
         ); // <-- Unique.
         return {
           items: [],
@@ -130,7 +130,11 @@ const PlannedStopsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Planned stop") + t("Manage/deleted2"), 4000); // <-- Unique.
+      notify(
+        "success",
+        t("entities.plannedStop", { capitalize: true }) + t("Manage/deleted2"),
+        4000,
+      ); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -193,7 +197,9 @@ const PlannedStopsClient = (props: Props) => {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span className="w-full font-semibold">
+              {t("status.status", { capitalize: true })}:
+            </span>
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
@@ -207,8 +213,10 @@ const PlannedStopsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: PlannedStopItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -217,8 +225,10 @@ const PlannedStopsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: PlannedStopItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -229,10 +239,10 @@ const PlannedStopsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: PlannedStopItem) => (
         <div className="flex items-center gap-4">
           <span
@@ -287,7 +297,7 @@ const PlannedStopsClient = (props: Props) => {
     },
     {
       key: "isHidden",
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       sortingItem: "visibilitycount",
       labelAsc: t("PlannedStops/visible planned stops"),
       labelDesc: t("PlannedStops/hidden planned stops"),
@@ -336,7 +346,7 @@ const PlannedStopsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("Common/Status"),
+      label: t("status.status", { capitalize: true }),
       breakpoint: "ml",
       options: [
         {
@@ -387,7 +397,7 @@ const PlannedStopsClient = (props: Props) => {
   return (
     <>
       <ManageBase<PlannedStopItem> // <-- Unique.
-        itemName={t("Common/planned stop")} // <-- Unique.
+        itemName={t("entities.plannedStop")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

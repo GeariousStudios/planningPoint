@@ -489,7 +489,7 @@ export const useMasterPlan = (
         plan.title ??
         plan.label ??
         plan.id ??
-        t("Common/Master plan"),
+        t("entities.masterPlan", { capitalize: true }),
     );
     const planName = planNameRaw.replace(/[\\/:*?"<>|]/g, "-").trim();
 
@@ -576,11 +576,15 @@ export const useMasterPlan = (
     ws["!freeze"] = { xSplit: 0, ySplit: 1 };
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, t("Common/Master plan"));
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      t("entities.masterPlan", { capitalize: true }),
+    );
 
     XLSX.writeFile(
       wb,
-      `${t("Common/Master plan")} - ${planName} - ${stamp}.xlsx`,
+      `${t("entities.masterPlan", { capitalize: true })} - ${planName} - ${stamp}.xlsx`,
     );
   };
 
@@ -2127,7 +2131,7 @@ export const useMasterPlan = (
   const filters = useMemo(() => {
     return [
       {
-        label: t("Common/Status"),
+        label: t("status.status", { capitalize: true }),
         breakpoint: "2xs",
         options: [
           {

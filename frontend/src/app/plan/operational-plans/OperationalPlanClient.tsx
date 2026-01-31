@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import Input from "@/app/components/common/Input";
 import {
   buttonDeletePrimaryClass,
@@ -53,7 +53,7 @@ type Props = {
 };
 
 const OperationalPlanClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
   const { operationalPlanId } = useParams();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token =
@@ -68,7 +68,9 @@ const OperationalPlanClient = (props: Props) => {
 
   return (
     <>
-      <Message content={t("Common/Not implemented")} />
+      <Message
+        content={t("status.notImplemented", { capitalize: true, end: "!" })}
+      />
     </>
   );
 };

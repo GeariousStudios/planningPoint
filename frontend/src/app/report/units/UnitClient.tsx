@@ -136,7 +136,7 @@ const UnitClient = (props: any) => {
             <div className="flex gap-4">
               {/* --- Report data top --- */}
               <CustomTooltip
-                content={`${!props.isReporter ? c.t("Common/No access") : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report data") : c.t("Unit/No columns")}`}
+                content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report data") : c.t("Unit/No columns")}`}
                 veryLongDelay={
                   props.isReporter == true && c.unitColumnNames.length > 0
                 }
@@ -168,7 +168,7 @@ const UnitClient = (props: any) => {
               </CustomTooltip>
 
               <CustomTooltip
-                content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Tooltip report events")}`}
+                content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : c.t("Unit/Tooltip report events")}`}
                 veryLongDelay={props.isReporter == true}
                 showOnTouch
               >
@@ -200,7 +200,7 @@ const UnitClient = (props: any) => {
 
             <div className="ml-auto flex max-w-max flex-wrap items-center gap-4">
               <CustomTooltip
-                content={`${c.refetchData && c.isManualRefresh ? c.t("Common/Updating") : c.t("Common/Update page")}`}
+                content={`${c.refetchData && c.isManualRefresh ? c.t("status.updating", { capitalize: true, end: "..." }) : c.t("actions.update", { capitalize: true }) + " " + c.t("common.page")}`}
                 veryLongDelay
                 showOnTouch
               >
@@ -210,7 +210,11 @@ const UnitClient = (props: any) => {
                     c.setIsManualRefresh(true);
                     c.setRefetchData(true);
                   }}
-                  aria-label={c.t("Common/Update page")}
+                  aria-label={
+                    c.t("common.update", { capitalize: true }) +
+                    " " +
+                    c.t("common.page")
+                  }
                   disabled={c.isManualRefresh && c.refetchData}
                 >
                   <Outline.ArrowPathIcon
@@ -261,7 +265,7 @@ const UnitClient = (props: any) => {
           <div className="flex justify-between gap-4">
             <div className="relative ml-auto flex items-center gap-4">
               <CustomTooltip
-                content={`${!props.isReporter ? c.t("Common/No access") : ""}`}
+                content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : ""}`}
                 veryLongDelay={props.isReporter == true}
                 showOnTouch
               >
@@ -347,7 +351,7 @@ const UnitClient = (props: any) => {
                       type="date"
                       value={c.pendingShiftDate}
                       onChange={(v) => c.setPendingShiftDate(String(v))}
-                      label={c.t("Common/Date")}
+                      label={c.t("time.date", { capitalize: true })}
                       min={c.unitCreationDate}
                       onModal
                       required
@@ -356,7 +360,7 @@ const UnitClient = (props: any) => {
                       type="time"
                       value={c.pendingShiftTime}
                       onChange={(v) => c.setPendingShiftTime(String(v))}
-                      label={c.t("Common/Time")}
+                      label={c.t("time.time", { capitalize: true })}
                       onModal
                       required
                     />
@@ -411,12 +415,12 @@ const UnitClient = (props: any) => {
                     <th
                       className={`${thClass} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-(--bg-grid-header) whitespace-nowrap`}
                     >
-                      {c.t("Common/Time")}
+                      {c.t("time.time", { capitalize: true })}
                     </th>
                     <th
                       className={`${thClass} w-[72px] bg-(--bg-grid-header) whitespace-nowrap`}
                     >
-                      {c.t("Common/Shift")}
+                      {c.t("entities.shift", { capitalize: true })}
                     </th>
                     <th
                       className={`${thClass} ${c.unitColumnNames.length > 0 ? "w-0" : ""} whitespace-nowrap`}
@@ -696,9 +700,9 @@ const UnitClient = (props: any) => {
                               const displayValue =
                                 dataType === "Boolean"
                                   ? cell?.value === true
-                                    ? c.t("Common/Yes")
+                                    ? c.t("common.yes", { capitalize: true })
                                     : cell?.value === "false"
-                                      ? c.t("Common/No")
+                                      ? c.t("common.no", { capitalize: true })
                                       : ""
                                   : dataType === "Number"
                                     ? (cell?.intValue ?? cell?.value ?? "")
@@ -893,7 +897,7 @@ const UnitClient = (props: any) => {
                                           )}
 
                                           <CustomTooltip
-                                            content={`${!props.isReporter ? c.t("Common/No access") : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report this data") + c.t("Unit/Tooltip this hour") : c.t("Unit/No columns")}`}
+                                            content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report this data") + c.t("Unit/Tooltip this hour") : c.t("Unit/No columns")}`}
                                             veryLongDelay={
                                               props.isReporter == true &&
                                               c.unitColumnNames.length > 0
@@ -981,7 +985,7 @@ const UnitClient = (props: any) => {
                                       </>
                                     </div>
                                     <CustomTooltip
-                                      content={`${!props.isReporter ? c.t("Common/No access") : isSynthetic ? c.t("Unit/Cannot be edited") : c.t("Unit/Update post")}`}
+                                      content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : isSynthetic ? c.t("Unit/Cannot be edited") : c.t("Unit/Update post")}`}
                                       veryLongDelay={
                                         props.isReporter == true && !isSynthetic
                                       }
@@ -1066,7 +1070,9 @@ const UnitClient = (props: any) => {
                                             onChange={(v) =>
                                               c.setEditChangeDate(String(v))
                                             }
-                                            label={c.t("Common/Date")}
+                                            label={c.t("time.date", {
+                                              capitalize: true,
+                                            })}
                                             onModal
                                             required
                                           />
@@ -1076,7 +1082,9 @@ const UnitClient = (props: any) => {
                                             onChange={(v) =>
                                               c.setEditChangeTime(String(v))
                                             }
-                                            label={c.t("Common/Time")}
+                                            label={c.t("time.time", {
+                                              capitalize: true,
+                                            })}
                                             onModal
                                             required
                                           />
@@ -1143,7 +1151,7 @@ const UnitClient = (props: any) => {
                               >
                                 <div className="flex flex-col gap-4 p-4">
                                   <CustomTooltip
-                                    content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Tooltip report events") + c.t("Unit/Tooltip this hour")}`}
+                                    content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : c.t("Unit/Tooltip report events") + c.t("Unit/Tooltip this hour")}`}
                                     veryLongDelay={props.isReporter == true}
                                     showOnTouch
                                   >
@@ -1230,7 +1238,7 @@ const UnitClient = (props: any) => {
                                             {report.categoryId && (
                                               <div className="flex gap-2">
                                                 <CustomTooltip
-                                                  content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Edit event")}`}
+                                                  content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : c.t("Unit/Edit event")}`}
                                                   veryLongDelay={
                                                     props.isReporter == true
                                                   }
@@ -1268,7 +1276,7 @@ const UnitClient = (props: any) => {
                                                 </CustomTooltip>
 
                                                 <CustomTooltip
-                                                  content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Delete event")}`}
+                                                  content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : c.t("Unit/Delete event")}`}
                                                   veryLongDelay={
                                                     props.isReporter == true
                                                   }
@@ -1326,18 +1334,18 @@ const UnitClient = (props: any) => {
                                                 const parts: string[] = [];
                                                 if (diffDays > 0)
                                                   parts.push(
-                                                    `${diffDays} ${diffDays === 1 ? c.t("Common/day") : c.t("Common/days")}`,
+                                                    `${diffDays} ${diffDays === 1 ? c.t("time.day") : c.t("time.day", { plural: true })}`,
                                                   );
                                                 if (diffHours > 0)
                                                   parts.push(
-                                                    `${diffHours} ${diffHours === 1 ? c.t("Common/hour") : c.t("Common/hours")}`,
+                                                    `${diffHours} ${diffHours === 1 ? c.t("time.hour") : c.t("time.hour", { plural: true })}`,
                                                   );
                                                 if (
                                                   diffMinutes > 0 ||
                                                   parts.length === 0
                                                 )
                                                   parts.push(
-                                                    `${diffMinutes} ${diffMinutes === 1 ? c.t("Common/minute") : c.t("Common/minutes")}`,
+                                                    `${diffMinutes} ${diffMinutes === 1 ? c.t("time.minute") : c.t("time.minute", { plural: true })}`,
                                                   );
 
                                                 const duration =
@@ -1375,7 +1383,7 @@ const UnitClient = (props: any) => {
                                           {!report.categoryId && (
                                             <div className="flex gap-2">
                                               <CustomTooltip
-                                                content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Edit event")}`}
+                                                content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : c.t("Unit/Edit event")}`}
                                                 veryLongDelay={
                                                   props.isReporter == true
                                                 }
@@ -1412,7 +1420,7 @@ const UnitClient = (props: any) => {
                                               </CustomTooltip>
 
                                               <CustomTooltip
-                                                content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Delete event")}`}
+                                                content={`${!props.isReporter ? c.t("status.noAccess", { capitalize: true, end: "!" }) : c.t("Unit/Delete event")}`}
                                                 veryLongDelay={
                                                   props.isReporter == true
                                                 }
@@ -1450,24 +1458,28 @@ const UnitClient = (props: any) => {
                                             {report.creationDate && (
                                               <div>
                                                 <span className="font-semibold">
-                                                  {c.t("Common/Created")}
+                                                  {c.t("status.created", {
+                                                    capitalize: true,
+                                                  }) + ":"}
                                                 </span>{" "}
                                                 {utcIsoToLocalDateTime(
                                                   report.creationDate,
                                                 )}{" "}
-                                                {c.t("Common/by")}{" "}
+                                                {c.t("common.by")}{" "}
                                                 {report.createdBy}
                                               </div>
                                             )}
                                             {report.updateDate && (
                                               <div>
                                                 <span className="font-semibold">
-                                                  {c.t("Common/Updated")}
+                                                  {c.t("status.updated", {
+                                                    capitalize: true,
+                                                  }) + ":"}
                                                 </span>{" "}
                                                 {utcIsoToLocalDateTime(
                                                   report.updateDate,
                                                 )}{" "}
-                                                {c.t("Common/by")}{" "}
+                                                {c.t("common.by")}{" "}
                                                 {report.updatedBy}
                                               </div>
                                             )}

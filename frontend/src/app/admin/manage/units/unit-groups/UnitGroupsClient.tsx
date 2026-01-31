@@ -15,7 +15,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import useTheme from "@/app/hooks/useTheme";
 import { useHandbook } from "@/app/context/HandbookContext";
 
@@ -24,7 +24,7 @@ type Props = {
 };
 
 const UnitGroupsClient = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // <-- Unique.
   // --- VARIABLES ---
@@ -87,7 +87,7 @@ const UnitGroupsClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/groups"),
+          err.message || t("Manage/Failed to fetch") + t("entities.group", "p"),
         ); // <-- Unique.
         return {
           items: [],
@@ -134,7 +134,11 @@ const UnitGroupsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Group") + t("Manage/deleted1"), 4000); // <-- Unique.
+      notify(
+        "success",
+        t("entities.group", { capitalize: true }) + t("Manage/deleted1"),
+        4000,
+      ); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -205,8 +209,10 @@ const UnitGroupsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: UnitGroupItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Created")}</span>
-          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.created", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("common.by")}{" "}
           {item.createdBy}
         </p>
       ),
@@ -215,8 +221,10 @@ const UnitGroupsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: UnitGroupItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">{t("Common/Updated")}</span>
-          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          <span className="font-semibold">
+            {t("status.updated", { capitalize: true }) + ":"}
+          </span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("common.by")}{" "}
           {item.updatedBy}
         </p>
       ),
@@ -227,10 +235,10 @@ const UnitGroupsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: t("Common/Name"),
+      label: t("common.name", { capitalize: true }),
       sortingItem: "name",
-      labelAsc: t("Common/name") + " Ö-A",
-      labelDesc: t("Common/name") + " A-Ö",
+      labelAsc: t("common.name") + " Ö-A",
+      labelDesc: t("common.name") + " A-Ö",
       getValue: (item: UnitGroupItem) => item.name,
       responsivePriority: 0,
     },
@@ -332,7 +340,7 @@ const UnitGroupsClient = (props: Props) => {
   return (
     <>
       <ManageBase<UnitGroupItem> // <-- Unique.
-        itemName={t("Common/group")} // <-- Unique.
+        itemName={t("entities.group")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

@@ -25,7 +25,7 @@ import {
 import Input from "../common/Input";
 import CustomTooltip from "../common/CustomTooltip";
 import useLanguage from "@/app/hooks/useLanguage";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 import { userConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
@@ -35,7 +35,7 @@ type Props = {
 };
 
 const SettingsModal = (props: Props) => {
-  const t = useTranslations();
+  const t = useTN();
 
   // --- VARIABLES ---
   // --- States ---
@@ -214,7 +214,7 @@ const SettingsModal = (props: Props) => {
     <ModalBase
       isOpen={props.isOpen}
       onClose={props.onClose}
-      label={t("Common/Settings")}
+      label={t("common.settings", { capitalize: true })}
       icon={SolidCog6ToothIcon}
       smallGap
     >
@@ -251,7 +251,13 @@ const SettingsModal = (props: Props) => {
             </li>
 
             {/* --- Notifications --- */}
-            <CustomTooltip content={t("Common/Not implemented")} showOnTouch>
+            <CustomTooltip
+              content={t("status.notImplemented", {
+                capitalize: true,
+                end: "!",
+              })}
+              showOnTouch
+            >
               <li>
                 <ModalLink
                   disabled
@@ -281,8 +287,14 @@ const SettingsModal = (props: Props) => {
                     <span className="w-24">
                       <SingleDropdown
                         options={[
-                          { label: t("Common/Dark"), value: "dark" },
-                          { label: t("Common/Light"), value: "light" },
+                          {
+                            label: t("appearance.dark", { capitalize: true }),
+                            value: "dark",
+                          },
+                          {
+                            label: t("appearance.light", { capitalize: true }),
+                            value: "light",
+                          },
                         ]}
                         value={currentTheme ?? ""}
                         onChange={(val) => {
@@ -354,7 +366,7 @@ const SettingsModal = (props: Props) => {
                         }}
                         className={`${buttonSecondaryClass} w-full rounded-full px-4`}
                       >
-                        {t("Common/Logout")}
+                        {t("auth.logout", { capitalize: true })}
                       </button>
                     </span>
                   </div>
@@ -364,7 +376,7 @@ const SettingsModal = (props: Props) => {
                 <div className="w-full">
                   <div id="portal-root" />
                   <div className={`${itemRowClass}`}>
-                    <span>{t("Common/Username")}</span>
+                    <span>{t("auth.username", { capitalize: true })}</span>
                     <div className="flex items-center gap-4">
                       <CustomTooltip side="left" content={username} showOnTouch>
                         <span className="w-48 truncate overflow-x-hidden">
@@ -388,7 +400,7 @@ const SettingsModal = (props: Props) => {
                   <hr className={`${hrClass}`} />
 
                   <div className={`${itemRowClass}`}>
-                    <span>{t("Common/Password")}</span>
+                    <span>{t("auth.password", { capitalize: true })}</span>
 
                     {username === "master" ? (
                       <div className="flex items-center gap-4">

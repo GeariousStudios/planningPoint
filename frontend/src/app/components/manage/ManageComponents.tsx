@@ -15,7 +15,7 @@ import {
 import MenuDropdown from "../common/MenuDropdown/MenuDropdown";
 import Input from "../common/Input";
 import CustomTooltip from "../common/CustomTooltip";
-import { useTranslations } from "next-intl";
+import useTN from "@/app/hooks/useTN";
 
 // --- PROPS ---
 type FilterData = {
@@ -223,7 +223,7 @@ export const ThCell = ({
   classNameAddition?: string;
   sortable?: boolean;
 }) => {
-  const t = useTranslations();
+  const t = useTN();
 
   const baseClass =
     "pl-4 p-2 min-w-48 h-[40px] border border-t-0 border-(--border-secondary) border-b-(--border-main) text-left transition-[background] duration-(--fast)";
