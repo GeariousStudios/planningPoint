@@ -1,5 +1,6 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "Common/Administrate": "Administrera",
   "Common/Manage": "Hantera",
   "Common/Categories": "Kategorier",
@@ -144,6 +145,8 @@
   "Common/Redo": "Gör om",
   "Common/Cancel": "Avbryt",
 =======
+=======
+>>>>>>> Stashed changes
   "common": {
     "name": {
       "singular": "namn",
@@ -177,6 +180,9 @@
     "right": "höger",
     "settings": "inställningar"
   },
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
   "actions": {
@@ -202,6 +208,7 @@
   },
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "Navbar/Home": "Startsida",
   "Navbar/Report": "Rapportering",
   "Navbar/Plan": "Planering",
@@ -222,6 +229,8 @@
   "Navbar/Master planning": "Huvudplanering",
   "Navbar/Operational planning": "Operativ planering",
 =======
+=======
+>>>>>>> Stashed changes
   "status": {
     "status": "status",
     "statusAndOther": "status och annat",
@@ -231,6 +240,9 @@
     "notImplemented": "ej implementerat",
     "noAccess": "du saknar behörighet"
   },
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
   "entities": {

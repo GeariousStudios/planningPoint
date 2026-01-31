@@ -408,12 +408,18 @@ const Navbar = (props: Props) => {
       {
         href: "/developer/manage/",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         label: t("Common/Developer") + " / " + t("Common/Manage"),
 =======
+=======
+>>>>>>> Stashed changes
         label:
           t("common.developer", { capitalize: true }) +
           " / " +
           t("common.manage", { capitalize: true }),
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         icon: "WrenchIcon",
       },
@@ -425,19 +431,29 @@ const Navbar = (props: Props) => {
       {
         href: "/admin/manage/",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         label: t("Common/Admin") + " / " + t("Common/Manage"),
 =======
+=======
+>>>>>>> Stashed changes
         label:
           t("common.admin", { capitalize: true }) +
           " / " +
           t("common.manage", { capitalize: true }),
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/units/categories/",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         label: t("Common/Categories"),
+=======
+        label: t("entities.category", { capitalize: true, plural: true }),
+>>>>>>> Stashed changes
 =======
         label: t("entities.category", { capitalize: true, plural: true }),
 >>>>>>> Stashed changes
@@ -466,7 +482,11 @@ const Navbar = (props: Props) => {
       {
         href: "/admin/manage/plan/master-plans/import-rules/",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         label: t("ImportRules/Import rules"),
+=======
+        label: t("entities.importRules", { capitalize: true }),
+>>>>>>> Stashed changes
 =======
         label: t("entities.importRules", { capitalize: true }),
 >>>>>>> Stashed changes
@@ -845,7 +865,11 @@ const Navbar = (props: Props) => {
                           <span className="2xs:block hidden">
                             <NavbarSubmenu
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                               label={t("Common/Manage")}
+=======
+                              label={t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
 =======
                               label={t("common.manage", { capitalize: true })}
 >>>>>>> Stashed changes
@@ -891,7 +915,11 @@ const Navbar = (props: Props) => {
                             <NavbarLink
                               href="/developer/manage/"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                               label={t("Common/Manage")}
+=======
+                              label={t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
 =======
                               label={t("common.manage", { capitalize: true })}
 >>>>>>> Stashed changes
@@ -1067,7 +1095,11 @@ const Navbar = (props: Props) => {
                           <span className="2xs:block hidden">
                             <NavbarSubmenu
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                               label={t("Common/Manage")}
+=======
+                              label={t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
 =======
                               label={t("common.manage", { capitalize: true })}
 >>>>>>> Stashed changes
@@ -1118,12 +1150,18 @@ const Navbar = (props: Props) => {
                                       }),
                                       href: "/admin/manage/units/categories/",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                                       label: t("Common/Categories"),
 =======
+=======
+>>>>>>> Stashed changes
                                       label: t("entities.category", {
                                         capitalize: true,
                                         plural: true,
                                       }),
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
                                       onToggleFavourite:
@@ -1249,7 +1287,13 @@ const Navbar = (props: Props) => {
                                     {
                                       href: "/admin/manage/plan/master-plans/import-rules/",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                                       label: t("ImportRules/Import rules"),
+=======
+                                      label: t("entities.importRules", {
+                                        capitalize: true,
+                                      }),
+>>>>>>> Stashed changes
 =======
                                       label: t("entities.importRules", {
                                         capitalize: true,
@@ -1389,7 +1433,11 @@ const Navbar = (props: Props) => {
                             <NavbarLink
                               href="/admin/manage/"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                               label={t("Common/Manage")}
+=======
+                              label={t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
 =======
                               label={t("common.manage", { capitalize: true })}
 >>>>>>> Stashed changes

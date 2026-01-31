@@ -235,13 +235,19 @@ const UnitModal = (props: Props) => {
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Unit") + t("Modal/created1"), 4000);
 =======
+=======
+>>>>>>> Stashed changes
       notify(
         "success",
         t("entities.unit", { capitalize: true }) + t("Modal/created1"),
         4000,
       );
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -503,13 +509,19 @@ const UnitModal = (props: Props) => {
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Unit") + t("Modal/updated1"), 4000);
 =======
+=======
+>>>>>>> Stashed changes
       notify(
         "success",
         t("entities.unit", { capitalize: true }) + t("Modal/updated1"),
         4000,
       );
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -828,12 +840,18 @@ const UnitModal = (props: Props) => {
 
               <MultiDropdown
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 label={t("Common/Categories")}
 =======
+=======
+>>>>>>> Stashed changes
                 label={t("entities.category", {
                   capitalize: true,
                   plural: true,
                 })}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                 value={categoryIds.map(String)}
                 onChange={(val: string[]) => setCategoryIds(val.map(Number))}

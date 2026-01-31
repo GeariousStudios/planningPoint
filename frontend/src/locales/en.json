@@ -1,5 +1,6 @@
 {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "Common/Administrate": "Administrate",
   "Common/Manage": "Manage",
   "Common/Categories": "Categories",
@@ -143,6 +144,8 @@
   "Common/Redo": "Redo",
   "Common/Cancel": "Cancel",
 =======
+=======
+>>>>>>> Stashed changes
   "common": {
     "manage": "manage",
     "category": {
@@ -320,6 +323,9 @@
     "tooltipSaveRules": "save rules",
     "tooltipRevertChanges": "revert changes"
   },
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
   "Message/Loading": "Loading...",

@@ -136,13 +136,19 @@ const CategoriesClient = (props: Props) => {
       await deleteContent(id);
       await fetchItems();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Manage/deleted1"), 4000); // <-- Unique.
 =======
+=======
+>>>>>>> Stashed changes
       notify(
         "success",
         capitalize(t("entities.category")) + t("Manage/deleted1"),
         4000,
       ); // <-- Unique.
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));

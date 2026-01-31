@@ -58,8 +58,13 @@ type ShiftChange = {
 };
 
 <<<<<<< Updated upstream:frontend/src/app/hooks/useClient.ts
+<<<<<<< Updated upstream:frontend/src/app/hooks/useClient.ts
 const useClient = (props: Props) => {
   const t = useTranslations();
+=======
+const useUnitClient = (props: Props) => {
+  const t = useTN();
+>>>>>>> Stashed changes:frontend/src/app/hooks/useUnitClient.ts
 =======
 const useUnitClient = (props: Props) => {
   const t = useTN();

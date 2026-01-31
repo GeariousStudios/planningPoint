@@ -37,7 +37,11 @@ import {
 import { start } from "repl";
 import DeleteModal from "../DeleteModal";
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { useTranslations } from "next-intl";
+=======
+import useTN from "@/app/hooks/useTN";
+>>>>>>> Stashed changes
 =======
 import useTN from "@/app/hooks/useTN";
 >>>>>>> Stashed changes
@@ -1067,7 +1071,13 @@ const ReportModal = (props: Props) => {
                             <SingleDropdown
                               id="category"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                               label={t("Common/Category")}
+=======
+                              label={t("entities.category", {
+                                capitalize: true,
+                              })}
+>>>>>>> Stashed changes
 =======
                               label={t("entities.category", {
                                 capitalize: true,
@@ -1114,7 +1124,13 @@ const ReportModal = (props: Props) => {
                                 <SingleDropdown
                                   id="subCategory"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                                   label={t("Common/Sub category")}
+=======
+                                  label={t("entities.subCategory", {
+                                    capitalize: true,
+                                  })}
+>>>>>>> Stashed changes
 =======
                                   label={t("entities.subCategory", {
                                     capitalize: true,

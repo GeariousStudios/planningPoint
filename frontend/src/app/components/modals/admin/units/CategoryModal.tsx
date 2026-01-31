@@ -170,13 +170,19 @@ const CategoryModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Modal/created1"), 4000);
 =======
+=======
+>>>>>>> Stashed changes
       notify(
         "success",
         t("entities.category", { capitalize: true }) + t("Modal/created1"),
         4000,
       );
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -276,13 +282,19 @@ const CategoryModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       notify("success", t("Common/Category") + t("Modal/updated1"), 4000);
 =======
+=======
+>>>>>>> Stashed changes
       notify(
         "success",
         t("entities.category", { capitalize: true }) + t("Modal/updated1"),
         4000,
       );
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     } catch (err) {
       notify("error", t("Modal/Unknown error"));

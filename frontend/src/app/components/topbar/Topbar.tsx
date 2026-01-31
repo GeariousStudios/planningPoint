@@ -773,7 +773,11 @@ const Topbar = (props: Props) => {
                     {/* <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-(--border-tertiary)" /> */}
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                       {t("Common/Manage")}
+=======
+                      {t("common.manage", { capitalize: true })}
+>>>>>>> Stashed changes
 =======
                       {t("common.manage", { capitalize: true })}
 >>>>>>> Stashed changes
