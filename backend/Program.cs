@@ -60,7 +60,8 @@ builder
 builder.Services.AddEndpointsApiExplorer();
 
 // --- Windows = Local, Linux = Render ---
-var sqlitePath = OperatingSystem.IsWindows() ? "planningPoint.db" : "/var/data/planningPoint.db";
+//var sqlitePath = OperatingSystem.IsWindows() ? "planningPoint.db" : "/var/data/planningPoint.db";
+var sqlitePath = OperatingSystem.IsWindows() ? "planningPoint.db" : "planningPoint.db";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite($"Data Source={sqlitePath}")
